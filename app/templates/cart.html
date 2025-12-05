@@ -19,7 +19,7 @@
         </thead>
         <tbody>
             {% set ns = namespace(total=0) %}
-            {% for item in cart.items %}
+            {% for item in items %}
             <tr>
                 <td>{{ item.book.title }}</td>
                 <td>{{ item.action|capitalize }}</td>
