@@ -1,0 +1,15 @@
+<!doctype html>
+<title>Hello from Flask</title>
+{% if items %}
+  <ol>
+	{% for item in items %}
+	  <li>
+		{% block item scoped%}
+		  <p>item {{ item }}!</p>
+		{% endblock item %}
+	  </li>
+	{% endfor %}
+  </ol>
+{% else %}
+  <h1>No items!</h1>
+{% endif %}
