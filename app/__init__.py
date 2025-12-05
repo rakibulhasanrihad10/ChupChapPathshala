@@ -10,6 +10,7 @@ def create_app(config_class=Config):
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
+    login_manager.login_view = 'auth.login'
 
     # Import models to register them with SQLAlchemy
     from app import models

@@ -1,8 +1,11 @@
 ---
 description: Start the Flask Development Server
 ---
+at first copy env.example file and rename it to .env
+then pest the server link from our discord server
 
 1. Open your terminal.
+
 2. Navigate to the project directory:
    ```bash
    cd c:\Users\rakib\library-management-system

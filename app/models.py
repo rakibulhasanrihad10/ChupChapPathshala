@@ -40,7 +40,10 @@ class Book(db.Model):
     
     # Inventory Management
     item_type = db.Column(db.String(20), default='hybrid') # circulation, sale, hybrid
+    category = db.Column(db.String(50), default='General') # e.g. Fiction, Islamic, Bengali
     location = db.Column(db.String(100)) # e.g., "Aisle 3, Shelf B"
+    image_url = db.Column(db.String(500), default='https://placehold.co/200x300?text=No+Cover') # Poster URL
+
     
     # Stock Counters
     stock_total = db.Column(db.Integer, default=1)

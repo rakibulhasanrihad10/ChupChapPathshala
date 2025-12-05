@@ -36,7 +36,7 @@ def add_to_cart(book_id):
         
     db.session.commit()
     flash(f'Added {book.title} to cart for {action}!', 'success')
-    return redirect(url_for('main.view_cart'))
+    return redirect(request.referrer or url_for('main.index'))
 
 @bp.route('/cart')
 @login_required

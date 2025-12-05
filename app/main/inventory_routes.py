@@ -23,15 +23,19 @@ def add_book():
         item_type = request.form.get('item_type')
         location = request.form.get('location')
         stock_total = int(request.form.get('stock_total'))
+        image_url = request.form.get('image_url')
+        category = request.form.get('category')
         
         book = Book(
             title=title,
             author=author,
             price=price,
             item_type=item_type,
+            category=category,
             location=location,
             stock_total=stock_total,
-            stock_available=stock_total # Initially all available
+            stock_available=stock_total, # Initially all available
+            image_url=image_url if image_url else None
         )
         db.session.add(book)
         db.session.commit()
