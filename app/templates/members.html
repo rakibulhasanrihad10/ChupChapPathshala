@@ -3,6 +3,7 @@
 {% block title %}Members List{% endblock %}
 
 {% block content %}
+  
 <div class="page-header">
     <h1 class="page-title">Library Members</h1>
 </div>
@@ -27,11 +28,14 @@
                 <td>{{ user.email }}</td>
                 <td>
                     {% if user.role == 'admin' %}
+                    <span 
+                        class="bg-amber-100 text-amber-600 py-[2px] px-2 rounded-full text-xs font-semibold"> Admin</span>
+                    {% elif user.role == 'librarian' %}
+			     	<span
+						class="bg-blue-100 text-blue-600 py-[2px] px-2 rounded-full text-xs font-semibold">Librarian</span>
+					{% else %}
                     <span
-                        style="background: #FEF3C7; color: #D97706; padding: 2px 8px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">Admin</span>
-                    {% else %}
-                    <span
-                        style="background: #E5E7EB; color: #374151; padding: 2px 8px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">Customer</span>
+                        class="bg-gray-100 text-gray-600 py-[2px] px-2 rounded-full text-xs font-semibold">Customer</span>
                     {% endif %}
                 </td>
                 <td>{{ user.membership_type|title }}</td>

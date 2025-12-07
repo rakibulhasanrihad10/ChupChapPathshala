@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}LMS{% endblock %} - ChupChap Pathshala</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
@@ -50,10 +51,10 @@
             <a href="{{ url_for('main.catalog') }}" class="nav-pill">E-Book</a>
             {% if current_user.is_authenticated and current_user.is_admin() %}
             <a href="{{ url_for('main.members') }}" class="nav-pill"
-                style="background-color: #F3E8FF; color: #7E22CE;">Members</a>
-            <a href="{{ url_for('main.inventory') }}" class="nav-pill"
-                style="background-color: #ECFDF5; color: #047857;">Inventory</a>
-            {% endif %}
+                style="background-color: #F3E8FF; color: #7E22CE;">Members</a>             {% endif %}
+			{% if current_user.is_authenticated and current_user.is_staff() %}
+			<a href="{{ url_for('main.inventory') }}" class="nav-pill"
+                style="background-color: #ECFDF5; color: #047857;">Inventory</a>			{% endif %}
         </div>
 
         <!-- 4. User Actions -->

@@ -3,11 +3,14 @@
 {% block title %}Inventory{% endblock %}
 
 {% block content %}
+
+<!-- Page Header -->
 <div class="page-header">
     <h1 class="page-title">Inventory Management</h1>
-    <a href="{{ url_for('main.add_book') }}" class="btn-add">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+    <a href="{{ url_for('main.add_book') }}" class="btn-add flex items-center gap-1">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
@@ -15,58 +18,81 @@
     </a>
 </div>
 
+<!-- Table Wrapper -->
 <div class="table-container">
-    <table class="table">
-        <thead>
+    <table class="table w-full text-left border-collapse">
+        <thead class="bg-gray-100 text-gray-700">
             <tr>
-                <th>Title</th>
-                <th>Author</th>
-                <th>Availability</th>
-                <th>Category</th>
-                <th>Location</th>
-                <th>Price</th>
-                <th>Total</th>
-                <th>Available</th>
-                <th>Borrowed</th>
-                <th>Sold</th>
+                <th class="p-3">Title</th>
+                <th class="p-3">Author</th>
+                <th class="p-3">Availability</th>
+                <th class="p-3">Category</th>
+                <th class="p-3">Location</th>
+                <th class="p-3">Price</th>
+                <th class="p-3">Total</th>
+                <th class="p-3">Available</th>
+                <th class="p-3">Borrowed</th>
+                <th class="p-3">Sold</th>
+				<th class="p-3">Restock</th>
             </tr>
         </thead>
+
         <tbody>
             {% for book in books %}
-            <tr>
-                <td style="font-weight: 500; color: #111827;">
-                    <div style="display: flex; align-items: center; gap: 1rem;">
-                        <img src="{{ book.image_url or 'https://placehold.co/40x60?text=No+Cover' }}" alt="Cover"
-                            style="width: 40px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #E5E7EB;">
+            <tr class="border-b">
+                <!-- Title + Cover -->
+                <td class="p-3 font-medium text-gray-900">
+                    <div class="flex items-center gap-4">
+                        <img src="{{ book.image_url or 'https://placehold.co/40x60?text=No+Cover' }}"
+                             alt="Cover"
+                             class="w-10 h-16 object-cover rounded border border-gray-300">
                         <span>{{ book.title }}</span>
                     </div>
                 </td>
-                <td>{{ book.author }}</td>
-                <td>
-                    <span
-                        style="padding: 2px 8px; border-radius: 9999px; background: #EEF2FF; color: #4F46E5; font-size: 0.75rem; font-weight: 600;">
+
+                <td class="p-3">{{ book.author }}</td>
+
+                <!-- Availability Badge -->
+                <td class="p-3">
+                    <span class="px-2 py-[2px] rounded-full bg-indigo-50 text-indigo-600 text-xs font-semibold">
                         {{ book.item_type|title }}
                     </span>
                 </td>
-                <td>{{ book.category }}</td>
-                <td>{{ book.location }}</td>
-                <td>{{ "%.2f"|format(book.price) }}</td>
-                <td>{{ book.stock_total }}</td>
-                <td>
-                    <span
-                        style="color: {% if book.stock_available > 0 %}#059669{% else %}#DC2626{% endif %}; font-weight: 500;">
-                        {{ book.stock_available }}
-                    </span>
+
+                <td class="p-3">{{ book.category }}</td>
+                <td class="p-3">{{ book.location }}</td>
+                <td class="p-3">{{ "%.2f"|format(book.price) }}</td>
+                <td class="p-3">{{ book.stock_total }}</td>
+
+                <!-- Stock Available (green/red text) -->
+                <td class="p-3 font-medium
+                    {% if book.stock_available > 0 %}
+                        text-green-600
+                    {% else %}
+                        text-red-600
+                    {% endif %}
+                ">
+                    {{ book.stock_available }}
                 </td>
-                <td>{{ book.stock_borrowed }}</td>
-                <td>{{ book.stock_sold }}</td>
+
+                <td class="p-3">{{ book.stock_borrowed }}</td>
+                <td class="p-3">{{ book.stock_sold }}</td>
+				<td class="p-3">
+                   <a href="{{ url_for('main.restock_book', book_id=book.id) }}" class="inline-flex items-center px-3 py-1 text-sm rounded-md bg-yellow-100 text-yellow-700 font-medium hover:bg-yellow-200">
+                     Restock
+                  </a>
+               </td>
+
             </tr>
+
             {% else %}
+            <!-- Empty State -->
             <tr>
-                <td colspan="9" style="text-align: center; padding: 3rem; color: #6B7280;">
+                <td colspan="10" class="text-center py-12 text-gray-500">
                     No books in inventory. <br>
-                    <a href="{{ url_for('main.add_book') }}" style="color: var(--primary-color);">Add your first
-                        book</a>
+                    <a href="{{ url_for('main.add_book') }}" class="text-indigo-600 font-medium">
+                        Add your first book
+                    </a>
                 </td>
             </tr>
             {% endfor %}
@@ -74,15 +100,17 @@
     </table>
 </div>
 
-<div style="margin-top: 2rem;">
+<!-- Back Link -->
+<div class="mt-8">
     <a href="{{ url_for('main.index') }}"
-        style="color: #6B7280; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        class="text-gray-500 inline-flex items-center gap-2 text-sm hover:text-gray-700">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="19" y1="12" x2="5" y2="12"></line>
             <polyline points="12 19 5 12 12 5"></polyline>
         </svg>
         Back to Dashboard
     </a>
 </div>
+
 {% endblock %}

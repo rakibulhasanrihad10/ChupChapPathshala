@@ -5,6 +5,8 @@ from app.main import bp
 from app.models import Book
 from app.decorators import staff_required
 
+from app.main.restock_form import RestockForm
+
 @bp.route('/inventory')
 @login_required
 @staff_required
@@ -42,3 +44,25 @@ def add_book():
         flash('Book added to inventory!')
         return redirect(url_for('main.inventory'))
     return render_template('add_book.html')
+
+
+
+@bp.route("/inventory/restock/<int:book_id>", methods=["GET", "POST"])
+@login_required
+@staff_required
+def restock_book(book_id):
+    book = Book.query.get_or_404(book_id)
+    form = RestockForm()
+
+    if form.validate_on_submit():
+        qty = form.quantity.data
+
+        # Update stock
+        book.stock_total += qty
+        book.stock_available += qty
+
+        db.session.commit()
+        flash(f"Successfully restocked {qty} copies of '{book.title}'.", "success")
+        return redirect(url_for("main.inventory"))
+
+    return render_template("restock.html", form=form, book=book)

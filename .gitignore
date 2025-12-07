@@ -4,3 +4,9 @@ __pycache__/
 *.pyc
 instance/
 .pytest_cache/
+
+# emacs autosaves
+*#*
+*~*
+
+.DS_STORE
