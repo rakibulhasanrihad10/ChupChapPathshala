@@ -9,8 +9,8 @@
     <h1 class="page-title">Inventory Management</h1>
 
     <a href="{{ url_for('main.add_book') }}" class="btn-add flex items-center gap-1">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
@@ -33,7 +33,7 @@
                 <th class="p-3">Available</th>
                 <th class="p-3">Borrowed</th>
                 <th class="p-3">Sold</th>
-				<th class="p-3">Restock</th>
+                <th class="p-3">Restock</th>
             </tr>
         </thead>
 
@@ -43,9 +43,8 @@
                 <!-- Title + Cover -->
                 <td class="p-3 font-medium text-gray-900">
                     <div class="flex items-center gap-4">
-                        <img src="{{ book.image_url or 'https://placehold.co/40x60?text=No+Cover' }}"
-                             alt="Cover"
-                             class="w-10 h-16 object-cover rounded border border-gray-300">
+                        <img src="{{ book.image_url or 'https://placehold.co/40x60?text=No+Cover' }}" alt="Cover"
+                            class="w-10 h-16 object-cover rounded border border-gray-300">
                         <span>{{ book.title }}</span>
                     </div>
                 </td>
@@ -77,11 +76,20 @@
 
                 <td class="p-3">{{ book.stock_borrowed }}</td>
                 <td class="p-3">{{ book.stock_sold }}</td>
-				<td class="p-3">
-                   <a href="{{ url_for('main.restock_book', book_id=book.id) }}" class="inline-flex items-center px-3 py-1 text-sm rounded-md bg-yellow-100 text-yellow-700 font-medium hover:bg-yellow-200">
-                     Restock
-                  </a>
-               </td>
+                <td class="p-3">
+                    <a href="{{ url_for('main.restock_book', book_id=book.id) }}"
+                        class="inline-flex items-center px-3 py-1 text-sm rounded-md bg-yellow-100 text-yellow-700 font-medium hover:bg-yellow-200">
+                        Restock
+                    </a>
+                    <form action="{{ url_for('main.supplier_lift', book_id=book.id) }}" method="POST"
+                        class="inline ml-2">
+                        <button type="submit"
+                            class="inline-flex items-center px-3 py-1 text-sm rounded-md bg-blue-100 text-blue-700 font-medium hover:bg-blue-200"
+                            title="Anti-Gravity Lift (Add to Order)">
+                            Lift
+                        </button>
+                    </form>
+                </td>
 
             </tr>
 
@@ -104,8 +112,8 @@
 <div class="mt-8">
     <a href="{{ url_for('main.index') }}"
         class="text-gray-500 inline-flex items-center gap-2 text-sm hover:text-gray-700">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="19" y1="12" x2="5" y2="12"></line>
             <polyline points="12 19 5 12 12 5"></polyline>
         </svg>

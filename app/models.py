@@ -99,3 +99,34 @@ class Discount(db.Model):
 
     def is_valid(self):
         return self.expiry_date > datetime.utcnow()
+
+class Supplier(db.Model):
+    __tablename__ = 'suppliers'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    contact_person = db.Column(db.String(100))
+    email = db.Column(db.String(120))
+    phone = db.Column(db.String(20))
+    
+    orders = db.relationship('SupplyOrder', backref='supplier', lazy='dynamic')
+
+class SupplyOrder(db.Model):
+    __tablename__ = 'supply_orders'
+    id = db.Column(db.Integer, primary_key=True)
+    supplier_id = db.Column(db.Integer, db.ForeignKey('suppliers.id'), nullable=True) # Nullable for draft/shortlist
+    status = db.Column(db.String(20), default='shortlist') 
+    # Statuses: 'shortlist', 'apply_gravity', 'pending_review', 'placed', 'completed'
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    items = db.relationship('SupplyOrderItem', backref='order', lazy='dynamic', cascade="all, delete-orphan")
+
+class SupplyOrderItem(db.Model):
+    __tablename__ = 'supply_order_items'
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('supply_orders.id'))
+    book_id = db.Column(db.Integer, db.ForeignKey('books.id'))
+    book = db.relationship('Book')
+    
+    mass = db.Column(db.Integer, default=5) # Ordered Quantity
+    payload = db.Column(db.Integer, nullable=True) # Received/Actual Quantity
