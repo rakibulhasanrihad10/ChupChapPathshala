@@ -33,7 +33,7 @@
                 <th class="p-3">Available</th>
                 <th class="p-3">Borrowed</th>
                 <th class="p-3">Sold</th>
-                <th class="p-3">Restock</th>
+                <th class="p-3 sticky right-0 shadow-[-3px_0_6px_rgba(0,0,0,0.05)] bg-gray-300">Action</th>
             </tr>
         </thead>
 
@@ -76,7 +76,7 @@
 
                 <td class="p-3">{{ book.stock_borrowed }}</td>
                 <td class="p-3">{{ book.stock_sold }}</td>
-                <td class="p-3">
+                <td class="p-3 sticky right-0 z-30 shadow-[-3px_0_6px_rgba(0,0,0,0.05)] bg-gray-300">
                     <a href="{{ url_for('main.restock_book', book_id=book.id) }}"
                         class="inline-flex items-center px-3 py-1 text-sm rounded-md bg-yellow-100 text-yellow-700 font-medium hover:bg-yellow-200">
                         Restock

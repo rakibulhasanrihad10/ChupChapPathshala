@@ -254,6 +254,15 @@
   .static {
     position: static;
   }
+  .sticky {
+    position: sticky;
+  }
+  .right-0 {
+    right: calc(var(--spacing) * 0);
+  }
+  .z-30 {
+    z-index: 30;
+  }
   .container {
     width: 100%;
     @media (width >= 40rem) {
@@ -560,6 +569,9 @@
   .bg-gray-200 {
     background-color: var(--color-gray-200);
   }
+  .bg-gray-300 {
+    background-color: var(--color-gray-300);
+  }
   .bg-green-50 {
     background-color: var(--color-green-50);
   }
@@ -801,6 +813,10 @@
   }
   .shadow {
     --tw-shadow: 0 1px 3px 0 var(--tw-shadow-color, rgb(0 0 0 / 0.1)), 0 1px 2px -1px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .shadow-\[-3px_0_6px_rgba\(0\,0\,0\,0\.05\)\] {
+    --tw-shadow: -3px 0 6px var(--tw-shadow-color, rgba(0,0,0,0.05));
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
   }
   .shadow-lg {
