@@ -38,7 +38,7 @@
         </thead>
 
         <tbody>
-            {% for book in books %}
+            {% for book in books.items %}
             <tr class="border-b">
                 <!-- Title + Cover -->
                 <td class="p-3 font-medium text-gray-900">
@@ -106,6 +106,51 @@
             {% endfor %}
         </tbody>
     </table>
+</div>
+
+<!-- Pagination Controls -->
+<div class="flex justify-center items-center gap-2 mt-6">
+    <!-- Previous Page -->
+    {% if books.has_prev %}
+    <a href="{{ url_for('main.inventory', page=books.prev_num) }}"
+        class="px-3 py-1 rounded bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-50">
+        &laquo; Prev
+    </a>
+    {% else %}
+    <span class="px-3 py-1 rounded bg-gray-100 border border-gray-300 text-gray-400 cursor-not-allowed">
+        &laquo; Prev
+    </span>
+    {% endif %}
+
+    <!-- Page Numbers -->
+    {% for page_num in books.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+        {% if page_num %}
+            {% if books.page == page_num %}
+                <span class="px-3 py-1 rounded bg-indigo-600 text-white border border-indigo-600 font-medium">
+                    {{ page_num }}
+                </span>
+            {% else %}
+                <a href="{{ url_for('main.inventory', page=page_num) }}"
+                    class="px-3 py-1 rounded bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 shadow-sm">
+                    {{ page_num }}
+                </a>
+            {% endif %}
+        {% else %}
+            <span class="px-3 py-1 text-gray-400">...</span>
+        {% endif %}
+    {% endfor %}
+
+    <!-- Next Page -->
+    {% if books.has_next %}
+    <a href="{{ url_for('main.inventory', page=books.next_num) }}"
+        class="px-3 py-1 rounded bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 shadow-sm">
+        Next &raquo;
+    </a>
+    {% else %}
+    <span class="px-3 py-1 rounded bg-gray-100 border border-gray-300 text-gray-400 cursor-not-allowed">
+        Next &raquo;
+    </span>
+    {% endif %}
 </div>
 
 <!-- Back Link -->
