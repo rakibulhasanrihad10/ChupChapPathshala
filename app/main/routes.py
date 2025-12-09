@@ -14,7 +14,7 @@ def members():
 @bp.route('/')
 def index():
     # Fetch 4 sample books for the home page display
-    books = Book.query.order_by(Book.id.desc()).limit(4).all()
+    books = Book.query.order_by(Book.id.desc()).limit(6).all()
     return render_template('index.html', books=books)
 
 @bp.route('/catalog')
