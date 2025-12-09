@@ -119,8 +119,8 @@ def supplier_submit_review():
     order.status = 'pending_review'
     db.session.commit()
     
-    flash('Review Beacon activated! Order sent to Owner for Launch Authorization.', 'success')
-    return redirect(url_for('main.index'))
+    flash('Order sent to Owner for Authorization.', 'success')
+    return redirect(url_for('main.supplier_shortlist'))
 
 @bp.route('/supplier/review', methods=['GET'])
 @login_required
@@ -144,7 +144,7 @@ def supplier_launch(order_id):
     # Here we would send email to supplier
     
     db.session.commit()
-    flash('Launch Application Authorized! Order transmitted to supplier.', 'success')
+    flash('Order Authorized! & transmitted to supplier.', 'success')
     return redirect(url_for('main.supplier_review'))
 
 @bp.route('/supplier/receive_list', methods=['GET'])
