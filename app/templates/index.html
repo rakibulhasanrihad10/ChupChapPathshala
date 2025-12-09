@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero">
+    <h1>Welcome to ChupChap Pathshala</h1>
+    <p>Your portal to knowledge. Discover, Borrow, and Own your favorite books.</p>
+
+    {% if not current_user.is_authenticated %}
+    <div style="margin-top: 1.5rem;">
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary">Join Now</a>
+        <a href="{{ url_for('auth.login') }}" class="btn btn-secondary">Login</a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Featured Books Section -->
+<div style="margin-bottom: 3rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.5rem; color: #111827; font-weight: 700;">Featured Books</h2>
+        <a href="{{ url_for('main.catalog') }}" style="color: #4F46E5; font-weight: 600; text-decoration: none;">View
+            All Books &rarr;</a>
+    </div>
+
+    <div class="features-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
+        {% for book in books %}
+        <div class="card" style="display: flex; flex-direction: column; overflow: hidden;">
+            <div
+                style="height: 200px; background: #F3F4F6; margin: -1.5rem -1.5rem 1rem -1.5rem; display: flex; align-items: center; justify-content: center;">
+                <img src="{{ book.image_url or 'https://placehold.co/150x220?text=No+Cover' }}" alt="{{ book.title }}"
+                    style="height: 100%; width: 100%; object-fit: cover;">
+            </div>
+            <h3>{{ book.title }}</h3>
+            <p><strong>Author:</strong> {{ book.author }}</p>
+            <p><strong>Availability:</strong> <span
+                    style="background: #e5e7eb; padding: 2px 6px; border-radius: 4px; font-size: 0.9em;">{{
+                    book.item_type|capitalize }}</span></p>
+            <p><strong>Category:</strong> <span style="color: #6B7280;">{{ book.category }}</span></p>
+            <p><strong>Price:</strong> {{ "%.2f"|format(book.price) }}</p>
+            <!-- Note: Displaying stock but action buttons require login/cart logic which is handled below -->
+
+            <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                <form action="{{ url_for('main.add_to_cart', book_id=book.id) }}" method="POST" style="width: 100%;">
+                    {% if book.item_type in ['sale', 'hybrid'] and book.stock_available > 0 %}
+                    <button type="submit" name="action" value="buy" class="nav-btn"
+                        style="width: 100%; margin-bottom: 0.5rem; background-color: var(--secondary-color);">Buy</button>
+                    {% endif %}
+
+                    {% if book.item_type in ['circulation', 'hybrid'] and book.stock_available > 0 %}
+                    <button type="submit" name="action" value="borrow" class="nav-btn"
+                        style="width: 100%;">Borrow</button>
+                    {% endif %}
+
+                    {% if book.stock_available == 0 %}
+                    <button disabled
+                        style="width: 100%; padding: 0.5rem; cursor: not-allowed; background: #E5E7EB; color: #6B7280; border: none; border-radius: 0.375rem;">Out
+                        of Stock</button>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Promotional / Premium Perks Section -->
+<div
+    style="background: linear-gradient(135deg, #4F46E5, #7C3AED); padding: 3rem; border-radius: 1rem; color: white; display: grid; md:grid-cols-2; gap: 2rem; align-items: center;">
+    <div>
+        <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 1rem;">Unlock Premium Perks</h2>
+        <p style="font-size: 1.1rem; line-height: 1.6; opacity: 0.9; margin-bottom: 1.5rem;">
+            Upgrade your membership to get exclusive access to our entire digital archive, extended borrowing limits (up
+            to 10 books), and free home delivery on all purchases.
+        </p>
+        <ul style="list-style: none; padding: 0; margin-bottom: 2rem;">
+            <li style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 50%;">✓</span> Extra
+                Borrowing Time
+            </li>
+            <li style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 50%;">✓</span> Free
+                Delivery
+            </li>
+            <li style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 50%;">✓</span> Priority
+                Support
+            </li>
+        </ul>
+        <a href="#"
+            style="background: white; color: #4F46E5; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; text-decoration: none; display: inline-block;">Learn
+            More</a>
+    </div>
+
+    <!-- Visual Element (Simple Card Representation or Illustration Placeholder) -->
+    <div
+        style="background: rgba(255,255,255,0.1); padding: 2rem; border-radius: 1rem; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);">
+        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem;">Extensive Catalog Access</h3>
+        <p style="opacity: 0.9; margin-bottom: 1.5rem;">Browse thousands of titles from our extensive collection. From
+            rare Bengali classics to modern international bestsellers.</p>
+        <a href="{{ url_for('main.catalog') }}"
+            style="width: 100%; display: block; text-align: center; padding: 0.75rem; background: rgba(255,255,255,0.2); color: white; text-decoration: none; border-radius: 0.5rem; font-weight: 600; transition: background 0.2s;">Explore
+            Full Catalog</a>
+    </div>
+</div>
+{% endblock %}

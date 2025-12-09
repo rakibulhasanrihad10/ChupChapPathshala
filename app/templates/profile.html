@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - ChupChap Pathshala{% endblock %}
+
+{% block content %}
+<div class="auth-container" style="max-width: 600px;">
+    <div class="auth-header">
+        <h2>User Profile</h2>
+        <p>Manage your account details</p>
+    </div>
+
+    <div class="profile-details" style="margin-bottom: 2rem;">
+        <div class="profile-item"
+            style="display: flex; justify-content: space-between; padding: 1rem; border-bottom: 1px solid #e5e7eb;">
+            <strong>Username:</strong>
+            <span>{{ current_user.username }}</span>
+        </div>
+        <div class="profile-item"
+            style="display: flex; justify-content: space-between; padding: 1rem; border-bottom: 1px solid #e5e7eb;">
+            <strong>Email:</strong>
+            <span>{{ current_user.email }}</span>
+        </div>
+        <div class="profile-item"
+            style="display: flex; justify-content: space-between; padding: 1rem; border-bottom: 1px solid #e5e7eb;">
+            <strong>Role:</strong>
+            <span style="text-transform: capitalize;">{{ current_user.role }}</span>
+        </div>
+        <div class="profile-item"
+            style="display: flex; justify-content: space-between; padding: 1rem; border-bottom: 1px solid #e5e7eb;">
+            <strong>Membership:</strong>
+            <span style="text-transform: capitalize;">{{ current_user.membership_type }}</span>
+        </div>
+        {% if current_user.membership_expiry %}
+        <div class="profile-item"
+            style="display: flex; justify-content: space-between; padding: 1rem; border-bottom: 1px solid #e5e7eb;">
+            <strong>Membership Expiry:</strong>
+            <span>{{ current_user.membership_expiry.strftime('%Y-%m-%d') }}</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="profile-actions" style="display: flex; gap: 1rem; justify-content: center;">
+        {% if current_user.is_admin() %}
+        <a href="{{ url_for('auth.create_admin') }}" class="btn btn-primary">Manage Admin Users / Add Administrator</a>
+        {% endif %}
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-primary"
+            style="background-color: #EF4444; border: none;">Logout</a>
+    </div>
+</div>
+{% endblock %}

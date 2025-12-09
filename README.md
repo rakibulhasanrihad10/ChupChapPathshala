@@ -1,28 +1,19 @@
-# library-management-system
-A Flask-based library and e-commerce platform.
+# How to Run the Project
 
-# how to run
-- clone this repo and enter the repo directory
-- create and activate python virtual environment
-  ``` bash
-  virtualenv .venv && source .venv/bin/activate
-  ```
-- install dependencies
-  ``` bash
-  pip3 install -r requirements.txt
-  ```
-- run the dev server
-  ``` bash
-  flask run --debug
-  ```
-- open the url printed in the output of flask command
+1.  **Setup Environment**:
+    -   Clone the repository
+    -   First, copy the env.example file and rename it to .env. Then, paste the database link from our Discord server.
 
-# adding your dependencies
-- install your python packages
-  ```bash
-  pip3 install yourpackages
-  ```
-- add to requirements.txt
-  ```bash
-  pip3 freeze > requirements.txt
-  ```
+2.  **Install Dependencies**:
+    *Open your terminal in the project folder and run:*
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+3.  **Run the App**:
+    ```bash
+    run.py
+    ```
+
+4.  **Open Browser**:
+    Go to: http://127.0.0.1:5000

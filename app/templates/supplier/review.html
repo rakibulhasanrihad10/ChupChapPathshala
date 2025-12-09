@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Owner Review - Review Beacon{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-indigo-800">Review Order (Final Authorization)</h1>
+        <p class="text-gray-600 mt-2">Authorize pending orders</p>
+    </div>
+
+    {% if orders %}
+    <div class="grid gap-8">
+        {% for order in orders %}
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-indigo-100">
+            <div class="bg-indigo-50 px-6 py-4 flex justify-between items-center border-b border-indigo-100">
+                <div>
+                    <h3 class="font-bold text-lg text-indigo-900">Order #{{ order.id }}</h3>
+                    <span class="text-sm text-gray-500">Created: {{ order.created_at.strftime('%Y-%m-%d %H:%M')
+                        }}</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2.5 py-0.5 rounded">Pending
+                        Review</span>
+                </div>
+            </div>
+
+            <div class="p-6">
+                <table class="min-w-full divide-y divide-gray-200 mb-6">
+                    <thead>
+                        <tr>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Book</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Requested Mass
+                                (Qty)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for item in order.items %}
+                        <tr>
+                            <td class="px-4 py-2 text-sm text-gray-900">{{ item.book.title }}</td>
+                            <td class="px-4 py-2 text-sm font-bold text-gray-900">{{ item.mass }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <div class="flex justify-end gap-3">
+                    <button class="text-indigo-600 hover:text-indigo-800 font-medium px-4 py-2">Edit Order</button>
+                    <!-- Placeholder for edit logic -->
+                    <form action="{{ url_for('main.supplier_launch', order_id=order.id) }}" method="POST">
+                        <button type="submit"
+                            class="bg-green-600 text-white px-6 py-2 rounded shadow hover:bg-green-700 font-bold transition transform hover:-translate-y-1">
+                            Confirm Order
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-xl shadow p-8 text-center text-gray-500">
+        <p class="text-xl">No active order.</p>
+        <p>No orders are currently pending review.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Inventory{% endblock %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="page-header">
+    <h1 class="page-title">Inventory Management</h1>
+
+    <a href="{{ url_for('main.add_book') }}" class="btn-add flex items-center gap-1">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Add New Book
+    </a>
+</div>
+
+<!-- Table Wrapper -->
+<div class="table-container">
+    <table class="table w-full text-left border-collapse">
+        <thead class="bg-gray-100 text-gray-700">
+            <tr>
+                <th class="p-3">Title</th>
+                <th class="p-3">Author</th>
+                <th class="p-3">Availability</th>
+                <th class="p-3">Category</th>
+                <th class="p-3">Location</th>
+                <th class="p-3">Price</th>
+                <th class="p-3">Total</th>
+                <th class="p-3">Available</th>
+                <th class="p-3">Borrowed</th>
+                <th class="p-3">Sold</th>
+                <th class="p-3">Restock</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for book in books %}
+            <tr class="border-b">
+                <!-- Title + Cover -->
+                <td class="p-3 font-medium text-gray-900">
+                    <div class="flex items-center gap-4">
+                        <img src="{{ book.image_url or 'https://placehold.co/40x60?text=No+Cover' }}" alt="Cover"
+                            class="w-10 h-16 object-cover rounded border border-gray-300">
+                        <span>{{ book.title }}</span>
+                    </div>
+                </td>
+
+                <td class="p-3">{{ book.author }}</td>
+
+                <!-- Availability Badge -->
+                <td class="p-3">
+                    <span class="px-2 py-[2px] rounded-full bg-indigo-50 text-indigo-600 text-xs font-semibold">
+                        {{ book.item_type|title }}
+                    </span>
+                </td>
+
+                <td class="p-3">{{ book.category }}</td>
+                <td class="p-3">{{ book.location }}</td>
+                <td class="p-3">{{ "%.2f"|format(book.price) }}</td>
+                <td class="p-3">{{ book.stock_total }}</td>
+
+                <!-- Stock Available (green/red text) -->
+                <td class="p-3 font-medium
+                    {% if book.stock_available > 0 %}
+                        text-green-600
+                    {% else %}
+                        text-red-600
+                    {% endif %}
+                ">
+                    {{ book.stock_available }}
+                </td>
+
+                <td class="p-3">{{ book.stock_borrowed }}</td>
+                <td class="p-3">{{ book.stock_sold }}</td>
+                <td class="p-3">
+                    <a href="{{ url_for('main.restock_book', book_id=book.id) }}"
+                        class="inline-flex items-center px-3 py-1 text-sm rounded-md bg-yellow-100 text-yellow-700 font-medium hover:bg-yellow-200">
+                        Restock
+                    </a>
+                    <form action="{{ url_for('main.supplier_lift', book_id=book.id) }}" method="POST"
+                        class="inline ml-2">
+                        <button type="submit"
+                            class="inline-flex items-center px-3 py-1 text-sm rounded-md bg-blue-100 text-blue-700 font-medium hover:bg-blue-200"
+                            title="Anti-Gravity Lift (Add to Order)">
+                            Lift
+                        </button>
+                    </form>
+                </td>
+
+            </tr>
+
+            {% else %}
+            <!-- Empty State -->
+            <tr>
+                <td colspan="10" class="text-center py-12 text-gray-500">
+                    No books in inventory. <br>
+                    <a href="{{ url_for('main.add_book') }}" class="text-indigo-600 font-medium">
+                        Add your first book
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Back Link -->
+<div class="mt-8">
+    <a href="{{ url_for('main.index') }}"
+        class="text-gray-500 inline-flex items-center gap-2 text-sm hover:text-gray-700">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Back to Dashboard
+    </a>
+</div>
+
+{% endblock %}

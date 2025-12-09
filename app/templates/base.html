@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LMS{% endblock %} - ChupChap Pathshala</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <!-- 1. Logo Section -->
+        <div class="logo-section">
+            <a href="{{ url_for('main.index') }}" class="nav-brand">
+                <!-- Using an SVG icon placeholder as per design, and text -->
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" class="brand-icon">
+                    <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+                <div class="brand-text">
+                    <span>CHUPCHAP</span>
+                    <span>PATHSHALA</span>
+                </div>
+            </a>
+        </div>
+
+        <!-- 2. Search Bar -->
+        <div class="search-section">
+            <form action="{{ url_for('main.catalog') }}" method="GET" class="search-form">
+                <input type="text" name="q" placeholder="Search" class="search-input">
+                <button type="submit" class="search-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </button>
+            </form>
+        </div>
+
+        <!-- 3. Navigation Links (Pill shaped) -->
+        <div class="nav-links">
+            <a href="{{ url_for('main.index') }}" class="nav-pill">Home</a>
+            <a href="{{ url_for('main.catalog') }}" class="nav-pill">Todays Offer</a>
+            <a href="{{ url_for('main.catalog') }}" class="nav-pill">E-Book</a>
+            {% if current_user.is_authenticated and current_user.is_admin() %}
+            <a href="{{ url_for('main.members') }}" class="nav-pill"
+                style="background-color: #F3E8FF; color: #7E22CE;">Members</a> {% endif %}
+            {% if current_user.is_authenticated and current_user.is_staff() %}
+            <a href="{{ url_for('main.inventory') }}" class="nav-pill"
+                style="background-color: #ECFDF5; color: #047857;">Inventory</a>
+            <a href="{{ url_for('main.supplier_shortlist') }}" class="nav-pill"
+                style="background-color: #E0F2FE; color: #0369A1;">Supplier Order</a>
+            <a href="{{ url_for('main.supplier_receive_list') }}" class="nav-pill"
+                style="background-color: #F0F9FF; color: #075985;">Receive</a>
+            {% endif %}
+            {% if current_user.is_authenticated and current_user.is_admin() %}
+            <a href="{{ url_for('main.supplier_review') }}" class="nav-pill"
+                style="background-color: #FEF3C7; color: #92400E;">Review Orders</a>
+            {% endif %}
+        </div>
+
+        <!-- 4. User Actions -->
+        <div class="user-actions">
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('main.profile') }}" class="user-profile">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span>Hello, {{ current_user.username }}</span>
+            </a>
+            {% else %}
+            <a href="{{ url_for('auth.login') }}" class="user-profile">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span>Hello, Sign in</span>
+            </a>
+            {% endif %}
+
+            <a href="{{ url_for('main.view_cart') }}" class="cart-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="9" cy="21" r="1"></circle>
+                    <circle cx="20" cy="21" r="1"></circle>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                </svg>
+                {% if current_user.is_authenticated and current_user.cart and current_user.cart.items.count() > 0 %}
+                <span class="cart-badge">{{ current_user.cart.items.count() }}</span>
+                {% endif %}
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <!-- Handle default 'message' category as info -->
+            <div class="alert alert-{{ category if category != 'message' else 'info' }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+        </div>
+
+        {% block content %}{% endblock %}
+    </div>
+    <footer class="footer">
+        <div class="container footer-content">
+            <!-- Column 1: Contact Info -->
+            <div class="footer-col">
+                <div class="footer-item">
+                    <i class="fas fa-map-marker-alt footer-icon"></i>
+                    <div>
+                        <strong>Address</strong>
+                        <p>Merul Badda, DIT, Road 5, Dhaka -1212</p>
+                    </div>
+                </div>
+                <div class="footer-item">
+                    <i class="fas fa-phone-alt footer-icon"></i>
+                    <strong>01789103656</strong>
+                </div>
+            </div>
+
+            <!-- Column 2: Support -->
+            <div class="footer-col">
+                <h4>Support</h4>
+                <ul class="footer-list">
+                    <li><a href="#">Track Order</a></li>
+                    <li><a href="#">যোগাযোগ করুন</a></li>
+                    <li><a href="#">আমার পণ্য খুঁজুন</a></li>
+                    <li><a href="#">সচরাচর জিজ্ঞাসা</a></li>
+                    <li><a href="#">হেল্প ডেস্ক</a></li>
+                </ul>
+            </div>
+
+            <!-- Column 3: About Us -->
+            <div class="footer-col">
+                <h4>About Us</h4>
+                <ul class="footer-list">
+                    <li><a href="#">About</a></li>
+
+                </ul>
+            </div>
+
+            <!-- Policy -->
+            <div class="footer-col">
+                <h4>Policy</h4>
+                <ul class="footer-list">
+                    <li><a href="#">Terms and Condition</a></li>
+                    <li><a href="#">গোপনীয়তা নীতি</a></li>
+                    <li><a href="#">Happy Return</a></li>
+                    <li><a href="#">Refund Policy</a></li>
+                </ul>
+            </div>
+
+            <!-- JOIN US -->
+            <div class="footer-col">
+                <h4>JOIN US</h4>
+                <div class="social-icons">
+                    <a href="#" class="social-link fb"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="social-link insta"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-link wa"><i class="fab fa-whatsapp"></i></a>
+                    <a href="#" class="social-link tw"><i class="fab fa-twitter"></i></a>
+                </div>
+                <div class="app-section">
+                    <h4>Download App</h4>
+                    <div class="app-buttons">
+                        <img src="{{ url_for('static', filename='images/app_store_badge.png') }}" alt="App Store"
+                            class="app-badge">
+                        <img src="{{ url_for('static', filename='images/google_play_badge.png') }}" alt="Google Play"
+                            class="app-badge">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>
