@@ -4,6 +4,17 @@
 
 {% block content %}
 
+
+<style>
+    .btn-red {
+        background-color: #FEE2E2; /* red-100 */
+        color: #B91C1C; /* red-700 */
+    }
+    .btn-red:hover {
+        background-color: #FECACA; /* red-200 */
+    }
+</style>
+
 <!-- Page Header -->
 <div class="page-header">
     <h1 class="page-title">Inventory Management</h1>
@@ -87,6 +98,13 @@
                             class="inline-flex items-center px-3 py-1 text-sm rounded-md bg-blue-100 text-blue-700 font-medium hover:bg-blue-200"
                             title="Add to Order">
                             Order
+                        </button>
+                    </form>
+                    
+                    <form action="{{ url_for('main.delete_book', book_id=book.id) }}" method="POST" class="inline ml-2" 
+                          onsubmit="return confirm('Are you sure you want to permanently remove this book?');">
+                        <button type="submit" class="inline-flex items-center px-3 py-1 text-sm rounded-md btn-red font-medium">
+                            Remove
                         </button>
                     </form>
                 </td>

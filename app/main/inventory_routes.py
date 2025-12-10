@@ -67,3 +67,24 @@ def restock_book(book_id):
         return redirect(url_for("main.inventory"))
 
     return render_template("restock.html", form=form, book=book)
+
+@bp.route('/inventory/delete/<int:book_id>', methods=['POST'])
+@login_required
+@staff_required
+def delete_book(book_id):
+    book = Book.query.get_or_404(book_id)
+    
+    # Validation: Cannot delete if currently borrowed
+    if book.stock_borrowed > 0:
+        flash('Cannot delete book: One or more copies are currently borrowed.', 'danger')
+        return redirect(url_for('main.inventory'))
+
+    try:
+        db.session.delete(book)
+        db.session.commit()
+        flash('Book removed successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        # This handles other FK constraints like past sales history
+        flash('Cannot delete book because it has associated history (sales, past loans).', 'danger')
+    return redirect(url_for('main.inventory'))

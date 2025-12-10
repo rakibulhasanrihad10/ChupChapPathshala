@@ -2,12 +2,21 @@ from app.extensions import db
 from datetime import datetime
 
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import UserMixin
+from flask_login import UserMixin, AnonymousUserMixin
 from app.extensions import login_manager
 
 @login_manager.user_loader
 def load_user(id):
     return User.query.get(int(id))
+
+class AnonymousUser(AnonymousUserMixin):
+    def is_admin(self):
+        return False
+        
+    def is_staff(self):
+        return False
+
+login_manager.anonymous_user = AnonymousUser
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
