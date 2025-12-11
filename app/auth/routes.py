@@ -70,3 +70,45 @@ def create_admin():
         return redirect(url_for('auth.create_admin'))
         
     return render_template('auth/create_admin.html', title='Create New Admin', form=form, admins=admins)
+    return render_template('auth/create_admin.html', title='Create New Admin', form=form, admins=admins)
+
+from app.extensions import oauth
+
+@bp.route('/login/google')
+def google_login():
+    google = oauth.create_client('google')
+    redirect_uri = url_for('auth.google_callback', _external=True)
+    return google.authorize_redirect(redirect_uri)
+
+@bp.route('/login/google/callback')
+def google_callback():
+    google = oauth.create_client('google')
+    token = google.authorize_access_token()
+    resp = google.get('https://www.googleapis.com/oauth2/v1/userinfo')
+    user_info = resp.json()
+    
+    # Do we have this user?
+    email = user_info['email']
+    user = User.query.filter_by(email=email).first()
+    
+    if not user:
+        # Create a new user
+        # We'll use the email prefix as username, ensuring uniqueness
+        base_username = email.split('@')[0]
+        username = base_username
+        counter = 1
+        while User.query.filter_by(username=username).first():
+            username = f"{base_username}{counter}"
+            counter += 1
+            
+        user = User(
+            username=username, 
+            email=email,
+            role='customer', # Default role
+            # No password set since it's OAuth
+        )
+        db.session.add(user)
+        db.session.commit()
+    
+    login_user(user)
+    return redirect(url_for('main.index'))
