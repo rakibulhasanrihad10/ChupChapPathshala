@@ -556,7 +556,7 @@ body {
 
 
 .btn-buy {
-    background: linear-gradient(135deg, #10B981, #059669);
+    background: linear-gradient(135deg, #7bd3b6, #48ac8c);
     color: white;
     box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3), 0 2px 4px -1px rgba(16, 185, 129, 0.1);
 }
@@ -569,7 +569,7 @@ body {
 
 
 .btn-borrow {
-    background: linear-gradient(135deg, #4F46E5, #4338CA);
+    background: linear-gradient(135deg, #8782e2, #4338CA);
     color: white;
     box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3), 0 2px 4px -1px rgba(79, 70, 229, 0.1);
 }
@@ -588,7 +588,98 @@ body {
     box-shadow: none;
 }
 
-.btn-disabled:hover {
-    transform: none;
-    box-shadow: none;
+
+/* Profile Page Design (Facebook Style) */
+.profile-header {
+    background: white;
+    border-radius: 0 0 1rem 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+    position: relative;
+    padding-bottom: 1rem;
+}
+
+.profile-cover-container {
+    height: 300px;
+    width: 100%;
+    border-radius: 0 0 1rem 1rem;
+    overflow: hidden;
+    position: relative;
+    background-color: #cbd5e1;
+    /* Fallback color */
+}
+
+.profile-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-avatar-container {
+    position: absolute;
+    bottom: -30px;
+    /* Overlap cover */
+    left: 2rem;
+    padding: 4px;
+    background: white;
+    border-radius: 50%;
+}
+
+.profile-avatar {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    border: 4px solid white;
+    object-fit: cover;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.profile-info-section {
+    padding-top: 1rem;
+    /* Space for avatar overlap */
+    padding-left: 14rem;
+    /* Adjusted for avatar width + margin */
+    padding-right: 2rem;
+    min-height: 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.profile-name {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #1f2937;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.profile-role {
+    color: #6b7280;
+    font-weight: 500;
+    font-size: 1.1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .profile-cover-container {
+        height: 200px;
+    }
+
+    .profile-avatar-container {
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 60px;
+        /* Push it up into the cover more or center it */
+    }
+
+    .profile-info-section {
+        padding-left: 1rem;
+        padding-top: 5rem;
+        /* Push down to clear avatar */
+        justify-content: center;
+        text-align: center;
+    }
 }

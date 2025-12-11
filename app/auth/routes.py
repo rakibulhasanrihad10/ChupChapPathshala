@@ -87,13 +87,12 @@ def google_callback():
     resp = google.get('https://www.googleapis.com/oauth2/v1/userinfo')
     user_info = resp.json()
     
-    # Do we have this user?
+
     email = user_info['email']
     user = User.query.filter_by(email=email).first()
     
     if not user:
-        # Create a new user
-        # We'll use the email prefix as username, ensuring uniqueness
+
         base_username = email.split('@')[0]
         username = base_username
         counter = 1
@@ -112,3 +111,108 @@ def google_callback():
     
     login_user(user)
     return redirect(url_for('main.index'))
+
+import os
+from werkzeug.utils import secure_filename
+from app.auth.forms import EditProfileForm
+
+def save_picture(form_picture, folder='profile_pics'):
+    # Generate random hex to avoid filename collisions
+    random_hex = os.urandom(8).hex()
+    _, f_ext = os.path.splitext(form_picture.filename)
+    picture_fn = random_hex + f_ext
+    
+
+    upload_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'static', 'uploads', folder)
+    
+
+    if not os.path.exists(upload_path):
+        os.makedirs(upload_path)
+        
+    picture_path = os.path.join(upload_path, picture_fn)
+    form_picture.save(picture_path)
+    
+
+    return url_for('static', filename=f'uploads/{folder}/{picture_fn}')
+
+@bp.route('/edit_profile', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+    form = EditProfileForm(current_user.username)
+    if form.validate_on_submit():
+        current_user.username = form.username.data
+        
+        
+        if form.profile_photo.data:
+            picture_file = save_picture(form.profile_photo.data, 'profile_pics')
+            current_user.profile_photo = picture_file
+            
+        if form.cover_photo.data:
+            cover_file = save_picture(form.cover_photo.data, 'profile_pics') 
+            current_user.cover_photo = cover_file
+            
+        db.session.commit()
+        flash('Your changes have been saved.')
+        return redirect(url_for('main.profile'))
+        
+    elif request.method == 'GET':
+        form.username.data = current_user.username
+        
+    return render_template('auth/edit_profile.html', title='Edit Profile', form=form)
+
+from flask_mail import Message
+from app.extensions import mail
+from flask import current_app
+from app.auth.forms import ResetPasswordRequestForm, ResetPasswordForm
+
+def send_reset_email(user):
+    token = user.get_reset_token()
+    msg = Message('ChupChap Pathshala Password Reset Request',
+                  sender=current_app.config['ADMINS'][0],
+                  recipients=[user.email])
+    
+
+    reset_url = url_for('auth.reset_password', token=token, _external=True)
+    msg.body = f'''To reset your password, visit the following link:
+{reset_url}
+
+If you did not make this request then simply ignore this email and no changes will be made.
+'''
+    
+    # Send the email via Flask-Mail
+
+    
+    # Try sending if server configured, otherwise just log (handled by print above safely)
+    try:
+        mail.send(msg)
+    except Exception as e:
+        print(f"Mail send failed (expected if no SMTP): {e}")
+
+@bp.route('/reset_password_request', methods=['GET', 'POST'])
+def reset_password_request():
+    if current_user.is_authenticated:
+        return redirect(url_for('main.index'))
+    form = ResetPasswordRequestForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user:
+            send_reset_email(user)
+        flash('Check your email for the instructions to reset your password')
+        return redirect(url_for('auth.login'))
+    return render_template('auth/reset_password_request.html',
+                           title='Reset Password', form=form)
+
+@bp.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    if current_user.is_authenticated:
+        return redirect(url_for('main.index'))
+    user = User.verify_reset_token(token)
+    if not user:
+        return redirect(url_for('main.index'))
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        user.set_password(form.password.data)
+        db.session.commit()
+        flash('Your password has been reset.')
+        return redirect(url_for('auth.login'))
+    return render_template('auth/reset_password.html', form=form)

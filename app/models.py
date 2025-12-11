@@ -4,6 +4,9 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, AnonymousUserMixin
 from app.extensions import login_manager
+from flask import current_app
+import jwt
+import time
 
 @login_manager.user_loader
 def load_user(id):
@@ -27,6 +30,10 @@ class User(UserMixin, db.Model):
     role = db.Column(db.String(20), default='customer')
     membership_type = db.Column(db.String(20), default='standard') # standard, premium
     membership_expiry = db.Column(db.DateTime, nullable=True)
+    
+    # Profile Customization
+    profile_photo = db.Column(db.String(500), default='https://placehold.co/150x150?text=User')
+    cover_photo = db.Column(db.String(500), default='https://placehold.co/800x300?text=Cover')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -39,6 +46,26 @@ class User(UserMixin, db.Model):
 
     def is_staff(self):
         return self.role in ['admin', 'librarian']
+
+    def get_reset_token(self, expires_sec=1800):
+        s = jwt.encode(
+            {'user_id': self.id, 'exp': time.time() + expires_sec},
+            current_app.config['SECRET_KEY'],
+            algorithm='HS256'
+        )
+        return s
+
+    @staticmethod
+    def verify_reset_token(token):
+        try:
+            user_id = jwt.decode(
+                token,
+                current_app.config['SECRET_KEY'],
+                algorithms=['HS256']
+            )['user_id']
+        except:
+            return None
+        return User.query.get(user_id)
 
 class Book(db.Model):
     __tablename__ = 'books'

@@ -18,3 +18,11 @@ class Config:
     # Upload Configuration
     UPLOAD_FOLDER = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'app/static/uploads/covers')
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB Limit
+
+    # Email Config
+    MAIL_SERVER = os.environ.get('MAIL_SERVER') or 'localhost'
+    MAIL_PORT = int(os.environ.get('MAIL_PORT') or 8025) # Default to debugging port
+    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS') is not None
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    ADMINS = [os.environ.get('MAIL_USERNAME') or 'your-email@example.com']

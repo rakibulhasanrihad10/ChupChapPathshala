@@ -46,4 +46,37 @@ class CreateAdminForm(FlaskForm):
         
         domain = email.data.split('@')[-1]
         if f'@{domain}' not in Config.APPROVED_ADMIN_DOMAINS:
-             raise ValidationError(f"ERROR: The email address provided is not associated with an approved administrative domain (e.g., @chupchappathshala.com). Admin creation aborted.")
+             raise ValidationError(f"ERROR: The email address provided is not associated with an approved administrative domain. Admin creation aborted.")
+
+from flask_wtf.file import FileField, FileAllowed
+
+class EditProfileForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    about_me = StringField('About Me')
+    profile_photo = FileField('Profile Picture', validators=[FileAllowed(['jpg', 'png', 'jpeg'], 'Images only!')])
+    cover_photo = FileField('Cover Photo', validators=[FileAllowed(['jpg', 'png', 'jpeg'], 'Images only!')])
+    submit = SubmitField('Save Changes')
+
+    def __init__(self, original_username, *args, **kwargs):
+        super(EditProfileForm, self).__init__(*args, **kwargs)
+        self.original_username = original_username
+
+    def validate_username(self, username):
+        if username.data != self.original_username:
+            user = User.query.filter_by(username=username.data).first()
+            if user:
+                raise ValidationError('Please use a different username.')
+
+class ResetPasswordRequestForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    submit = SubmitField('Request Password Reset')
+
+    def validate_email(self, email):
+        user = User.query.filter_by(email=email.data).first()
+        if user is None:
+            raise ValidationError('There is no account with that email. You must register first.')
+
+class ResetPasswordForm(FlaskForm):
+    password = PasswordField('Password', validators=[DataRequired()])
+    confirm_password = PasswordField('Repeat Password', validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField('Request Password Reset')

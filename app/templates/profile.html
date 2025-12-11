@@ -3,48 +3,93 @@
 {% block title %}Profile - ChupChap Pathshala{% endblock %}
 
 {% block content %}
-<div class="auth-container" style="max-width: 600px;">
-    <div class="auth-header">
-        <h2>User Profile</h2>
-        <p>Manage your account details</p>
+<!-- Profile Header Section -->
+<div class="profile-header">
+    <div class="profile-cover-container">
+        <img src="{{ current_user.cover_photo or 'https://placehold.co/1200x400/1e3a8a/FFF?text=Cover+Photo' }}" 
+             alt="Cover Photo" class="profile-cover">
     </div>
 
-    <div class="profile-details" style="margin-bottom: 2rem;">
-        <div class="profile-item"
-            style="display: flex; justify-content: space-between; padding: 1rem; border-bottom: 1px solid #e5e7eb;">
-            <strong>Username:</strong>
-            <span>{{ current_user.username }}</span>
-        </div>
-        <div class="profile-item"
-            style="display: flex; justify-content: space-between; padding: 1rem; border-bottom: 1px solid #e5e7eb;">
-            <strong>Email:</strong>
-            <span>{{ current_user.email }}</span>
-        </div>
-        <div class="profile-item"
-            style="display: flex; justify-content: space-between; padding: 1rem; border-bottom: 1px solid #e5e7eb;">
-            <strong>Role:</strong>
-            <span style="text-transform: capitalize;">{{ current_user.role }}</span>
-        </div>
-        <div class="profile-item"
-            style="display: flex; justify-content: space-between; padding: 1rem; border-bottom: 1px solid #e5e7eb;">
-            <strong>Membership:</strong>
-            <span style="text-transform: capitalize;">{{ current_user.membership_type }}</span>
-        </div>
-        {% if current_user.membership_expiry %}
-        <div class="profile-item"
-            style="display: flex; justify-content: space-between; padding: 1rem; border-bottom: 1px solid #e5e7eb;">
-            <strong>Membership Expiry:</strong>
-            <span>{{ current_user.membership_expiry.strftime('%Y-%m-%d') }}</span>
-        </div>
-        {% endif %}
+    <!-- Avatar Container -->
+    <div class="profile-avatar-container">
+        <img src="{{ current_user.profile_photo or 'https://placehold.co/200x200/4F46E5/FFF?text=Me' }}" 
+             alt="{{ current_user.username }}" class="profile-avatar">
     </div>
 
-    <div class="profile-actions" style="display: flex; gap: 1rem; justify-content: center;">
-        {% if current_user.is_admin() %}
-        <a href="{{ url_for('auth.create_admin') }}" class="btn btn-primary">Manage Admin Users / Add Administrator</a>
-        {% endif %}
-        <a href="{{ url_for('auth.logout') }}" class="btn btn-primary"
-            style="background-color: #EF4444; border: none;">Logout</a>
+    <!-- Info Section -->
+    <div class="profile-info-section">
+        <div>
+            <h1 class="profile-name">{{ current_user.username }}</h1>
+            <p class="profile-role">
+                {{ current_user.role|capitalize }} 
+                {% if current_user.membership_type == 'premium' %}
+                <span class="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                    Premium Member
+                </span>
+                {% endif %}
+            </p>
+        </div>
+        
+        <div class="flex gap-3">
+             {% if current_user.is_admin() %}
+             <a href="{{ url_for('auth.create_admin') }}" class="btn-action btn-borrow" style="width: auto;">
+                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                 Add Admin
+             </a>
+             {% endif %}
+             <a href="{{ url_for('auth.edit_profile') }}" class="btn-action" style="background: #E5E7EB; color: #374151; width: auto;">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                Edit Profile
+             </a>
+        </div>
+    </div>
+</div>
+
+<!-- Profile Content Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Left Sidebar: Intro -->
+    <div class="md:col-span-1">
+        <div class="bg-white p-6 rounded-xl shadow-sm space-y-4">
+            <h3 class="text-xl font-bold text-gray-900">About</h3>
+            
+            <div class="space-y-3 text-gray-600">
+                <div class="flex items-center gap-3">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    <span>{{ current_user.email }}</span>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.2-2.85.577-4.147"></path></svg>
+                    <span>Joined {{ current_user.membership_expiry.strftime('%B %Y') if current_user.membership_expiry else 'Recently' }}</span>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                     <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                     <span>Member Status: {{ current_user.membership_type|capitalize }}</span>
+                </div>
+            </div>
+            
+            <div class="pt-4 border-t border-gray-100">
+                <a href="{{ url_for('auth.logout') }}" class="w-full btn-action" style="background-color: #FEE2E2; color: #991B1B; justify-content: center;">
+                    Logout
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Content: Could be Lending History, Favorites, etc in future -->
+    <div class="md:col-span-2 space-y-6">
+        <!-- Placeholder for Posts/History -->
+        <div class="bg-white p-6 rounded-xl shadow-sm text-center py-12">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900">No borrowing history yet</h3>
+            <p class="text-gray-500 mt-2">Books you borrow or buy will appear here.</p>
+            <a href="{{ url_for('main.catalog') }}" class="mt-4 inline-block text-indigo-600 font-medium hover:text-indigo-500">
+                Browse Catalog &rarr;
+            </a>
+        </div>
     </div>
 </div>
 {% endblock %}
