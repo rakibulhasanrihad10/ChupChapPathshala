@@ -17,15 +17,7 @@
         <!-- 1. Logo Section -->
         <div class="logo-section">
             <a href="{{ url_for('main.index') }}" class="nav-brand">
-                <!-- Using an SVG icon placeholder as per design, and text -->
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" class="brand-icon">
-                    <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round" />
-                    <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round" />
-                    <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round" />
-                </svg>
+                <img src="{{ url_for('static', filename='images/cp logo.png') }}" alt="Logo" class="brand-icon" style="width: 40px; height: 40px; object-fit: contain;">
                 <div class="brand-text">
                     <span>CHUPCHAP</span>
                     <span>PATHSHALA</span>

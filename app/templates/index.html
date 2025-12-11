@@ -55,19 +55,17 @@
             <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
                 <form action="{{ url_for('main.add_to_cart', book_id=book.id) }}" method="POST" style="width: 100%;">
                     {% if book.item_type in ['sale', 'hybrid'] and book.stock_available > 0 %}
-                    <button type="submit" name="action" value="buy" class="nav-btn"
-                        style="width: 100%; margin-bottom: 0.5rem; background-color: var(--secondary-color);">Buy</button>
+                    <button type="submit" name="action" value="buy" class="btn-action btn-buy"
+                        style="margin-bottom: 0.5rem;">Buy</button>
                     {% endif %}
 
                     {% if book.item_type in ['circulation', 'hybrid'] and book.stock_available > 0 %}
-                    <button type="submit" name="action" value="borrow" class="nav-btn"
-                        style="width: 100%;">Borrow</button>
+                    <button type="submit" name="action" value="borrow" class="btn-action btn-borrow">Borrow</button>
                     {% endif %}
 
                     {% if book.stock_available == 0 %}
                     <button disabled
-                        style="width: 100%; padding: 0.5rem; cursor: not-allowed; background: #E5E7EB; color: #6B7280; border: none; border-radius: 0.375rem;">Out
-                        of Stock</button>
+                        class="btn-action btn-disabled">Out of Stock</button>
                     {% endif %}
                 </form>
             </div>
