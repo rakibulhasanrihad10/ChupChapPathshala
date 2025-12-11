@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 
+
 {% block title %}Inventory{% endblock %}
 
 {% block content %}
@@ -30,7 +31,11 @@
 </div>
 
 <!-- Table Wrapper -->
-<div class="table-container">
+
+<div id = "table" class="relative">
+<div id = "dropdown-root" class="absolute z-200"></div>
+<div  class="table-container">
+  
     <table class="table w-full text-left border-collapse">
         <thead class="bg-gray-100 text-gray-700">
             <tr>
@@ -88,26 +93,35 @@
                 <td class="p-3">{{ book.stock_borrowed }}</td>
                 <td class="p-3">{{ book.stock_sold }}</td>
                 <td class="p-3 sticky right-0 z-30 shadow-[-3px_0_6px_rgba(0,0,0,0.05)] bg-gray-300">
+				  
+					<i class="action-btn fa-solid fa-ellipsis text-3xl" data-id = {{book.id}}></i>
+				  
+				  <div id = {{"menu-" ~ book.id}} class="hidden">
+					<div class="block p-4 bg-gray-200 items-stretch">
                     <a href="{{ url_for('main.restock_book', book_id=book.id) }}"
-                        class="inline-flex items-center px-3 py-1 text-sm rounded-md bg-yellow-100 text-yellow-700 font-medium hover:bg-yellow-200">
+                        class="block items-center px-3 py-1 text-sm rounded-md bg-yellow-100 text-yellow-700 font-medium hover:bg-yellow-200">
                         Restock
                     </a>
+                    
                     <form action="{{ url_for('main.supplier_lift', book_id=book.id) }}" method="POST"
-                        class="inline ml-2">
+                        class="flex mt-2">
                         <button type="submit"
-                            class="inline-flex items-center px-3 py-1 text-sm rounded-md bg-blue-100 text-blue-700 font-medium hover:bg-blue-200"
+                            class="block items-center px-3 py-1 text-sm rounded-md bg-blue-100 text-blue-700 font-medium hover:bg-blue-200"
                             title="Add to Order">
                             Order
                         </button>
                     </form>
                     
-                    <form action="{{ url_for('main.delete_book', book_id=book.id) }}" method="POST" class="inline ml-2" 
+                    <form action="{{ url_for('main.delete_book', book_id=book.id) }}" method="POST" class="flex mt-2" 
                           onsubmit="return confirm('Are you sure you want to permanently remove this book?');">
-                        <button type="submit" class="inline-flex items-center px-3 py-1 text-sm rounded-md btn-red font-medium">
+                        <button type="submit" class="block items-center px-3 py-1 text-sm rounded-md btn-red font-medium">
                             Remove
                         </button>
                     </form>
+					</div>
+					</div>
                 </td>
+				
 
             </tr>
 
@@ -125,7 +139,7 @@
         </tbody>
     </table>
 </div>
-
+</div>
 <!-- Pagination Controls -->
 <div class="flex justify-center items-center gap-2 mt-6">
     <!-- Previous Page -->
@@ -183,5 +197,32 @@
         Back to Dashboard
     </a>
 </div>
-
+<script>
+  const rt = document.getElementById("dropdown-root");
+  const table = document.getElementById("table");
+  let menu = null;
+  document.addEventListener("mouseover", e => {
+  if (e.target.matches(".action-btn")) {
+      const rect = e.target.getBoundingClientRect();
+      const table_rect = table.getBoundingClientRect();
+	  const menu_container = document.getElementById("menu-"+e.target.dataset.id);
+	  //if (!menu_container) {alert(e.target.dataset)}
+        // create menu if not exists
+        //if (!menu) {
+        menu = document.createElement("div");
+        menu.className = "flex flex-gap-8";
+        menu.innerHTML = menu_container.innerHTML;
+        rt.replaceChildren(menu);
+                
+        rt.style.top = rect.top - table_rect.top + "px";
+        rt.style.left = rect.left - table_rect.left + "px";
+        menu.style.display = "block";
+    }
+  });
+  document.addEventListener("mouseout", e => {
+    if (menu && !rt.contains(e.relatedTarget)) {
+        menu.style.display = "none";
+    }
+  });
+</script>
 {% endblock %}
