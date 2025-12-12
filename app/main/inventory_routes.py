@@ -7,13 +7,21 @@ from app.decorators import staff_required
 
 from app.main.restock_form import RestockForm
 
+class PaginateProxy:
+    def __init__(self,items):
+        self.items = items
+
 @bp.route('/inventory')
 @login_required
 @staff_required
 def inventory():
+    target = request.args.get('target',None,type=int)
+    if target:
+        books = PaginateProxy([Book.query.get(target)])
+        return render_template('inventory.html', books=books, single=True)
     page = request.args.get('page', 1, type=int)
     books = Book.query.paginate(page=page, per_page=10, error_out=False)
-    return render_template('inventory.html', books=books)
+    return render_template('inventory.html', books=books, single=False)
 
 @bp.route('/inventory/add', methods=['GET', 'POST'])
 @login_required

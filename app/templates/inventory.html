@@ -140,6 +140,7 @@
     </table>
 </div>
 </div>
+{% if not single %}
 <!-- Pagination Controls -->
 <div class="flex justify-center items-center gap-2 mt-6">
     <!-- Previous Page -->
@@ -184,7 +185,7 @@
     </span>
     {% endif %}
 </div>
-
+{% endif %}
 <!-- Back Link -->
 <div class="mt-8">
     <a href="{{ url_for('main.index') }}"
