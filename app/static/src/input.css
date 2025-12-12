@@ -1,1 +1,9 @@
 @import "tailwindcss";
+
+
+.label {
+	@apply block font-medium text-gray-700 mt-1 mb-1;
+}
+.field {
+    @apply w-full p-3 border border-gray-300 rounded-lg;
+}

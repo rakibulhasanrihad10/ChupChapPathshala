@@ -5,7 +5,7 @@ from app.main import bp
 from app.models import Book
 from app.decorators import staff_required
 
-from app.main.restock_form import RestockForm
+from app.main.inventory_forms import RestockForm, EditForm
 
 class PaginateProxy:
     def __init__(self,items):
@@ -75,6 +75,46 @@ def restock_book(book_id):
         return redirect(url_for("main.inventory"))
 
     return render_template("restock.html", form=form, book=book)
+
+
+@bp.route("/inventory/edit/<int:book_id>", methods=["GET", "POST"])
+@login_required
+@staff_required
+def edit_book(book_id):
+    book = Book.query.get_or_404(book_id)
+    form = EditForm()
+    if request.method == "GET":
+        form.title.data = book.title
+        form.author.data = book.author
+        form.price.data = book.price
+        form.item_type.data = book.item_type
+        form.category.data = book.category
+        form.location.data = book.location
+        form.image_url.data = book.image_url
+        form.stock_available.data = book.stock_available
+        form.stock_borrowed.data = book.stock_borrowed
+        form.stock_sold.data = book.stock_sold
+
+    
+    if form.validate_on_submit():
+        book.title = form.title.data
+        book.author = form.author.data
+        book.price = form.price.data
+        book.item_type = form.item_type.data
+        book.category = form.category.data
+        book.location = form.location.data
+        book.image_url = form.image_url.data
+        book.stock_available = form.stock_available.data
+        book.stock_borrowed = form.stock_borrowed.data
+        book.stock_sold = form.stock_sold.data
+        book.stock_total = book.stock_borrowed + book.stock_sold + book.stock_available
+                
+        db.session.commit()
+        flash(f"Successfully Edited '{book.title}'.", "success")
+        return redirect(url_for("main.inventory"))
+
+    return render_template("edit_book.html", form=form, book=book)
+
 
 @bp.route('/inventory/delete/<int:book_id>', methods=['POST'])
 @login_required

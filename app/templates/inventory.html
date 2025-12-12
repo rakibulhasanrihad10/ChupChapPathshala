@@ -102,7 +102,10 @@
                         class="block items-center px-3 py-1 text-sm rounded-md bg-yellow-100 text-yellow-700 font-medium hover:bg-yellow-200">
                         Restock
                     </a>
-                    
+                    <a href="{{ url_for('main.edit_book', book_id=book.id) }}"
+                        class="block items-center px-3 py-1 text-sm rounded-md bg-red-100 text-red-700 font-medium hover:bg-red-200 mt-2">
+                        Edit
+                    </a>
                     <form action="{{ url_for('main.supplier_lift', book_id=book.id) }}" method="POST"
                         class="flex mt-2">
                         <button type="submit"
