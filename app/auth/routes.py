@@ -173,7 +173,7 @@ from app.auth.forms import ResetPasswordRequestForm, ResetPasswordForm
 def send_reset_email(user):
     token = user.get_reset_token()
     msg = Message('ChupChap Pathshala Password Reset Request',
-                  sender=f"ChupChap Support <{current_app.config['ADMINS'][0]}>",
+                  sender=("ChupChap Support", current_app.config['ADMINS'][0]),
                   recipients=[user.email])
     
 
