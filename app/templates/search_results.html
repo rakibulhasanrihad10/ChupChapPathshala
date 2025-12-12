@@ -59,6 +59,11 @@
                         Sold Out
                     </span>
                     {% endif %}
+					{% if current_user.is_authenticated and current_user.is_staff() %}
+			           <form action="{{ url_for('main.inventory') }}" method="GET" style="width: 100%;">
+			               <button type="submit" name="target" value={{book.id}} class="btn-action btn-borrow">Locate</button>
+			           </form>
+		            {% endif %}
                 </div>
             </div>
         </div>
