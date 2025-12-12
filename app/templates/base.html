@@ -106,6 +106,20 @@
             {% endif %}
             {% endwith %}
         </div>
+        
+        <!-- Auto-dismiss alerts -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(alert => {
+                    setTimeout(() => {
+                        alert.style.transition = 'opacity 0.5s ease';
+                        alert.style.opacity = '0';
+                        setTimeout(() => alert.remove(), 500);
+                    }, 3000); 
+                });
+            });
+        </script>
 
         {% block content %}{% endblock %}
     </div>
@@ -130,11 +144,8 @@
             <div class="footer-col">
                 <h4>Support</h4>
                 <ul class="footer-list">
-                    <li><a href="#">Track Order</a></li>
-                    <li><a href="#">যোগাযোগ করুন</a></li>
-                    <li><a href="#">আমার পণ্য খুঁজুন</a></li>
-                    <li><a href="#">সচরাচর জিজ্ঞাসা</a></li>
-                    <li><a href="#">হেল্প ডেস্ক</a></li>
+                    <li><a href="#">FAQ </a></li>
+                    <li><a href="#">Help Desk</a></li>
                 </ul>
             </div>
 
@@ -152,9 +163,7 @@
                 <h4>Policy</h4>
                 <ul class="footer-list">
                     <li><a href="#">Terms and Condition</a></li>
-                    <li><a href="#">গোপনীয়তা নীতি</a></li>
-                    <li><a href="#">Happy Return</a></li>
-                    <li><a href="#">Refund Policy</a></li>
+                    <li><a href="#">Return & Refund Policy</a></li>
                 </ul>
             </div>
 
@@ -162,19 +171,10 @@
             <div class="footer-col">
                 <h4>JOIN US</h4>
                 <div class="social-icons">
-                    <a href="#" class="social-link fb"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://www.facebook.com/ahmadialibrarybarura/" class="social-link fb"><i class="fab fa-facebook-f"></i></a>
                     <a href="#" class="social-link insta"><i class="fab fa-instagram"></i></a>
                     <a href="#" class="social-link wa"><i class="fab fa-whatsapp"></i></a>
                     <a href="#" class="social-link tw"><i class="fab fa-twitter"></i></a>
-                </div>
-                <div class="app-section">
-                    <h4>Download App</h4>
-                    <div class="app-buttons">
-                        <img src="{{ url_for('static', filename='images/app_store_badge.png') }}" alt="App Store"
-                            class="app-badge">
-                        <img src="{{ url_for('static', filename='images/google_play_badge.png') }}" alt="Google Play"
-                            class="app-badge">
-                    </div>
                 </div>
             </div>
         </div>
