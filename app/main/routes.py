@@ -3,6 +3,7 @@ from flask_login import login_required
 from app.main import bp
 from app.models import Book, User
 from app.decorators import admin_required
+from app.main import featured_books_routes
 
 @bp.route('/members')
 @login_required
@@ -13,8 +14,7 @@ def members():
 
 @bp.route('/')
 def index():
-    # Fetch 4 sample books for the home page display
-    books = Book.query.order_by(Book.id.desc()).limit(6).all()
+    books = featured_books_routes.fetch_most_sold(6)
     return render_template('index.html', books=books)
 
 @bp.route('/catalog')
