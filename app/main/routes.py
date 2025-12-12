@@ -1,4 +1,4 @@
-from flask import render_template
+from flask import render_template, request
 from flask_login import login_required
 from app.main import bp
 from app.models import Book, User
@@ -19,8 +19,15 @@ def index():
 
 @bp.route('/catalog')
 def catalog():
-    books = Book.query.all()
-    return render_template('catalog.html', books=books)
+    category = request.args.get('category')
+    categories = ['Bengali', 'Islamic', 'Children', 'Academic']
+    
+    if category:
+        books = Book.query.filter_by(category=category).all()
+    else:
+        books = Book.query.all()
+        
+    return render_template('catalog.html', books=books, current_category=category, categories=categories)
 
 @bp.route('/profile')
 @login_required

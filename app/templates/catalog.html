@@ -4,6 +4,22 @@
 
 {% block content %}
 <h2>Library Catalog</h2>
+
+    <!-- Category Filter -->
+    <div style="display: flex; gap: 0.75rem; overflow-x: auto; padding-bottom: 0.5rem; margin-bottom: 2rem; -ms-overflow-style: none; scrollbar-width: none;">
+        <a href="{{ url_for('main.catalog') }}" 
+           style="white-space: nowrap; padding: 0.5rem 1.25rem; border-radius: 9999px; text-decoration: none; font-weight: 500; transition: all 0.2s box-shadow; 
+                  {{ 'background-color: #4F46E5; color: white; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);' if not current_category else 'background-color: #F3F4F6; color: #374151;' }}">
+           All Books
+        </a>
+        {% for cat in categories %}
+        <a href="{{ url_for('main.catalog', category=cat) }}" 
+           style="white-space: nowrap; padding: 0.5rem 1.25rem; border-radius: 9999px; text-decoration: none; font-weight: 500; transition: all 0.2s box-shadow;
+                  {{ 'background-color: #4F46E5; color: white; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);' if current_category == cat else 'background-color: #F3F4F6; color: #374151;' }}">
+           {{ cat }}
+        </a>
+        {% endfor %}
+    </div>
 <div class="features-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
     {% for book in books %}
     <div class="card" style="display: flex; flex-direction: column; overflow: hidden;">
