@@ -33,7 +33,7 @@ def checkout_review():
         return redirect(url_for('main.view_cart'))
 
     # Calculate Totals
-    subtotal = sum(item.book.price * item.quantity for item in selected_items if item.action == 'buy')
+    subtotal = sum(item.book.sale_price * item.quantity for item in selected_items if item.action == 'buy')
     delivery_charge = 60.0 if subtotal > 0 else 0
     total = subtotal + delivery_charge
     
@@ -92,7 +92,7 @@ def confirm_checkout():
             
         if item.action == 'buy':
             # Calculate Price with Discounts
-            price = book.price
+            price = book.sale_price
             
             # Membership Discount (10% for Premium)
             if current_user.membership_type == 'premium':
@@ -166,7 +166,7 @@ def send_order_email(user, items, delivery_info):
     total = 0
     for item in items:
 
-        line_total = item.book.price * item.quantity
+        line_total = item.book.sale_price * item.quantity
         item_list += f"- {item.book.title} x {item.quantity}: TK {line_total}\n"
         total += line_total
     

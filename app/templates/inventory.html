@@ -37,7 +37,7 @@
 <div  class="table-container">
   
     <table class="table w-full text-left border-collapse">
-        <thead class="bg-gray-100 text-gray-700">
+        <thead class="text-gray-700" style="background-color: var(--bg-color); color: var(--text-color);">
             <tr>
                 <th class="p-3">Title</th>
                 <th class="p-3">Author</th>
@@ -49,7 +49,7 @@
                 <th class="p-3">Available</th>
                 <th class="p-3">Borrowed</th>
                 <th class="p-3">Sold</th>
-                <th class="p-3 sticky right-0 shadow-[-3px_0_6px_rgba(0,0,0,0.05)] bg-gray-300">Action</th>
+                <th class="p-3 sticky right-0 shadow-[-3px_0_6px_rgba(0,0,0,0.05)]" style="background-color: var(--bg-color);">Action</th>
             </tr>
         </thead>
 
@@ -57,10 +57,12 @@
             {% for book in books.items %}
             <tr class="border-b">
                 <!-- Title + Cover -->
-                <td class="p-3 font-medium text-gray-900">
+                <td class="p-3 font-medium text-gray-900" style="color: var(--text-color);">
                     <div class="flex items-center gap-4">
-                        <img src="{{ book.image_url or 'https://placehold.co/40x60?text=No+Cover' }}" alt="Cover"
-                            class="w-10 h-16 object-cover rounded border border-gray-300">
+                        <div class="w-10 h-16 rounded border overflow-hidden" style="border-color: var(--border-color);">
+                            <img src="{{ book.image_url or 'https://placehold.co/40x60?text=No+Cover' }}" alt="Cover"
+                                class="w-full h-full object-cover book-thumb-img">
+                        </div>
                         <span>{{ book.title }}</span>
                     </div>
                 </td>
@@ -76,7 +78,7 @@
 
                 <td class="p-3">{{ book.category }}</td>
                 <td class="p-3">{{ book.location }}</td>
-                <td class="p-3">{{ "%.2f"|format(book.price) }}</td>
+                <td class="p-3">TK {{ "%.2f"|format(book.price) }}</td>
                 <td class="p-3">{{ book.stock_total }}</td>
 
                 <!-- Stock Available (green/red text) -->
@@ -92,12 +94,12 @@
 
                 <td class="p-3">{{ book.stock_borrowed }}</td>
                 <td class="p-3">{{ book.stock_sold }}</td>
-                <td class="p-3 sticky right-0 z-30 shadow-[-3px_0_6px_rgba(0,0,0,0.05)] bg-gray-300">
+                <td class="p-3 sticky right-0 z-30 shadow-[-3px_0_6px_rgba(0,0,0,0.05)]" style="background-color: var(--bg-color);">
 				  
-					<i class="action-btn fa-solid fa-ellipsis text-3xl" data-id = {{book.id}}></i>
+					<i class="action-btn fa-solid fa-ellipsis text-3xl" data-id = {{book.id}} style="color: var(--text-muted);"></i>
 				  
 				  <div id = {{"menu-" ~ book.id}} class="hidden">
-					<div class="block p-4 bg-gray-200 items-stretch">
+					<div class="block p-4 items-stretch rounded shadow-lg border" style="background-color: var(--card-bg); border-color: var(--border-color);">
                     <a href="{{ url_for('main.restock_book', book_id=book.id) }}"
                         class="block items-center px-3 py-1 text-sm rounded-md bg-yellow-100 text-yellow-700 font-medium hover:bg-yellow-200">
                         Restock

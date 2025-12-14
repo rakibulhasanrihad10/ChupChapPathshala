@@ -55,7 +55,7 @@ def view_cart():
     
     items = cart.items.all()
     # Calculate Subtotal (only for buying)
-    subtotal = sum(item.book.price * item.quantity for item in items if item.action == 'buy')
+    subtotal = sum(item.book.sale_price * item.quantity for item in items if item.action == 'buy')
     return render_template('cart.html', items=items, subtotal=subtotal)
 
 @bp.route('/cart/update/<int:item_id>', methods=['POST'])
@@ -86,8 +86,8 @@ def update_quantity(item_id):
     return jsonify({
         'success': True, 
         'quantity': item.quantity,
-        'item_total': item.book.price * item.quantity if item.action == 'buy' else 0,
-        'price': item.book.price
+        'item_total': item.book.sale_price * item.quantity if item.action == 'buy' else 0,
+        'price': item.book.sale_price
     })
 
 @bp.route('/cart/remove/<int:item_id>')

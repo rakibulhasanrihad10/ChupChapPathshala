@@ -78,7 +78,8 @@ class Book(db.Model):
     item_type = db.Column(db.String(20), default='hybrid') # circulation, sale, hybrid
     category = db.Column(db.String(50), default='General') # e.g. Fiction, Islamic, Bengali
     location = db.Column(db.String(100)) # e.g., "Aisle 3, Shelf B"
-    image_url = db.Column(db.String(500), default='https://placehold.co/200x300?text=No+Cover') # Poster URL
+    image_url = db.Column(db.String(500)) # Poster URL
+    discount_percentage = db.Column(db.Float, default=0.0)
 
     
     # Stock Counters
@@ -89,6 +90,12 @@ class Book(db.Model):
 
     def __repr__(self):
         return f'<Book {self.title}>'
+
+    @property
+    def sale_price(self):
+        if self.discount_percentage and self.discount_percentage > 0:
+            return self.price * (1 - self.discount_percentage / 100)
+        return self.price
 
 class Cart(db.Model):
     __tablename__ = 'carts'
@@ -110,7 +117,9 @@ class Loan(db.Model):
     __tablename__ = 'loans'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user = db.relationship('User', backref='loans')
     book_id = db.Column(db.Integer, db.ForeignKey('books.id'))
+    book = db.relationship('Book', backref='loans')
     checkout_date = db.Column(db.DateTime, default=datetime.utcnow)
     due_date = db.Column(db.DateTime)
     return_date = db.Column(db.DateTime, nullable=True)

@@ -57,25 +57,25 @@ def create_admin():
         return redirect(url_for('main.index'))
     
     form = CreateAdminForm()
-    admins = User.query.filter_by(role='admin').all()
+    # Fetch both admins and librarians
+    staff = User.query.filter(User.role.in_(['admin', 'librarian'])).all()
     
     if form.validate_on_submit():
         # Double check domain logic here just in case, though form handles it
         domain = form.email.data.split('@')[-1]
         if f'@{domain}' not in Config.APPROVED_ADMIN_DOMAINS:
              flash("ERROR: The email address provided is not associated with an approved administrative domain. Admin creation aborted.")
-             return render_template('auth/create_admin.html', title='Create New Admin', form=form, admins=admins)
+             return render_template('auth/create_admin.html', title='Create New Staff', form=form, staff=staff)
 
-        user = User(username=form.username.data, email=form.email.data, role='admin')
+        user = User(username=form.username.data, email=form.email.data, role=form.role.data)
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
         # Mock Email Notification
-        flash(f"Success! New Admin user ({form.name.data}) has been created and notified.")
+        flash(f"Success! New {form.role.data.capitalize()} user ({form.name.data}) has been created and notified.")
         return redirect(url_for('auth.create_admin'))
         
-    return render_template('auth/create_admin.html', title='Create New Admin', form=form, admins=admins)
-    return render_template('auth/create_admin.html', title='Create New Admin', form=form, admins=admins)
+    return render_template('auth/create_admin.html', title='Create New Staff', form=form, staff=staff)
 
 from app.extensions import oauth
 

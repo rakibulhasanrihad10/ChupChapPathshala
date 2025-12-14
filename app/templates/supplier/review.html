@@ -5,18 +5,18 @@
 {% block content %}
 <div class="container mx-auto px-4 py-8">
     <div class="mb-8">
-        <h1 class="text-3xl font-bold text-indigo-800">Review Order (Final Authorization)</h1>
-        <p class="text-gray-600 mt-2">Authorize pending orders</p>
+        <h1 class="text-3xl font-bold" style="color: var(--primary-color);">Review Order (Final Authorization)</h1>
+        <p class="mt-2" style="color: var(--text-muted);">Authorize pending orders</p>
     </div>
 
     {% if orders %}
     <div class="grid gap-8">
         {% for order in orders %}
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-indigo-100">
-            <div class="bg-indigo-50 px-6 py-4 flex justify-between items-center border-b border-indigo-100">
+        <div class="rounded-xl shadow-lg overflow-hidden border" style="background-color: var(--card-bg); border-color: var(--border-color);">
+            <div class="px-6 py-4 flex justify-between items-center border-b" style="background-color: var(--bg-color); border-color: var(--border-color);">
                 <div>
-                    <h3 class="font-bold text-lg text-indigo-900">Order #{{ order.id }}</h3>
-                    <span class="text-sm text-gray-500">Created: {{ order.created_at.strftime('%Y-%m-%d %H:%M')
+                    <h3 class="font-bold text-lg" style="color: var(--text-color);">Order #{{ order.id }}</h3>
+                    <span class="text-sm" style="color: var(--text-muted);">Created: {{ order.created_at.strftime('%Y-%m-%d %H:%M')
                         }}</span>
                 </div>
                 <div class="flex items-center gap-4">
@@ -26,26 +26,26 @@
             </div>
 
             <div class="p-6">
-                <table class="min-w-full divide-y divide-gray-200 mb-6">
+                <table class="min-w-full divide-y mb-6" style="border-color: var(--border-color);">
                     <thead>
                         <tr>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Book</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Requested Mass
+                            <th class="px-4 py-2 text-left text-xs font-medium uppercase" style="color: var(--text-muted);">Book</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium uppercase" style="color: var(--text-muted);">Requested Mass
                                 (Qty)</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-200">
+                    <tbody class="divide-y" style="border-color: var(--border-color);">
                         {% for item in order.items %}
                         <tr>
-                            <td class="px-4 py-2 text-sm text-gray-900">{{ item.book.title }}</td>
-                            <td class="px-4 py-2 text-sm font-bold text-gray-900">{{ item.mass }}</td>
+                            <td class="px-4 py-2 text-sm" style="color: var(--text-color);">{{ item.book.title }}</td>
+                            <td class="px-4 py-2 text-sm font-bold" style="color: var(--text-color);">{{ item.mass }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
 
                 <div class="flex justify-end gap-3">
-                    <button class="text-indigo-600 hover:text-indigo-800 font-medium px-4 py-2">Edit Order</button>
+                    <button class="font-medium px-4 py-2 hover:opacity-75" style="color: var(--primary-color);">Edit Order</button>
                     <!-- Placeholder for edit logic -->
                     <form action="{{ url_for('main.supplier_launch', order_id=order.id) }}" method="POST">
                         <button type="submit"
@@ -59,7 +59,7 @@
         {% endfor %}
     </div>
     {% else %}
-    <div class="bg-white rounded-xl shadow p-8 text-center text-gray-500">
+    <div class="rounded-xl shadow p-8 text-center" style="background-color: var(--card-bg); color: var(--text-muted);">
         <p class="text-xl">No active order.</p>
         <p>No orders are currently pending review.</p>
     </div>

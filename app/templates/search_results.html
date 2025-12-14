@@ -21,9 +21,15 @@
     <div class="search-results-grid">
         {% for book in results %}
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-            <!-- Reuse card design similar to catalog or index -->
+            
             <a href="#" class="book-cover-container group">
                 <img src="{{ book.image_url }}" alt="{{ book.title }}">
+                {% if book.discount_percentage and book.discount_percentage > 0 %}
+                <div class="discount-badge">
+                    <span class="discount-value">{{ "%.0f"|format(book.discount_percentage) }}%</span>
+                    <span class="discount-label">OFF</span>
+                </div>
+                {% endif %}
             </a>
             
             <div class="p-4">
@@ -40,7 +46,16 @@
                 </p>
                 
                 <div class="flex items-center justify-between">
-                    <span class="font-bold text-gray-900">${{ "%.2f"|format(book.price) }}</span>
+                    <div class="flex flex-col">
+                        {% if book.discount_percentage and book.discount_percentage > 0 %}
+                            <div class="flex items-center">
+                                <span class="text-red-500 line-through mr-1 text-xs">TK {{ "%.2f"|format(book.price) }}</span>
+                                <span class="font-bold text-green-600">TK {{ "%.2f"|format(book.sale_price) }}</span>
+                            </div>
+                        {% else %}
+                            <span class="font-bold text-gray-900">TK {{ "%.2f"|format(book.price) }}</span>
+                        {% endif %}
+                    </div>
                     
                     {% if book.stock_available > 0 %}
                     <form action="{{ url_for('main.add_to_cart', book_id=book.id) }}" method="POST">

@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import IntegerField, SubmitField, StringField, SelectField,FloatField
-from wtforms.validators import DataRequired, InputRequired, NumberRange, Length, URL
+from wtforms.validators import DataRequired, InputRequired, NumberRange, Length, URL, Optional
 
 class RestockForm(FlaskForm):
     quantity = IntegerField(
@@ -42,7 +42,7 @@ class EditForm(FlaskForm):
     )
     image_url = StringField(
         "Image URL",
-        validators=[DataRequired(), URL(), Length(min=1, max=500)]
+        validators=[Optional(), URL(), Length(min=0, max=500)]
     )
     stock_available = FloatField(
         "Stock Available",

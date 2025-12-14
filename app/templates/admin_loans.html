@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Borrowed Books - Admin{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Borrowed Books Tracking</h1>
+    <div class="flex gap-3">
+        <a href="{{ url_for('main.members') }}" class="btn-action" style="background: var(--card-bg); color: var(--text-color); border: 1px solid var(--border-color); width: auto;">
+            Manage Members
+        </a>
+    </div>
+</div>
+
+<div class="card" style="background: var(--card-bg); overflow-x: auto;">
+    <table style="width: 100%; border-collapse: collapse; min-width: 800px;">
+        <thead>
+            <tr style="border-bottom: 2px solid var(--border-color); text-align: left;">
+                <th style="padding: 1rem; color: var(--text-muted); font-weight: 600;">User</th>
+                <th style="padding: 1rem; color: var(--text-muted); font-weight: 600;">Book Info</th>
+                <th style="padding: 1rem; color: var(--text-muted); font-weight: 600;">Dates</th>
+                <th style="padding: 1rem; color: var(--text-muted); font-weight: 600;">Status</th>
+                <th style="padding: 1rem; color: var(--text-muted); font-weight: 600;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for loan in loans %}
+            <tr style="border-bottom: 1px solid var(--border-color);">
+                <!-- User Info -->
+                <td style="padding: 1rem;">
+                    <div style="font-weight: 600; color: var(--text-color);">{{ loan.user.username }}</div>
+                    <div style="font-size: 0.875rem; color: var(--text-muted);">{{ loan.user.email }}</div>
+                </td>
+                
+                <!-- Book Info -->
+                <td style="padding: 1rem;">
+                    <div style="font-weight: 600; color: var(--text-color);">{{ loan.book.title }}</div>
+                    <div style="font-size: 0.875rem; color: var(--text-muted);">{{ loan.book.author }}</div>
+                </td>
+                
+                <!-- Dates -->
+                <td style="padding: 1rem;">
+                    <div style="font-size: 0.9rem;">
+                        <span style="color: var(--text-muted);">Out:</span> 
+                        <span style="color: var(--text-color);">{{ loan.checkout_date.strftime('%Y-%m-%d') }}</span>
+                    </div>
+                    <div style="font-size: 0.9rem;">
+                        <span style="color: var(--text-muted);">Due:</span> 
+                        <span style="color: var(--text-color);">{{ loan.due_date.strftime('%Y-%m-%d') }}</span>
+                    </div>
+                </td>
+                
+                <!-- Status -->
+                <td style="padding: 1rem;">
+                    {% if loan.status == 'returned' %}
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Returned</span>
+                    {% elif loan.days_remaining < 0 %}
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Overdue ({{ loan.days_remaining|abs }} days)</span>
+                    {% else %}
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Active</span>
+                        <div style="font-size: 0.75rem; margin-top: 0.25rem; color: var(--primary-color);">{{ loan.days_remaining }} days left</div>
+                    {% endif %}
+                </td>
+                
+                <!-- Actions -->
+                <td style="padding: 1rem;">
+                    {% if loan.status == 'active' %}
+                    <form action="{{ url_for('main.mark_returned', loan_id=loan.id) }}" method="POST" onsubmit="return confirm('Mark this book as returned?');">
+                        <button type="submit" class="btn-action" style="padding: 0.5rem 1rem; font-size: 0.875rem; background: var(--bg-color); color: var(--text-color); border: 1px solid var(--border-color); width: auto;">
+                            Mark Returned
+                        </button>
+                    </form>
+                    {% else %}
+                    <span style="color: var(--text-muted); font-size: 0.875rem;">{{ loan.return_date.strftime('%Y-%m-%d') }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" style="padding: 3rem; text-align: center; color: var(--text-muted);">
+                    No borrowing records found.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

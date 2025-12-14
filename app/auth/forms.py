@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
+from wtforms import StringField, PasswordField, SubmitField, SelectField
 from wtforms.validators import DataRequired, Email, EqualTo, ValidationError
 from app.models import User
 from config import Config
@@ -32,7 +32,8 @@ class CreateAdminForm(FlaskForm):
     password = PasswordField('Temporary Password', validators=[DataRequired()])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
     name = StringField('Full Name', validators=[DataRequired()])
-    submit = SubmitField('Create Admin')
+    role = SelectField('Role', choices=[('admin', 'Admin'), ('librarian', 'Librarian')], default='admin')
+    submit = SubmitField('Create User')
 
     def validate_username(self, username):
         user = User.query.filter_by(username=username.data).first()

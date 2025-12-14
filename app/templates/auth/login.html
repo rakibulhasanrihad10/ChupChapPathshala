@@ -10,13 +10,13 @@
         outline: none;
     }
 </style>
-<div class="flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8" style="min-height: 80vh;">
-    <div class="max-w-md w-full bg-white p-10 rounded-xl shadow-lg">
+<div class="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8" style="min-height: 80vh; background-color: var(--bg-color);">
+    <div class="max-w-md w-full p-10 rounded-xl shadow-lg" style="background-color: var(--card-bg);">
         <div class="text-center mb-8">
-            <h2 class="mt-2 text-3xl font-extrabold text-gray-900">
+            <h2 class="mt-2 text-3xl font-extrabold" style="color: var(--text-color);">
                 Welcome Back
             </h2>
-            <p class="mt-2 text-sm text-gray-600">
+            <p class="mt-2 text-sm" style="color: var(--text-muted);">
                 Login to continue learning
             </p>
         </div>
@@ -26,18 +26,16 @@
 
             <div class="rounded-md">
                 <div class="mb-4">
-                    {{ form.email.label(class="block text-sm font-medium text-gray-700 mb-1") }}
-                    {{ form.email(class="input-field appearance-none rounded-lg relative block w-full px-3 py-2 border
-                    border-gray-300 placeholder-gray-500 text-gray-900 focus:z-10 sm:text-sm") }}
+                    {{ form.email.label(class="block text-sm font-medium mb-1", style="color: var(--text-color);") }}
+                    {{ form.email(class="input-field appearance-none rounded-lg relative block w-full px-3 py-2 border placeholder-gray-500 focus:z-10 sm:text-sm", style="background-color: var(--bg-color); color: var(--text-color); border-color: var(--border-color);") }}
                     {% for error in form.email.errors %}
                     <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
                     {% endfor %}
                 </div>
 
                 <div class="mb-6">
-                    {{ form.password.label(class="block text-sm font-medium text-gray-700 mb-1") }}
-                    {{ form.password(class="input-field appearance-none rounded-lg relative block w-full px-3 py-2
-                    border border-gray-300 placeholder-gray-500 text-gray-900 focus:z-10 sm:text-sm") }}
+                    {{ form.password.label(class="block text-sm font-medium mb-1", style="color: var(--text-color);") }}
+                    {{ form.password(class="input-field appearance-none rounded-lg relative block w-full px-3 py-2 border placeholder-gray-500 focus:z-10 sm:text-sm", style="background-color: var(--bg-color); color: var(--text-color); border-color: var(--border-color);") }}
                     {% for error in form.password.errors %}
                     <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
                     {% endfor %}
@@ -63,10 +61,10 @@
             <div class="mt-6">
                 <div class="relative">
                     <div class="absolute inset-0 flex items-center">
-                        <div class="w-full border-t border-gray-300"></div>
+                        <div class="w-full border-t" style="border-color: var(--border-color);"></div>
                     </div>
                     <div class="relative flex justify-center text-sm">
-                        <span class="px-2 bg-white text-gray-500">
+                        <span class="px-2" style="background-color: var(--card-bg); color: var(--text-muted);">
                             Or continue with
                         </span>
                     </div>
@@ -74,7 +72,8 @@
 
                 <div class="mt-6">
                     <a href="{{ url_for('auth.google_login') }}"
-                        class="w-full flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        class="w-full flex items-center justify-center px-4 py-2 border shadow-sm text-sm font-medium rounded-md hover:bg-gray-50 transition-colors"
+                        style="background-color: var(--card-bg); color: var(--text-color); border-color: var(--border-color);">
                         <svg class="h-5 w-5 mr-2" aria-hidden="true" viewBox="0 0 24 24">
                             <path
                                 d="M12.0003 20.45c4.6593 0 8.364-3.8398 8.364-8.45 0-0.7483-0.0818-1.4646-0.219-2.1524H12.0003v4.1068h4.6853c-0.223 1.082-0.865 2.016-1.802 2.6515v2.2274h2.909c1.72-1.5833 2.709-3.921 2.709-6.902 0-0.7816-0.081-1.5283-0.212-2.2514H12.0003V9.6h8.4907c0.125.75.196 1.52.196 2.305 0 2.21-0.565 4.29-1.575 6.13-1.025 1.87-2.485 3.39-4.26 4.455l-2.91-2.23Z"
@@ -100,7 +99,7 @@
         </form>
 
         <div class="text-center mt-6">
-            <p class="text-sm text-gray-600">
+            <p class="text-sm" style="color: var(--text-muted);">
                 New here?
                 <a href="{{ url_for('auth.register') }}" class="font-medium text-indigo-600 hover:text-indigo-500">
                     Create an account

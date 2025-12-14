@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
-    APPROVED_ADMIN_DOMAINS = ['@chupchappathshala.com']
+    APPROVED_ADMIN_DOMAINS = ['@chupchappathshala.com','@gmail.com']
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
     GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
     GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)

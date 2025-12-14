@@ -6,24 +6,68 @@
     /* Emerald */
     --accent-color: #F59E0B;
     /* Amber */
-    --background-color: #F3F4F6;
+
+    /* Theme Variables (Light Default) */
+    --bg-color: #F3F4F6;
+    --card-bg: #FFFFFF;
     --text-color: #1F2937;
-    --white: #FFFFFF;
+    --text-muted: #6B7280;
+    --border-color: #E5E7EB;
+    --nav-bg: #F3F4F6;
+    --pill-bg: #E5E7EB;
+    --pill-text: #374151;
+    --pill-hover: #D1D5DB;
+    --placeholder-bg: #E5E7EB;
+    --placeholder-text: #1F2937;
+
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="dark"] {
+    --bg-color: #111827;
+    /* Gray 900 */
+    --card-bg: #1F2937;
+    /* Gray 800 */
+    --text-color: #F9FAFB;
+    /* Gray 50 */
+    --text-muted: #9CA3AF;
+    /* Gray 400 */
+    --border-color: #374151;
+    /* Gray 700 */
+    --nav-bg: #111827;
+    --pill-bg: #374151;
+    --pill-text: #E5E7EB;
+    --pill-hover: #4B5563;
+    --pill-hover: #4B5563;
+    --placeholder-bg: #1F2937;
+    --placeholder-text: #F9FAFB;
+
+
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+}
+
+/* Audio Player Dark Mode Fix */
+[data-theme="dark"] audio {
+    filter: invert(1) hue-rotate(180deg);
+}
+
+[data-theme="dark"] .book-thumb-img[src*="placehold.co"] {
+    filter: invert(1) hue-rotate(180deg);
 }
 
 body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    background-color: var(--background-color);
+    background-color: var(--bg-color);
     color: var(--text-color);
     margin: 0;
     padding: 0;
     line-height: 1.5;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Navigation */
 .navbar {
-    background-color: var(--background-color);
+    background-color: var(--nav-bg);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     padding: 0.5rem 2rem;
     display: flex;
@@ -32,19 +76,21 @@ body {
     position: sticky;
     top: 0;
     z-index: 100;
+    transition: background-color 0.3s ease;
+    border-bottom: 1px solid var(--border-color);
 }
 
 /* Logo */
 .nav-brand {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 1rem;
     text-decoration: none;
-    color: #1e3a8a;
+    color: var(--text-color);
 }
 
 .brand-icon {
-    color: #1e3a8a;
+    color: var(--primary-color);
 }
 
 .brand-text {
@@ -59,19 +105,19 @@ body {
 .search-section {
     flex: 1;
     display: flex;
-    justify-content: center;
-    max-width: 400px;
-    margin: 0 2rem;
+    justify-content: flex-start;
+    max-width: 600px;
+    margin: 0 1rem;
 }
 
 .search-form {
     display: flex;
     align-items: center;
-    background: #E5E7EB;
+    background: var(--pill-bg);
     border-radius: 9999px;
     padding: 0.5rem 1rem;
     width: 100%;
-
+    border: 1px solid transparent;
 }
 
 .search-input {
@@ -80,13 +126,14 @@ body {
     outline: none;
     flex: 1;
     font-size: 0.9rem;
+    color: var(--text-color);
 }
 
 .search-btn {
     background: none;
     border: none;
     cursor: pointer;
-    color: #000;
+    color: var(--text-color);
     padding: 0;
     display: flex;
 }
@@ -99,9 +146,9 @@ body {
 
 .nav-pill {
     text-decoration: none;
-    background-color: #E5E7EB;
+    background-color: var(--pill-bg);
     /* Grey pill */
-    color: #374151;
+    color: var(--pill-text);
     padding: 0.5rem 1.5rem;
     border-radius: 9999px;
     /* Pill shape */
@@ -111,7 +158,7 @@ body {
 }
 
 .nav-pill:hover {
-    background-color: #D1D5DB;
+    background-color: var(--pill-hover);
 }
 
 /* Custom Colored Pills (Members, Inventory, Order) */
@@ -147,7 +194,14 @@ body {
     display: block !important;
 }
 
-/* Invisible bridge for hover gap */
+.dropdown-menu {
+    background-color: rgba(150, 150, 150, 0.2);
+    backdrop-filter: blur(5px);
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 .dropdown-menu::before {
     content: '';
     position: absolute;
@@ -162,15 +216,16 @@ body {
     display: block;
     padding: 0.5rem 1rem;
     font-size: 0.875rem;
-    color: #374151;
+    color: var(--text-color);
     text-decoration: none;
     transition: all 0.2s;
     border-radius: 0.5rem;
 }
 
 .dropdown-item:hover {
-    background-color: #E0F2FE;
-    color: #0369A1;
+    background-color: rgba(150, 150, 150, 0.2);
+    backdrop-filter: blur(5px);
+    color: var(--text-color);
 }
 
 /* User Actions */
@@ -185,7 +240,7 @@ body {
     align-items: center;
     gap: 0.5rem;
     text-decoration: none;
-    color: #1F2937;
+    color: var(--text-color);
     font-weight: 500;
 }
 
@@ -301,7 +356,7 @@ body {
 }
 
 .card {
-    background: var(--white);
+    background: var(--card-bg);
     padding: 2rem;
     border-radius: 1rem;
     box-shadow: var(--shadow);
@@ -321,13 +376,17 @@ body {
 .book-image-container {
     position: relative;
     height: 200px;
-    background: #F3F4F6;
+    background-color: var(--bg-color);
     margin: -1.5rem -1.5rem 1rem -1.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    border-radius: 1rem;
+
 }
+
+
 
 .upload-overlay {
     position: absolute;
@@ -400,7 +459,7 @@ body {
 /* Table Styles - Added for Inventory */
 .table-container {
     overflow-x: auto;
-    background: var(--white);
+    background: var(--card-bg);
     border-radius: 1rem;
     box-shadow: var(--shadow);
     margin-top: 0;
@@ -416,13 +475,13 @@ body {
 .table td {
     padding: 1rem 0.75rem;
     text-align: left;
-    border-bottom: 1px solid #E5E7EB;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .table th {
-    background-color: #F9FAFB;
+    background-color: var(--pill-bg);
     font-weight: 600;
-    color: #374151;
+    color: var(--text-color);
     text-transform: uppercase;
     font-size: 0.75rem;
     letter-spacing: 0.05em;
@@ -433,11 +492,11 @@ body {
 }
 
 .table tr:hover {
-    background-color: #F9FAFB;
+    background-color: var(--bg-color);
 }
 
 .table td {
-    color: #4B5563;
+    color: var(--text-color);
     font-size: 0.875rem;
 }
 
@@ -511,8 +570,7 @@ body {
     position: relative;
     width: 100%;
     padding-bottom: 150%;
-    /* 2:3 Aspect Ratio */
-    background-color: #f3f4f6;
+    background-color: var(--bg-color);
     overflow: hidden;
     display: block;
 }
@@ -554,7 +612,7 @@ body {
     left: -1px;
     width: calc(100% + 2px);
     z-index: 40;
-    background-color: #e5e7eb;
+    background-color: var(--card-bg);
     padding-top: 5px;
     clip-path: inset(0px -10px -10px -10px);
 }
@@ -650,7 +708,7 @@ body {
 
 /* Profile Page Design (Facebook Style) */
 .profile-header {
-    background: white;
+    background: var(--card-bg);
     border-radius: 0 0 1rem 1rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     margin-bottom: 2rem;
@@ -688,7 +746,7 @@ body {
     width: 160px;
     height: 160px;
     border-radius: 50%;
-    border: 4px solid white;
+    border: 4px solid var(--card-bg);
     object-fit: cover;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
@@ -710,13 +768,13 @@ body {
 .profile-name {
     font-size: 2rem;
     font-weight: 800;
-    color: #1f2937;
+    color: var(--text-color);
     margin: 0;
     line-height: 1.2;
 }
 
 .profile-role {
-    color: #6b7280;
+    color: var(--text-muted);
     font-weight: 500;
     font-size: 1.1rem;
 }
@@ -741,4 +799,70 @@ body {
         justify-content: center;
         text-align: center;
     }
+}
+
+/* No Cover Placeholder */
+.no-cover-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--bg-color);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: var(--placeholder-text);
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 1rem;
+
+}
+
+.status-badge {
+    background: var(--pill-bg);
+    color: var(--text-color);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+/* Discount Badge - Starburst */
+.discount-badge {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 60px;
+    height: 60px;
+    background-color: #DC2626;
+    /* Red-600 */
+    color: white;
+    font-weight: 800;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    line-height: 0.9;
+    z-index: 20;
+    transform: rotate(15deg);
+    filter: drop-shadow(0 4px 3px rgba(0, 0, 0, 0.3));
+    /* Starburst Shape */
+    clip-path: polygon(50% 0%, 61% 10%, 75% 6%, 81% 19%, 94% 21%, 93% 35%, 100% 44%, 93% 56%,
+            99% 68%, 87% 76%, 86% 90%, 72% 92%, 63% 100%, 50% 92%, 37% 100%, 28% 92%,
+            14% 90%, 13% 76%, 1% 68%, 7% 56%, 0% 44%, 7% 35%, 6% 21%, 19% 19%, 25% 6%,
+            39% 10%);
+}
+
+.discount-value {
+    font-size: 1.25rem;
+    font-weight: 900;
+}
+
+.discount-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    font-weight: 700;
 }

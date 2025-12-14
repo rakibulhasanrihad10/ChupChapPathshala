@@ -17,6 +17,7 @@
     <div style="display: grid; grid-template-columns: 1fr 300px; gap: 2rem; align-items: start;">
 
         <!-- Cart Items Table -->
+<!-- Cart Items Table -->
         <div class="table-container">
             <table class="table">
                 <thead>
@@ -38,7 +39,7 @@
                         <td>
                             <input type="checkbox" name="selected_items" value="{{ item.id }}" checked 
                                 class="item-checkbox" 
-                                data-price="{{ item.book.price if item.action == 'buy' else 0 }}"
+                                data-price="{{ item.book.sale_price if item.action == 'buy' else 0 }}"
                                 data-qty="{{ item.quantity }}"
                                 data-action="{{ item.action }}"
                                 onchange="calculateTotal()"
@@ -48,40 +49,47 @@
                             <div style="display: flex; align-items: center; gap: 1rem;">
                                 <!-- Tiny Thumbnail -->
                                 <div
-                                    style="width: 40px; height: 60px; background: #F3F4F6; border-radius: 4px; overflow: hidden; flex-shrink: 0;">
+                                    style="width: 40px; height: 60px; background: var(--bg-color); border-radius: 4px; overflow: hidden; flex-shrink: 0;">
                                     <img src="{{ item.book.image_url or 'https://placehold.co/40x60?text=No+Img' }}" alt=""
-                                        style="width: 100%; height: 100%; object-fit: cover;">
+                                        class="book-thumb-img" style="width: 100%; height: 100%; object-fit: cover;">
                                 </div>
                                 <div>
-                                    <div style="font-weight: 600; color: #111827;">{{ item.book.title }}</div>
-                                    <div style="font-size: 0.875rem; color: #6B7280;">{{ item.book.author }}</div>
+                                    <div style="font-weight: 600; color: var(--text-color);">{{ item.book.title }}</div>
+                                    <div style="font-size: 0.875rem; color: var(--text-muted);">{{ item.book.author }}</div>
                                 </div>
                             </div>
                         </td>
                         <td>
                             <span
-                                style="padding: 2px 8px; border-radius: 9999px; background: #e5e7eb; font-size: 0.75rem; font-weight: 600;">{{
+                                style="padding: 2px 8px; border-radius: 9999px; background: var(--pill-bg); color: var(--pill-text); font-size: 0.75rem; font-weight: 600;">{{
                                 item.action|capitalize }}</span>
                         </td>
                         <td>
                             {% if item.action == 'buy' %}
-                            <span class="price-unit">{{ item.book.price }}</span>
+                                {% if item.book.discount_percentage and item.book.discount_percentage > 0 %}
+                                    <div style="display: flex; flex-direction: column;">
+                                        <span class="text-red-500 line-through text-xs">TK {{ "%.2f"|format(item.book.price) }}</span>
+                                        <span class="price-unit text-green-600 font-bold">TK {{ "%.2f"|format(item.book.sale_price) }}</span>
+                                    </div>
+                                {% else %}
+                                    <span class="price-unit">TK {{ "%.2f"|format(item.book.price) }}</span>
+                                {% endif %}
                             {% else %}
                             -
                             {% endif %}
                         </td>
                         <td>
-                            <div style="display: flex; align-items: center; gap: 8px; background: #F3F4F6; border-radius: 6px; padding: 2px 6px; width: fit-content;">
+                            <div style="display: flex; align-items: center; gap: 8px; background: var(--pill-bg); border-radius: 6px; padding: 2px 6px; width: fit-content;">
                                 <button type="button" onclick="updateQty({{ item.id }}, 'decrease')" 
-                                    style="width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: none; background: transparent; cursor: pointer; color: #6B7280; font-weight: bold;">-</button>
-                                <span id="qty-{{ item.id }}" style="font-weight: 600; font-size: 0.9rem; min-width: 20px; text-align: center;">{{ item.quantity }}</span>
+                                    style="width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: none; background: transparent; cursor: pointer; color: var(--text-muted); font-weight: bold;">-</button>
+                                <span id="qty-{{ item.id }}" style="font-weight: 600; font-size: 0.9rem; min-width: 20px; text-align: center; color: var(--text-color);">{{ item.quantity }}</span>
                                 <button type="button" onclick="updateQty({{ item.id }}, 'increase')"
-                                    style="width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: none; background: transparent; cursor: pointer; color: #4F46E5; font-weight: bold;">+</button>
+                                    style="width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: none; background: transparent; cursor: pointer; color: var(--primary-color); font-weight: bold;">+</button>
                             </div>
                         </td>
                         <td>
                             {% if item.action == 'buy' %}
-                            <span id="total-{{ item.id }}" class="item-total">{{ item.book.price * item.quantity }}</span>
+                            TK <span id="total-{{ item.id }}" class="item-total">{{ "%.2f"|format(item.book.sale_price * item.quantity) }}</span>
                             {% else %}
                             -
                             {% endif %}
@@ -98,34 +106,34 @@
 
         <!-- Checkout Summary Card -->
         <div
-            style="background: white; padding: 1.5rem; border-radius: 1rem; box-shadow: var(--shadow); position: sticky; top: 2rem;">
+            style="background: var(--card-bg); padding: 1.5rem; border-radius: 1rem; box-shadow: var(--shadow); position: sticky; top: 2rem;">
             <h3
-                style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; border-bottom: 1px solid #E5E7EB; padding-bottom: 1rem;">
+                style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; color: var(--text-color);">
                 Summary</h3>
 
             <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 1rem;">
-                <span style="color: #4B5563;">Selected Items (<span id="count-display">0</span>)</span>
-                <span style="font-weight: 600; color: #111827;">TK <span id="subtotal-display">0.00</span></span>
+                <span style="color: var(--text-muted);">Selected Items (<span id="count-display">0</span>)</span>
+                <span style="font-weight: 600; color: var(--text-color);">TK <span id="subtotal-display">0.00</span></span>
             </div>
             
             <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; font-size: 1rem;">
-                <span style="color: #4B5563;">Delivery Charge</span>
-                <span style="font-weight: 600; color: #111827;">TK <span id="delivery-display">60.00</span></span>
+                <span style="color: var(--text-muted);">Delivery Charge</span>
+                <span style="font-weight: 600; color: var(--text-color);">TK <span id="delivery-display">60.00</span></span>
             </div>
             
-            <div style="height: 1px; background: #E5E7EB; margin: 1rem 0;"></div>
+            <div style="height: 1px; background: var(--border-color); margin: 1rem 0;"></div>
 
             <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem; font-size: 1.1rem;">
-                <span style="color: #111827; font-weight: 700;">Total</span>
-                <span style="font-weight: 700; color: #4F46E5;">TK <span id="final-total-display">0.00</span></span>
+                <span style="color: var(--text-color); font-weight: 700;">Total</span>
+                <span style="font-weight: 700; color: var(--primary-color);">TK <span id="final-total-display">0.00</span></span>
             </div>
 
             <div style="margin-bottom: 1.5rem;">
                 <label
-                    style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: #374151;">Promo
+                    style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-color);">Promo
                     Code</label>
                 <input type="text" name="coupon_code" placeholder="Enter code"
-                    style="width: 100%; padding: 0.75rem; border: 1px solid #D1D5DB; border-radius: 0.5rem; outline: none;">
+                    style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); border-radius: 0.5rem; outline: none;">
             </div>
             
             <button type="submit" class="btn-action btn-borrow" style="font-size: 1rem; padding: 0.75rem;">
@@ -136,8 +144,8 @@
     </div>
 </form>
 {% else %}
-<div style="text-align: center; padding: 4rem; background: white; border-radius: 1rem; box-shadow: var(--shadow);">
-    <div style="margin-bottom: 1.5rem; color: #D1D5DB;">
+<div style="text-align: center; padding: 4rem; background: var(--card-bg); border-radius: 1rem; box-shadow: var(--shadow);">
+    <div style="margin-bottom: 1.5rem; color: var(--text-muted);">
         <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="9" cy="21" r="1"></circle>
@@ -145,8 +153,8 @@
             <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
         </svg>
     </div>
-    <h3 style="font-size: 1.5rem; font-weight: 700; color: #111827; margin-bottom: 0.5rem;">Your cart is empty</h3>
-    <p style="color: #6B7280; margin-bottom: 2rem;">Looks like you haven't added any books yet.</p>
+    <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--text-color); margin-bottom: 0.5rem;">Your cart is empty</h3>
+    <p style="color: var(--text-muted); margin-bottom: 2rem;">Looks like you haven't added any books yet.</p>
     <a href="{{ url_for('main.catalog') }}" class="btn btn-primary">Browse Books</a>
 </div>
 {% endif %}

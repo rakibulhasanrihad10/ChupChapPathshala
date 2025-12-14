@@ -19,36 +19,36 @@
     <div style="display: grid; grid-template-columns: 1fr 400px; gap: 2rem; align-items: start;">
         
         <!-- Shipping Information -->
-        <div class="card">
-            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; color: #111827;">Shipping Information</h2>
+        <div class="card" style="background: var(--card-bg); box-shadow: var(--shadow);">
+            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--text-color);">Shipping Information</h2>
             
             <div style="display: grid; gap: 1.5rem;">
                 <!-- Name -->
                 <div>
-                    <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: #374151;">Full Name</label>
+                    <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-color);">Full Name</label>
                     <input type="text" name="name" required value="{{ current_user.username }}"
-                        style="width: 100%; padding: 0.75rem; border: 1px solid #D1D5DB; border-radius: 0.5rem; outline: none;">
+                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); border-radius: 0.5rem; outline: none;">
                 </div>
                 
                 <!-- Phone -->
                 <div>
-                    <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: #374151;">Phone Number</label>
-                    <input type="tel" name="phone" required placeholder="017..."
-                        style="width: 100%; padding: 0.75rem; border: 1px solid #D1D5DB; border-radius: 0.5rem; outline: none;">
+                    <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-color);">Phone Number</label>
+                    <input type="tel" name="phone" required placeholder="017..." pattern="[0-9]*" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); border-radius: 0.5rem; outline: none;">
                 </div>
                 
                 <!-- Address -->
                 <div>
-                    <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: #374151;">Address</label>
+                    <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-color);">Address</label>
                     <textarea name="address" required rows="3" placeholder="House #, Road #, Area..."
-                        style="width: 100%; padding: 0.75rem; border: 1px solid #D1D5DB; border-radius: 0.5rem; outline: none; font-family: inherit;"></textarea>
+                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); border-radius: 0.5rem; outline: none; font-family: inherit;"></textarea>
                 </div>
                 
                 <!-- City -->
                 <div>
-                    <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: #374151;">City</label>
+                    <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-color);">City</label>
                     <select name="city" required 
-                        style="width: 100%; padding: 0.75rem; border: 1px solid #D1D5DB; border-radius: 0.5rem; outline: none; background: white;">
+                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem; outline: none; background: var(--bg-color); color: var(--text-color);">
                         <option value="Dhaka">Dhaka</option>
                         <option value="Chittagong">Chittagong</option>
                         <option value="Sylhet">Sylhet</option>
@@ -63,21 +63,30 @@
         </div>
 
         <!-- Order Summary -->
-        <div class="card" style="position: sticky; top: 2rem;">
-            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; color: #111827;">Order Summary</h2>
+        <div class="card" style="position: sticky; top: 2rem; background: var(--card-bg); box-shadow: var(--shadow);">
+            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--text-color);">Order Summary</h2>
             
             <div style="margin-bottom: 1.5rem; max-height: 300px; overflow-y: auto;">
                 {% for item in items %}
-                <div style="display: flex; gap: 1rem; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #E5E7EB;">
-                     <div style="width: 50px; height: 75px; background: #F3F4F6; border-radius: 4px; overflow: hidden; flex-shrink: 0;">
+                <div style="display: flex; gap: 1rem; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
+                     <div style="width: 50px; height: 75px; background: var(--bg-color); border-radius: 4px; overflow: hidden; flex-shrink: 0;">
                         <img src="{{ item.book.image_url or 'https://placehold.co/50x75?text=Img' }}" alt=""
-                            style="width: 100%; height: 100%; object-fit: cover;">
+                            class="book-thumb-img" style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
                     <div style="flex: 1;">
-                        <div style="font-weight: 600; color: #111827; font-size: 0.95rem;">{{ item.book.title }}</div>
-                        <div style="font-size: 0.85rem; color: #6B7280;">Qty: {{ item.quantity }}</div>
+                        <div style="font-weight: 600; color: var(--text-color); font-size: 0.95rem;">{{ item.book.title }}</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted);">Qty: {{ item.quantity }}</div>
                         {% if item.action == 'buy' %}
-                        <div style="font-weight: 500; color: #4F46E5; margin-top: 0.25rem;">TK {{ item.book.price * item.quantity }}</div>
+                        <div style="font-weight: 500; color: var(--primary-color); margin-top: 0.25rem;">
+                            {% if item.book.discount_percentage and item.book.discount_percentage > 0 %}
+                            <div style="display: flex; flex-direction: column;">
+                                <span class="text-red-500 line-through text-xs">TK {{ "%.2f"|format(item.book.price * item.quantity) }}</span>
+                                <span>TK {{ "%.2f"|format(item.book.sale_price * item.quantity) }}</span>
+                            </div>
+                            {% else %}
+                            TK {{ "%.2f"|format(item.book.sale_price * item.quantity) }}
+                            {% endif %}
+                        </div>
                         {% else %}
                         <div style="font-size: 0.85rem; color: #10B981; margin-top: 0.25rem;">Borrow</div>
                         {% endif %}
@@ -86,12 +95,12 @@
                 {% endfor %}
             </div>
 
-            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; color: #4B5563;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; color: var(--text-color);">
                 <span>Subtotal</span>
                 <span style="font-weight: 600;">TK {{ subtotal }}</span>
             </div>
             
-            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; color: #4B5563;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; color: var(--text-color);">
                 <span>Delivery Charge</span>
                 <span style="font-weight: 600;">TK {{ delivery_charge }}</span>
             </div>
@@ -103,18 +112,18 @@
             </div>
             {% endif %}
 
-            <div style="height: 1px; background: #E5E7EB; margin: 1rem 0;"></div>
+            <div style="height: 1px; background: var(--border-color); margin: 1rem 0;"></div>
 
-            <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem; font-size: 1.25rem; font-weight: 700; color: #111827;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem; font-size: 1.25rem; font-weight: 700; color: var(--text-color);">
                 <span>Total</span>
-                <span style="color: #4F46E5;">TK {{ total }}</span>
+                <span style="color: var(--primary-color);">TK {{ total }}</span>
             </div>
 
             <button type="submit" class="btn-action btn-buy" style="font-size: 1.1rem; padding: 1rem;">
                 Place Order
             </button>
             
-            <div style="margin-top: 1rem; font-size: 0.875rem; color: #6B7280; text-align: center;">
+            <div style="margin-top: 1rem; font-size: 0.875rem; color: var(--text-muted); text-align: center;">
                 By placing this order, you agree to our Terms of Service.
             </div>
         </div>
