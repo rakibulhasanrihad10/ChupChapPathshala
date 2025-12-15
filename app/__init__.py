@@ -35,3 +35,5 @@ def create_app(config_class=Config):
     app.register_blueprint(auth_bp, url_prefix='/auth')
 
     return app
+
+# Force reload for search ranking fix

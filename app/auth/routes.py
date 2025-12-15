@@ -18,7 +18,7 @@ def register():
     
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = User(username=form.username.data, email=form.email.data)
+        user = User(username=form.username.data, email=form.email.data, phone_number=form.phone_number.data)
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
@@ -67,7 +67,7 @@ def create_admin():
              flash("ERROR: The email address provided is not associated with an approved administrative domain. Admin creation aborted.")
              return render_template('auth/create_admin.html', title='Create New Staff', form=form, staff=staff)
 
-        user = User(username=form.username.data, email=form.email.data, role=form.role.data)
+        user = User(username=form.username.data, email=form.email.data, role=form.role.data, phone_number=form.phone_number.data)
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
@@ -76,6 +76,35 @@ def create_admin():
         return redirect(url_for('auth.create_admin'))
         
     return render_template('auth/create_admin.html', title='Create New Staff', form=form, staff=staff)
+
+@bp.route('/delete_staff/<int:user_id>', methods=['POST'])
+@login_required
+def delete_staff(user_id):
+    if not current_user.is_admin():
+        flash('Permission denied.')
+        return redirect(url_for('main.index'))
+        
+    user = User.query.get_or_404(user_id)
+    
+    # Prevent self-deletion
+    if user.id == current_user.id:
+        flash('You cannot delete your own account.')
+        return redirect(url_for('auth.create_admin'))
+
+    # Prevent deleting other admins
+    if user.role == 'admin':
+        flash('You cannot delete another administrator.')
+        return redirect(url_for('auth.create_admin'))
+        
+    # target is actually staff (safety check)
+    if user.role not in ['admin', 'librarian']:
+         flash('Cannot delete non-staff users from this panel.')
+         return redirect(url_for('auth.create_admin'))
+
+    db.session.delete(user)
+    db.session.commit()
+    flash(f'Staff member {user.username} has been deleted.')
+    return redirect(url_for('auth.create_admin'))
 
 from app.extensions import oauth
 
@@ -146,6 +175,7 @@ def edit_profile():
     form = EditProfileForm(current_user.username)
     if form.validate_on_submit():
         current_user.username = form.username.data
+        current_user.phone_number = form.phone_number.data
         
         
         if form.profile_photo.data:
@@ -162,6 +192,7 @@ def edit_profile():
         
     elif request.method == 'GET':
         form.username.data = current_user.username
+        form.phone_number.data = current_user.phone_number
         
     return render_template('auth/edit_profile.html', title='Edit Profile', form=form)
 

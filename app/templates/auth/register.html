@@ -34,6 +34,14 @@
                 </div>
 
                 <div class="mb-4">
+                    {{ form.phone_number.label(class="block text-sm font-medium mb-1", style="color: var(--text-color);") }}
+                    {{ form.phone_number(class="input-field appearance-none rounded-lg relative block w-full px-3 py-2 border placeholder-gray-500 focus:z-10 sm:text-sm", style="background-color: var(--bg-color); color: var(--text-color); border-color: var(--border-color);") }}
+                    {% for error in form.phone_number.errors %}
+                    <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-4">
                     {{ form.email.label(class="block text-sm font-medium mb-1", style="color: var(--text-color);") }}
                     {{ form.email(class="input-field appearance-none rounded-lg relative block w-full px-3 py-2 border placeholder-gray-500 focus:z-10 sm:text-sm", style="background-color: var(--bg-color); color: var(--text-color); border-color: var(--border-color);") }}
                     {% for error in form.email.errors %}

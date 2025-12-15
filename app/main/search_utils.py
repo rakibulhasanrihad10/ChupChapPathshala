@@ -8,13 +8,17 @@ def search_suggestions(query, limit=10):
     if not query:
         return []
         
-    # Case-insensitive LIKE query for SQLite
-    search_pattern = f"%{query}%"
+    # Case-insensitive LIKE query for SQLite - STARTS WITH only
+    search_pattern = f"{query}%"
     books = Book.query.filter(Book.title.ilike(search_pattern))\
-        .limit(limit)\
+        .limit(50)\
         .all()
-        
-    return [book.title for book in books]
+    
+    # Python sorting - Alphabetical
+    books.sort(key=lambda x: x.title.lower())
+    
+    # Return top 'limit' titles
+    return [book.title for book in books[:limit]]
 
 def full_text_search(query):
     """
@@ -26,12 +30,6 @@ def full_text_search(query):
 
     search_pattern = f"%{query}%"
     
-    # In SQLite, we can't easily do complex ranking in one query without FTS extension efficiently configuration.
-    # For this scale, we can fetch matching results and rank in Python or use ordering.
-    
-    # We will prioritize matches in Title over Author.
-    # And we could try to prioritize 'starts with' over 'contains' using case expressions,
-    # but simple filtering is usually enough for V1.
     
     books = Book.query.filter(
         or_(
@@ -39,12 +37,8 @@ def full_text_search(query):
             Book.author.ilike(search_pattern)
         )
     ).all()
-    
-    # Simple Python ranking:
-    # 1. Exact title match
-    # 2. Title starts with query
-    # 3. Title contains query
-    # 4. Author matches
+
+
     
     query_lower = query.lower()
     

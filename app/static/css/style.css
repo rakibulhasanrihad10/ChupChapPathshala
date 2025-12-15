@@ -146,60 +146,33 @@ body {
 
 .nav-pill {
     text-decoration: none;
-    background-color: var(--pill-bg);
-    /* Grey pill */
-    color: var(--pill-text);
-    padding: 0.5rem 1.5rem;
+    background-color: transparent;
+    color: var(--text-color);
+    padding: 0.5rem 1.0rem;
     border-radius: 9999px;
-    /* Pill shape */
     font-size: 0.9rem;
     font-weight: 500;
     transition: all 0.2s;
 }
 
 .nav-pill:hover {
-    background-color: var(--pill-hover);
+    background-color: var(--pill-bg);
 }
 
-/* Custom Colored Pills (Members, Inventory, Order) */
-.nav-pill-purple {
-    background-color: #F3E8FF;
-    color: #7E22CE;
-}
 
-.nav-pill-purple:hover {
-    background-color: #E9D5FF;
-}
 
-.nav-pill-green {
-    background-color: #ECFDF5;
-    color: #047857;
-}
 
-.nav-pill-green:hover {
-    background-color: #D1FAE5;
-}
 
-.nav-pill-blue {
-    background-color: #E0F2FE;
-    color: #0369A1;
-}
-
-.nav-pill-blue:hover {
-    background-color: #BAE6FD;
-}
-
-/* Navbar Dropdown Fallback */
 .dropdown-container:hover .dropdown-menu {
     display: block !important;
 }
 
 .dropdown-menu {
-    background-color: rgba(150, 150, 150, 0.2);
-    backdrop-filter: blur(5px);
+    background-color: var(--nav-bg);
     border-radius: 0.5rem;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border: none;
+    padding: 0.5rem;
 }
 
 .dropdown-menu::before {
@@ -211,15 +184,19 @@ body {
     height: 15px;
 }
 
-/* Navbar Dropdown Items */
+
 .dropdown-item {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     padding: 0.5rem 1rem;
     font-size: 0.875rem;
     color: var(--text-color);
     text-decoration: none;
     transition: all 0.2s;
-    border-radius: 0.5rem;
+    border-radius: 9999px;
+    margin: 0.25rem;
+    white-space: nowrap;
 }
 
 .dropdown-item:hover {
@@ -594,12 +571,20 @@ body {
 }
 
 /* When suggestions are active */
+/* When suggestions are active */
 .search-form.has-suggestions {
-    background-color: #e5e7eb;
+    background-color: var(--pill-bg);
+    /* Was #e5e7eb */
     border-radius: 1.5rem 1.5rem 0 0;
     border-bottom-color: transparent;
-    border: #e5e7eb;
+    border-color: var(--pill-bg);
     z-index: 50;
+}
+
+[data-theme="dark"] .search-form.has-suggestions {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    border-bottom-color: transparent;
 }
 
 /* Suggestions dropdown adjustments when unified */
@@ -801,6 +786,34 @@ body {
     }
 }
 
+/* Search Autocomplete Theme Styles */
+.search-dropdown {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.search-suggestion-item {
+    color: var(--text-color) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    background-color: transparent;
+}
+
+.search-suggestion-item:hover,
+.search-suggestion-item.active {
+    background-color: var(--bg-color) !important;
+    /* or var(--pill-hover) */
+}
+
+/* Fix icon color in dark mode */
+.search-suggestion-item .suggestion-icon {
+    color: var(--text-muted);
+}
+
+.search-suggestion-item:hover .suggestion-icon,
+.search-suggestion-item.active .suggestion-icon {
+    color: var(--primary-color);
+}
+
 /* No Cover Placeholder */
 .no-cover-placeholder {
     width: 100%;
@@ -865,4 +878,9 @@ body {
     font-size: 0.7rem;
     text-transform: uppercase;
     font-weight: 700;
+}
+
+/* Utility to ensure strikethrough works if Tailwind is missing it */
+.line-through {
+    text-decoration: line-through;
 }

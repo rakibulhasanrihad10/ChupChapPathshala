@@ -52,6 +52,7 @@
                     class="status-badge">{{
                     book.item_type|capitalize }}</span></p>
             <p><strong>Category:</strong> <span style="color: #6B7280;">{{ book.category }}</span></p>
+            <p>
                 <strong>Price:</strong>
                 {% if book.discount_percentage and book.discount_percentage > 0 %}
                 <span class="text-red-500 line-through mr-1">TK {{ "%.2f"|format(book.price) }}</span>
@@ -59,6 +60,7 @@
                 {% else %}
                 TK {{ "%.2f"|format(book.price) }}
                 {% endif %}
+            </p>
             
             <!-- Removed Creating Stock since this is Popular Books view, replaced with Sold count up top -->
 

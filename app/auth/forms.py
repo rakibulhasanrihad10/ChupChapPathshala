@@ -6,6 +6,7 @@ from config import Config
 
 class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
+    phone_number = StringField('Phone Number', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
     confirm_password = PasswordField('Repeat Password', validators=[DataRequired(), EqualTo('password')])
@@ -29,6 +30,7 @@ class LoginForm(FlaskForm):
 class CreateAdminForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
+    phone_number = StringField('Phone Number', validators=[DataRequired()])
     password = PasswordField('Temporary Password', validators=[DataRequired()])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
     name = StringField('Full Name', validators=[DataRequired()])
@@ -53,6 +55,7 @@ from flask_wtf.file import FileField, FileAllowed
 
 class EditProfileForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
+    phone_number = StringField('Phone Number', validators=[DataRequired()])
     about_me = StringField('About Me')
     profile_photo = FileField('Profile Picture', validators=[FileAllowed(['jpg', 'png', 'jpeg'], 'Images only!')])
     cover_photo = FileField('Cover Photo', validators=[FileAllowed(['jpg', 'png', 'jpeg'], 'Images only!')])

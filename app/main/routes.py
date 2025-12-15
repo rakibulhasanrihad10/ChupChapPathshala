@@ -38,6 +38,10 @@ def admin_offers():
         if not book_ids:
             flash('No books selected.', 'warning')
             return redirect(url_for('main.admin_offers'))
+        try:
+            book_ids = [int(bid) for bid in book_ids]
+        except ValueError:
+             pass 
 
         books = Book.query.filter(Book.id.in_(book_ids)).all()
         count = 0
@@ -59,7 +63,8 @@ def admin_offers():
     query = Book.query
     search_query = request.args.get('q')
     if search_query:
-        query = query.filter(Book.title.ilike(f'%{search_query}%'))
+        # prefix match 
+        query = query.filter(Book.title.ilike(f'{search_query}%'))
         
     page = request.args.get('page', 1, type=int)
     books = query.order_by(Book.title).paginate(page=page, per_page=10, error_out=False)
@@ -74,7 +79,7 @@ def admin_loans():
     for loan in loans:
         if loan.status == 'active':
             delta = loan.due_date - datetime.utcnow()
-            # Add custom attribute to the object instance for the template
+            # custom attribute to the object instance 
             loan.days_remaining = delta.days
     return render_template('admin_loans.html', loans=loans)
 

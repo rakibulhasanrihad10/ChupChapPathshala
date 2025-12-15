@@ -13,3 +13,5 @@ def search():
     query = request.args.get('q', '')
     results = full_text_search(query)
     return render_template('search_results.html', query=query, results=results)
+
+# Force reload

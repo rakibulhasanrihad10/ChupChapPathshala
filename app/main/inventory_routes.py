@@ -20,8 +20,14 @@ def inventory():
         books = PaginateProxy([Book.query.get(target)])
         return render_template('inventory.html', books=books, single=True)
     page = request.args.get('page', 1, type=int)
-    books = Book.query.paginate(page=page, per_page=10, error_out=False)
-    return render_template('inventory.html', books=books, single=False)
+    search_query = request.args.get('q')
+    
+    query = Book.query
+    if search_query:
+        query = query.filter(Book.title.ilike(f'{search_query}%'))
+        
+    books = query.paginate(page=page, per_page=10, error_out=False)
+    return render_template('inventory.html', books=books, single=False, search_query=search_query)
 
 @bp.route('/inventory/add', methods=['GET', 'POST'])
 @login_required
