@@ -281,11 +281,24 @@ def catalog():
 @bp.route('/profile')
 @login_required
 def profile():
-    loans = Loan.query.filter_by(user_id=current_user.id).order_by(Loan.checkout_date.desc()).all()
-    # Calculate days remaining/overdue for each loan
-    for loan in loans:
-        if loan.status == 'active':
-            delta = loan.due_date - datetime.utcnow()
-            loan.days_remaining = delta.days
-            
-    return render_template('profile.html', loans=loans)
+    # My Profile
+    return redirect(url_for('main.user_profile', username=current_user.username))
+
+@bp.route('/profile/<username>')
+def user_profile(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    
+    # Logic:
+    # If Owner: Show Loans and Posts
+    # If Public: Show Post Only (Loans Hidden in Template)
+    
+    loans = None
+    if current_user.is_authenticated and current_user.id == user.id:
+        loans = Loan.query.filter_by(user_id=user.id).order_by(Loan.checkout_date.desc()).all()
+        # Calculate days remaining/overdue for each loan
+        for loan in loans:
+            if loan.status == 'active':
+                delta = loan.due_date - datetime.utcnow()
+                loan.days_remaining = delta.days
+    
+    return render_template('profile.html', user=user, loans=loans)

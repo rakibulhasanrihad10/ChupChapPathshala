@@ -6,41 +6,53 @@
 <!-- Profile Header Section -->
 <div class="profile-header">
     <div class="profile-cover-container">
-        <img src="{{ current_user.cover_photo or 'https://placehold.co/1200x400/1e3a8a/FFF?text=Cover+Photo' }}" 
-             alt="Cover Photo" class="profile-cover">
+        <img src="{{ current_user.cover_photo or 'https://placehold.co/1200x400/1e3a8a/FFF?text=Cover+Photo' }}"
+            alt="Cover Photo" class="profile-cover">
     </div>
 
     <!-- Avatar Container -->
     <div class="profile-avatar-container">
-        <img src="{{ current_user.profile_photo or 'https://placehold.co/200x200/4F46E5/FFF?text=Me' }}" 
-             alt="{{ current_user.username }}" class="profile-avatar">
+        <img src="{{ user.profile_photo or 'https://placehold.co/200x200/4F46E5/FFF?text=Me' }}"
+            alt="{{ user.username }}" class="profile-avatar">
     </div>
 
     <!-- Info Section -->
     <div class="profile-info-section">
         <div>
-            <h1 class="profile-name">{{ current_user.username }}</h1>
+            <h1 class="profile-name">{{ user.username }}</h1>
             <p class="profile-role">
-                {{ current_user.role|capitalize }} 
-                {% if current_user.membership_type == 'premium' %}
-                <span class="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                {{ user.role|capitalize }}
+                {% if user.membership_type == 'premium' %}
+                <span
+                    class="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
                     Premium Member
                 </span>
                 {% endif %}
             </p>
         </div>
-        
+
         <div class="flex gap-3">
-             {% if current_user.is_admin() %}
-             <a href="{{ url_for('auth.create_admin') }}" class="btn-action btn-borrow" style="width: auto;">
-                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                 Add Admin
-             </a>
-             {% endif %}
-             <a href="{{ url_for('auth.edit_profile') }}" class="btn-action" style="background: var(--pill-bg); color: var(--pill-text); width: auto;">
-                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+            {% if current_user.is_authenticated and current_user.is_admin() %}
+            <a href="{{ url_for('auth.create_admin') }}" class="btn-action btn-borrow" style="width: auto;">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Add Admin
+            </a>
+            {% endif %}
+
+            {% if current_user.is_authenticated and current_user.id == user.id %}
+            <a href="{{ url_for('auth.edit_profile') }}" class="btn-action"
+                style="background: var(--pill-bg); color: var(--pill-text); width: auto;">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
+                    </path>
+                </svg>
                 Edit Profile
-             </a>
+            </a>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -51,67 +63,102 @@
     <div class="md:col-span-1">
         <div class="p-6 rounded-xl shadow-sm space-y-4" style="background-color: var(--card-bg);">
             <h3 class="text-xl font-bold" style="color: var(--text-color);">About</h3>
-            
+
             <div class="space-y-3" style="color: var(--text-muted);">
                 <div class="flex items-center gap-3">
-                    <svg class="w-5 h-5" style="color: var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                    <span>{{ current_user.email }}</span>
+                    <svg class="w-5 h-5" style="color: var(--text-muted);" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                        </path>
+                    </svg>
+                    <span>{{ user.email if current_user.is_authenticated and current_user.id == user.id else
+                        '*******@***.com' }}</span>
                 </div>
-                
+
                 <div class="flex items-center gap-3">
-                    <svg class="w-5 h-5" style="color: var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.2-2.85.577-4.147"></path></svg>
-                    <span>Joined {{ current_user.membership_expiry.strftime('%B %Y') if current_user.membership_expiry else 'Recently' }}</span>
+                    <svg class="w-5 h-5" style="color: var(--text-muted);" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.2-2.85.577-4.147">
+                        </path>
+                    </svg>
+                    <span>Joined {{ user.membership_expiry.strftime('%B %Y') if user.membership_expiry else 'Recently'
+                        }}</span>
                 </div>
-                
+
                 <div class="flex items-center gap-3">
-                     <svg class="w-5 h-5" style="color: var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                     <span>Member Status: {{ current_user.membership_type|capitalize }}</span>
+                    <svg class="w-5 h-5" style="color: var(--text-muted);" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                        </path>
+                    </svg>
+                    <span>Member Status: {{ user.membership_type|capitalize }}</span>
                 </div>
             </div>
-            
+
+            {% if current_user.is_authenticated and current_user.id == user.id %}
             <div class="pt-4 border-t" style="border-color: var(--border-color);">
-                <a href="{{ url_for('auth.logout') }}" class="w-full btn-action" style="background-color: #FEE2E2; color: #991B1B; justify-content: center;">
+                <a href="{{ url_for('auth.logout') }}" class="w-full btn-action"
+                    style="background-color: #FEE2E2; color: #991B1B; justify-content: center;">
                     Logout
                 </a>
             </div>
+            {% endif %}
         </div>
     </div>
 
-    <!-- Right Content: Could be Lending History, Favorites, etc in future -->
+    <!-- Right Content: Borrowing History (Private) & Forum Posts (Public) -->
     <div class="md:col-span-2 space-y-6">
+
+        <!-- Borrowing History (Private) -->
+        {% if current_user.is_authenticated and current_user.id == user.id %}
         {% if loans %}
         <div class="p-6 rounded-xl shadow-sm" style="background-color: var(--card-bg);">
             <h3 class="text-xl font-bold mb-6" style="color: var(--text-color);">Borrowing History</h3>
-            
+
             <div class="space-y-4">
                 {% for loan in loans %}
-                <div class="flex items-start gap-4 p-4 rounded-lg border" style="border-color: var(--border-color); background-color: var(--bg-color);">
+                <div class="flex items-start gap-4 p-4 rounded-lg border"
+                    style="border-color: var(--border-color); background-color: var(--bg-color);">
                     <!-- Book Thumb -->
-                    <div class="flex-shrink-0 w-16 h-24 overflow-hidden rounded" style="background-color: var(--border-color);">
-                        <img src="{{ loan.book.image_url or 'https://placehold.co/100x150?text=No+Cover' }}" alt="{{ loan.book.title }}" class="w-full h-full object-cover book-thumb-img">
+                    <div class="flex-shrink-0 w-16 h-24 overflow-hidden rounded"
+                        style="background-color: var(--border-color);">
+                        <img src="{{ loan.book.image_url or 'https://placehold.co/100x150?text=No+Cover' }}"
+                            alt="{{ loan.book.title }}" class="w-full h-full object-cover book-thumb-img">
                     </div>
-                    
+
                     <div class="flex-1 min-w-0">
                         <div class="flex justify-between items-center">
-                             <div>
-                                <h4 class="text-lg font-bold truncate" style="color: var(--text-color);">{{ loan.book.title }}</h4>
-                                <p class="text-sm font-medium" style="color: var(--text-muted);">{{ loan.book.author }}</p>
-                             </div>
-                             
-                             <!-- Status Badge -->
-                             {% if loan.status == 'returned' %}
-                                <span class="px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-md bg-green-100 text-green-800 border border-green-200">Returned</span>
-                             {% elif loan.days_remaining < 0 %}
-                                <span class="px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-md bg-red-100 text-red-800 border border-red-200">Overdue</span>
-                             {% else %}
-                                <span class="px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-md bg-blue-100 text-blue-800 border border-blue-200">Active</span>
-                             {% endif %}
+                            <div>
+                                <h4 class="text-lg font-bold truncate" style="color: var(--text-color);">{{
+                                    loan.book.title }}</h4>
+                                <p class="text-sm font-medium" style="color: var(--text-muted);">{{ loan.book.author }}
+                                </p>
+                            </div>
+
+                            <!-- Status Badge -->
+                            {% if loan.status == 'returned' %}
+                            <span
+                                class="px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-md bg-green-100 text-green-800 border border-green-200">Returned</span>
+                            {% elif loan.days_remaining < 0 %} <span
+                                class="px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-md bg-red-100 text-red-800 border border-red-200">
+                                Overdue</span>
+                                {% else %}
+                                <span
+                                    class="px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-md bg-blue-100 text-blue-800 border border-blue-200">Active</span>
+                                {% endif %}
                         </div>
-                        
+
                         <div class="mt-4 grid grid-cols-2 gap-4 text-sm">
                             <div>
-                                <p class="text-xs uppercase tracking-wide" style="color: var(--text-muted);">Borrowed</p>
-                                <p class="font-medium" style="color: var(--text-color);">{{ loan.checkout_date.strftime('%b %d, %Y') }}</p>
+                                <p class="text-xs uppercase tracking-wide" style="color: var(--text-muted);">Borrowed
+                                </p>
+                                <p class="font-medium" style="color: var(--text-color);">{{
+                                    loan.checkout_date.strftime('%b %d, %Y') }}</p>
                             </div>
                             <div>
                                 <p class="text-xs uppercase tracking-wide" style="color: var(--text-muted);">
@@ -119,15 +166,16 @@
                                 </p>
                                 <p class="font-medium" style="color: var(--text-color);">
                                     {% if loan.status == 'returned' %}
-                                        {{ loan.return_date.strftime('%b %d, %Y') if loan.return_date else '-' }}
+                                    {{ loan.return_date.strftime('%b %d, %Y') if loan.return_date else '-' }}
                                     {% else %}
-                                        {{ loan.due_date.strftime('%b %d, %Y') }}
-                                        {% if loan.status == 'active' %}
-                                            <span class="ml-1 text-xs font-bold {{ 'text-red-500' if loan.days_remaining < 3 else 'text-green-500' }}">
-                                                ({{ 'Overdue' if loan.days_remaining < 0 else loan.days_remaining ~ ' days left' }})
-                                            </span>
-                                        {% endif %}
-                                    {% endif %}
+                                    {{ loan.due_date.strftime('%b %d, %Y') }}
+                                    {% if loan.status == 'active' %}
+                                    <span
+                                        class="ml-1 text-xs font-bold {{ 'text-red-500' if loan.days_remaining < 3 else 'text-green-500' }}">
+                                        ({{ 'Overdue' if loan.days_remaining < 0 else loan.days_remaining ~ ' days left'
+                                            }}) </span>
+                                            {% endif %}
+                                            {% endif %}
                                 </p>
                             </div>
                         </div>
@@ -137,18 +185,53 @@
             </div>
         </div>
         {% else %}
-        <!-- Placeholder for Posts/History -->
+        <!-- Placeholder for Loans -->
         <div class="p-6 rounded-xl shadow-sm text-center py-12" style="background-color: var(--card-bg);">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4" style="background-color: var(--bg-color);">
-                <svg class="w-8 h-8" style="color: var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
+                style="background-color: var(--bg-color);">
+                <svg class="w-8 h-8" style="color: var(--text-muted);" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
+                    </path>
+                </svg>
             </div>
             <h3 class="text-lg font-medium" style="color: var(--text-color);">No borrowing history yet</h3>
             <p class="mt-2" style="color: var(--text-muted);">Books you borrow or buy will appear here.</p>
-            <a href="{{ url_for('main.catalog') }}" class="mt-4 inline-block font-medium hover:text-indigo-500" style="color: var(--primary-color);">
+            <a href="{{ url_for('main.catalog') }}" class="mt-4 inline-block font-medium hover:text-indigo-500"
+                style="color: var(--primary-color);">
                 Browse Catalog &rarr;
             </a>
         </div>
         {% endif %}
+        {% endif %}
+
+        <!-- Forum Post History (Public) -->
+        <div class="p-6 rounded-xl shadow-sm" style="background-color: var(--card-bg);">
+            <h3 class="text-xl font-bold mb-6" style="color: var(--text-color);">Forum Activity</h3>
+            {% if user.forum_posts %}
+            {% for post in user.forum_posts %}
+            <div class="card mb-3 bg-slate-900 border-none shadow-none" style="background-color: var(--bg-color);">
+                <div class="card-body p-4 rounded-lg border" style="border-color: var(--border-color);">
+                    <div class="flex justify-between items-center mb-2">
+                        <a href="{{ url_for('forum.view_post', post_id=post.id) }}"
+                            class="text-lg font-bold hover:text-blue-500 transition-colors"
+                            style="color: var(--text-color);">
+                            {{ post.title }}
+                        </a>
+                        <span class="text-xs text-muted">{{ post.created_at.strftime('%Y-%m-%d') }}</span>
+                    </div>
+                    <span
+                        class="inline-block px-2 py-1 tx-xs rounded bg-blue-100 text-blue-800 text-xs font-semibold uppercase">{{
+                        post.post_type }}</span>
+                    <p class="mt-2 text-sm line-clamp-2" style="color: var(--text-muted);">{{ post.content }}</p>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="text-center py-4" style="color: var(--text-muted);">No forum posts yet.</p>
+            {% endif %}
+        </div>
+
     </div>
-</div>
-{% endblock %}
+    {% endblock %}

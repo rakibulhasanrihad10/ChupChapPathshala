@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Forum - Book Trade{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Community Forum</h1>
+        <a href="{{ url_for('forum.create_post') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Create Post
+        </a>
+    </div>
+
+    {% for post in posts %}
+    <!-- Adaptive Card -->
+    <div class="rounded-xl p-6 mb-6 shadow-xl border transition-colors feature-card"
+        style="background-color: var(--card-bg); border-color: var(--border-color); box-shadow: var(--shadow);">
+
+        <!-- Header: User Pill & Date -->
+        <div class="flex items-center gap-3 mb-4">
+            <div class="inline-flex items-center px-3 py-1 rounded-full border"
+                style="background-color: var(--pill-bg); border-color: var(--border-color);">
+                <span class="text-xs font-medium" style="color: var(--text-muted);">
+                    {{ post.post_type|title }} by
+                    <a href="{{ url_for('main.user_profile', username=post.user.username) }}" class="hover:underline"
+                        style="color: var(--primary-color);">
+                        {{ post.user.username }}
+                    </a>
+                </span>
+            </div>
+            <span class="text-xs font-medium" style="color: var(--text-muted);">
+                {{ post.created_at.strftime('%Y-%m-%d') }}
+            </span>
+        </div>
+
+        <!-- Title -->
+        <h2 class="text-2xl font-bold mb-3 tracking-tight">
+            <a href="{{ url_for('forum.view_post', post_id=post.id) }}" class="transition-colors hover:opacity-80"
+                style="color: var(--text-color);">
+                {{ post.title }}
+            </a>
+        </h2>
+
+        <!-- Body -->
+        <p class="text-base leading-relaxed mb-6 line-clamp-3 font-normal" style="color: var(--text-muted);">
+            {{ post.content }}
+        </p>
+
+        <!-- Footer: Read More -->
+        <div class="flex items-center">
+            <a href="{{ url_for('forum.view_post', post_id=post.id) }}"
+                class="inline-flex items-center text-sm font-semibold transition-colors group"
+                style="color: var(--primary-color);">
+                Read more
+                <svg class="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none"
+                    stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3">
+                    </path>
+                </svg>
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-12 rounded-xl border"
+        style="background-color: var(--card-bg); border-color: var(--border-color);">
+        <div class="text-lg" style="color: var(--text-muted);">No posts found. Be the first to start a discussion!</div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

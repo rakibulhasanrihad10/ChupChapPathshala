@@ -214,3 +214,30 @@ class Category(db.Model):
 
     def __repr__(self):
         return f'<Category {self.name}>'
+
+class ForumPost(db.Model):
+    __tablename__ = 'forum_posts'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user = db.relationship('User', backref=db.backref('forum_posts', lazy=True))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    post_type = db.Column(db.String(20), default='trade') # trade, sale, discussion
+    status = db.Column(db.String(20), default='open') # open, closed
+
+    def __repr__(self):
+        return f'<ForumPost {self.title}>'
+
+class ForumComment(db.Model):
+    __tablename__ = 'forum_comments'
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user = db.relationship('User', backref=db.backref('forum_comments', lazy=True))
+    post_id = db.Column(db.Integer, db.ForeignKey('forum_posts.id'), nullable=False)
+    post = db.relationship('ForumPost', backref=db.backref('comments', lazy=True, cascade="all, delete-orphan"))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<ForumComment {self.content[:20]}>'

@@ -55,11 +55,16 @@
 
             <div style="position: relative; z-index: 2;">
                 <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">{{ campaign.title }}</h1>
+                    style="font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                    {{ campaign.title }}</h1>
                 {% if campaign.description %}
-                <p style="font-size: 1.25rem; margin-bottom: 1.5rem; max-width: 600px; margin-left: auto; margin-right: auto; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">{{ campaign.description }}</p>
+                <p
+                    style="font-size: 1.25rem; margin-bottom: 1.5rem; max-width: 600px; margin-left: auto; margin-right: auto; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">
+                    {{ campaign.description }}</p>
                 {% endif %}
-                
-                <a href="{{ campaign.button_link }}" class="btn btn-primary" style="font-size: 1.1rem; padding: 0.75rem 2rem;">{{ campaign.button_text }}</a>
+
+                <a href="{{ campaign.button_link }}" class="btn btn-primary"
+                    style="font-size: 1.1rem; padding: 0.75rem 2rem;">{{ campaign.button_text }}</a>
             </div>
         </div>
         {% endfor %}
@@ -69,32 +74,37 @@
 
 <!-- Categories Section -->
 <div style="margin-bottom: 3rem;">
-    <h2 style="font-size: 1.5rem; color: var(--text-color); font-weight: 700; margin-bottom: 1.5rem;">Shop by Category</h2>
+    <h2 style="font-size: 1.5rem; color: var(--text-color); font-weight: 700; margin-bottom: 1.5rem;">Shop by Category
+    </h2>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
         <!-- Bengali -->
         <a href="{{ url_for('main.catalog', category='Bengali') }}" style="text-decoration: none; color: inherit;">
-            <div style="background: linear-gradient(135deg, #75ced1, #44e9ef); padding: 0.75rem; border-radius: 0.75rem; color: white; text-align: center; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+            <div style="background: linear-gradient(135deg, #75ced1, #44e9ef); padding: 0.75rem; border-radius: 0.75rem; color: white; text-align: center; transition: transform 0.2s;"
+                onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
                 <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700;">Bengali</h3>
                 <p style="margin: 0.5rem 0 0; opacity: 0.9; font-size: 0.9rem;">Literature & Classics</p>
             </div>
         </a>
         <!-- Islamic -->
         <a href="{{ url_for('main.catalog', category='Islamic') }}" style="text-decoration: none; color: inherit;">
-            <div style="background: linear-gradient(135deg, #2d6fd3, #8c82e4); padding: 0.75rem; border-radius: 0.75rem; color: white; text-align: center; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+            <div style="background: linear-gradient(135deg, #2d6fd3, #8c82e4); padding: 0.75rem; border-radius: 0.75rem; color: white; text-align: center; transition: transform 0.2s;"
+                onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
                 <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700;">Islamic</h3>
                 <p style="margin: 0.5rem 0 0; opacity: 0.9; font-size: 0.9rem;">Religion & History</p>
             </div>
         </a>
-         <!-- Children -->
+        <!-- Children -->
         <a href="{{ url_for('main.catalog', category='Children') }}" style="text-decoration: none; color: inherit;">
-            <div style="background: linear-gradient(135deg, #60A5FA, #3B82F6); padding: 0.75rem; border-radius: 0.75rem; color: white; text-align: center; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+            <div style="background: linear-gradient(135deg, #60A5FA, #3B82F6); padding: 0.75rem; border-radius: 0.75rem; color: white; text-align: center; transition: transform 0.2s;"
+                onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
                 <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700;">Children</h3>
                 <p style="margin: 0.5rem 0 0; opacity: 0.9; font-size: 0.9rem;">Stories & Fun</p>
             </div>
         </a>
-         <!-- Academic -->
+        <!-- Academic -->
         <a href="{{ url_for('main.catalog', category='Academic') }}" style="text-decoration: none; color: inherit;">
-            <div style="background: linear-gradient(135deg, #08e0d2, #12e4af); padding: 0.75rem; border-radius: 0.75rem; color: white; text-align: center; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+            <div style="background: linear-gradient(135deg, #08e0d2, #12e4af); padding: 0.75rem; border-radius: 0.75rem; color: white; text-align: center; transition: transform 0.2s;"
+                onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
                 <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700;">Academic</h3>
                 <p style="margin: 0.5rem 0 0; opacity: 0.9; font-size: 0.9rem;">School & Learning</p>
             </div>
@@ -155,54 +165,54 @@
         }
     });
 
-function uploadCover(input, bookId) {
-    if (input.files && input.files[0]) {
-        const file = input.files[0];
-        
-        // Client-side validation: Check file size (16MB limit)
-        if (file.size > 16 * 1024 * 1024) {
-            alert('File is too large. Maximum size is 16MB.');
-            return;
-        }
+    function uploadCover(input, bookId) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
 
-        const formData = new FormData();
-        formData.append('file', file);
-        
-        // Show Spinner / Hide overlay
-        const spinner = document.getElementById(`spinner-${bookId}`);
-        
-        if(spinner) spinner.style.display = 'block';
-        
-        fetch(`/upload_cover/${bookId}`, {
-            method: 'POST',
-            body: formData
-        })
-        .then(async response => {
-            const contentType = response.headers.get("content-type");
-            if (contentType && contentType.indexOf("application/json") !== -1) {
-                return response.json();
-            } else {
-                const text = await response.text();
-                throw new Error(`Server returned non-JSON response: ${response.status} ${response.statusText}. Response: ${text.substring(0, 100)}...`);
+            // Client-side validation: Check file size (16MB limit)
+            if (file.size > 16 * 1024 * 1024) {
+                alert('File is too large. Maximum size is 16MB.');
+                return;
             }
-        })
-        .then(data => {
-            if (data.success) {
-                const img = document.getElementById(`img-${bookId}`);
-                if(img) img.src = data.image_url + '?t=' + new Date().getTime();
-            } else {
-                alert('Upload failed: ' + (data.error || 'Unknown error'));
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Upload failed. Check console for details.\n' + error.message);
-        })
-        .finally(() => {
-            if(spinner) spinner.style.display = 'none';
-            input.value = '';
-        });
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Show Spinner / Hide overlay
+            const spinner = document.getElementById(`spinner-${bookId}`);
+
+            if (spinner) spinner.style.display = 'block';
+
+            fetch(`/upload_cover/${bookId}`, {
+                method: 'POST',
+                body: formData
+            })
+                .then(async response => {
+                    const contentType = response.headers.get("content-type");
+                    if (contentType && contentType.indexOf("application/json") !== -1) {
+                        return response.json();
+                    } else {
+                        const text = await response.text();
+                        throw new Error(`Server returned non-JSON response: ${response.status} ${response.statusText}. Response: ${text.substring(0, 100)}...`);
+                    }
+                })
+                .then(data => {
+                    if (data.success) {
+                        const img = document.getElementById(`img-${bookId}`);
+                        if (img) img.src = data.image_url + '?t=' + new Date().getTime();
+                    } else {
+                        alert('Upload failed: ' + (data.error || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Upload failed. Check console for details.\n' + error.message);
+                })
+                .finally(() => {
+                    if (spinner) spinner.style.display = 'none';
+                    input.value = '';
+                });
+        }
     }
-}
 </script>
 {% endblock %}

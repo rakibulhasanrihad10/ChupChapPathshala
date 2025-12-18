@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Forum{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto my-8">
+    <!-- Breadcrumb -->
+    <nav class="mb-8 flex items-center text-sm font-medium" style="color: var(--text-muted);">
+        <a href="{{ url_for('forum.index') }}" class="hover:underline transition-colors">Forum</a>
+        <svg class="h-5 w-5 mx-2" fill="currentColor" viewBox="0 0 20 20" style="color: var(--text-muted);">
+            <path fill-rule="evenodd"
+                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                clip-rule="evenodd" />
+        </svg>
+        <span style="color: var(--text-color);">{{ title }}</span>
+    </nav>
+
+    <!-- Main Card -->
+    <div class="rounded-2xl shadow-xl overflow-hidden border"
+        style="background-color: var(--card-bg); border-color: var(--border-color); box-shadow: var(--shadow);">
+        <div class="p-8">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold tracking-tight mb-2" style="color: var(--text-color);">{{ title }}</h1>
+                <p style="color: var(--text-muted);">Share your thoughts, trade books, or start a discussion.</p>
+            </div>
+
+            <form method="POST" class="space-y-6">
+                <!-- Title Input -->
+                <div>
+                    <label for="title" class="block text-sm font-medium mb-2" style="color: var(--text-color);">Post
+                        Title</label>
+                    <input type="text" id="title" name="title" value="{{ post.title if post else '' }}"
+                        placeholder="e.g., Looking to trade 'The Alchemist' for 'Sapiens'"
+                        class="w-full rounded-lg px-4 py-3 placeholder:opacity-60 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium"
+                        style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color);"
+                        required>
+                </div>
+
+                <!-- Type Select -->
+                <div>
+                    <label for="post_type" class="block text-sm font-medium mb-2"
+                        style="color: var(--text-color);">Category</label>
+                    <div class="relative">
+                        <select id="post_type" name="post_type"
+                            class="w-full appearance-none rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium cursor-pointer"
+                            style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color);">
+                            <option value="trade" {% if post and post.post_type=='trade' %}selected{% endif %}>Trade
+                                Request</option>
+                            <option value="sale" {% if post and post.post_type=='sale' %}selected{% endif %}>For Sale
+                            </option>
+                            <option value="discussion" {% if post and post.post_type=='discussion' %}selected{% endif
+                                %}>General Discussion</option>
+                        </select>
+                        <!-- Custom Dropdown Icon -->
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4"
+                            style="color: var(--text-muted);">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content Textarea -->
+                <div>
+                    <label for="content" class="block text-sm font-medium mb-2"
+                        style="color: var(--text-color);">Description</label>
+                    <textarea id="content" name="content" rows="8"
+                        placeholder="Describe what you're looking for or trading..."
+                        class="w-full rounded-lg px-4 py-3 placeholder:opacity-60 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium resize-y"
+                        style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color);"
+                        required>{{ post.content if post else '' }}</textarea>
+                </div>
+
+                <!-- Actions -->
+                <div class="pt-4 flex items-center justify-end gap-4">
+                    <a href="{{ url_for('forum.index') }}"
+                        class="px-6 py-3 rounded-lg hover:opacity-80 transition-all font-medium"
+                        style="color: var(--text-muted);">
+                        Cancel
+                    </a>
+                    <button type="submit"
+                        class="px-8 py-3 rounded-lg font-bold shadow-lg transform hover:-translate-y-0.5 transition-all duration-200"
+                        style="background-color: var(--primary-color); color: #ffffff; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
+                        {{ 'Update Post' if post else 'Publish Post' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

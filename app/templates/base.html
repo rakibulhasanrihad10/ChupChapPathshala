@@ -10,10 +10,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+
     <!-- Theme prevention flash script -->
     <script>
-        (function() {
+        (function () {
             const savedTheme = localStorage.getItem('theme');
             const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
@@ -30,7 +30,7 @@
             <a href="{{ url_for('main.index') }}" class="nav-brand">
                 <img src="{{ url_for('static', filename='images/cp logo.png') }}" alt="Logo" class="brand-icon"
                     style="width: 60px; height: 60px; object-fit: contain;">
-                
+
             </a>
         </div>
 
@@ -64,6 +64,7 @@
             <a href="{{ url_for('main.catalog') }}" class="nav-pill">All Books</a>
             <a href="{{ url_for('main.catalog', filter='offers') }}" class="nav-pill">🎁Offer</a>
             <a href="{{ url_for('main.ebook_list') }}" class="nav-pill">E-Book</a>
+            <a href="{{ url_for('forum.index') }}" class="nav-pill">Forum</a>
             {% if current_user.is_authenticated and current_user.is_admin() %}
             <a href="{{ url_for('main.members') }}" class="nav-pill">Members</a>
             <a href="{{ url_for('main.admin_loans') }}" class="nav-pill">Borrowed Books</a>
@@ -82,8 +83,7 @@
                     class="absolute left-0 top-full mt-2 w-48 hidden group-hover:block dropdown-menu z-50">
                     <div>
                         {% if current_user.is_staff() %}
-                        <a href="{{ url_for('main.supplier_shortlist') }}"
-                            class="dropdown-item">Shortlist
+                        <a href="{{ url_for('main.supplier_shortlist') }}" class="dropdown-item">Shortlist
                         </a>
                         {% endif %}
 
@@ -95,8 +95,7 @@
                         {% endif %}
 
                         {% if current_user.is_staff() %}
-                        <a href="{{ url_for('main.supplier_receive_list') }}"
-                            class="dropdown-item">Received</a>
+                        <a href="{{ url_for('main.supplier_receive_list') }}" class="dropdown-item">Received</a>
                         {% endif %}
                     </div>
                 </div>
@@ -107,9 +106,12 @@
         <!-- User Actions -->
         <div class="user-actions">
             <!-- Dark Mode Toggle -->
-            <button id="theme-toggle" class="nav-pill" style="padding: 0.5rem; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: none; cursor: pointer; color: inherit;">
+            <button id="theme-toggle" class="nav-pill"
+                style="padding: 0.5rem; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: none; cursor: pointer; color: inherit;">
                 <!-- Sun Icon -->
-                <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: var(--sun-display, block);">
+                <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    style="display: var(--sun-display, block);">
                     <circle cx="12" cy="12" r="5"></circle>
                     <line x1="12" y1="1" x2="12" y2="3"></line>
                     <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -121,7 +123,9 @@
                     <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
                 </svg>
                 <!-- Moon Icon -->
-                <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: var(--moon-display, none);">
+                <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    style="display: var(--moon-display, none);">
                     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
                 </svg>
             </button>
@@ -135,13 +139,15 @@
                     </svg>
                     <span class="hidden sm:inline">{{ current_user.username }}</span>
                 </a>
-                <div class="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 w-48 hidden group-hover:block dropdown-menu z-50">
+                <div
+                    class="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 w-48 hidden group-hover:block dropdown-menu z-50">
                     <div>
                         <a href="{{ url_for('main.profile') }}" class="dropdown-item">
                             <i class="fas fa-user-circle mr-2 opacity-70"></i>My Profile
                         </a>
                         <div class="border-t border-gray-700 opacity-20 my-1"></div>
-                        <a href="{{ url_for('auth.logout') }}" class="dropdown-item text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
+                        <a href="{{ url_for('auth.logout') }}"
+                            class="dropdown-item text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
                             <i class="fas fa-sign-out-alt mr-2"></i>Logout
                         </a>
                     </div>
@@ -166,7 +172,7 @@
         </div>
     </nav>
     <script>
-        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+        document.getElementById('mobile-menu-btn').addEventListener('click', function () {
             document.querySelector('.navbar').classList.toggle('mobile-menu-open');
         });
     </script>
@@ -344,7 +350,7 @@
         function updateActiveSuggestion(items) {
             // Remove active class from all
             for (let i = 0; i < items.length; i++) {
-                items[i].classList.remove('active'); 
+                items[i].classList.remove('active');
             }
             // Add active class to current
             if (currentFocus > -1 && items[currentFocus]) {
@@ -416,7 +422,7 @@
                                 }
                             }
 
-                    
+
 
                         } else {
                             // Fallback
@@ -458,7 +464,7 @@
         themeToggle.addEventListener('click', () => {
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
             const newTheme = isDark ? 'light' : 'dark';
-            
+
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
             updateIcons(!isDark);
