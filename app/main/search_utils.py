@@ -68,14 +68,15 @@ class ExtBook:
     title: str
     author: str
     cover: str
-    
+    lang: [str]
 URL = "https://openlibrary.org/search.json"
 def ext_search(query):
     "searches book externally. returns books, error"
     response = requests.get(URL,
                             params={
                                 "q": query,
-                                "limit": 60
+                                #"limit": 60,
+                                "lang": "bn"
                             },
                             headers={"User-Agent": "ChupChapPathShala/1.0 (md.yeamin.sarder@g.bracu.ac.bd)"}
                             )
@@ -88,8 +89,10 @@ def ext_search(query):
             title = book["title"]
             author = ", ".join(book["author_name"])
             cover = f"https://covers.openlibrary.org/b/olid/{book['cover_edition_key']}-M.jpg"
-            books.append(ExtBook(title, author, cover))
+            lang = book["language"] if "language" in book else []
+            books.append(ExtBook(title, author, cover, lang))
         except KeyError as ke:
             pass#print(book)
+    books.sort(key=lambda book: "ben" in book.lang, reverse=True)
     return books, None
 
