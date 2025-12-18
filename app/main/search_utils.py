@@ -1,5 +1,7 @@
 from app.models import Book
 from sqlalchemy import or_
+from dataclasses import dataclass
+import requests
 
 def search_suggestions(query, limit=10):
     """
@@ -60,3 +62,34 @@ def full_text_search(query):
     books.sort(key=rank_score, reverse=True)
     
     return books
+
+@dataclass
+class ExtBook:
+    title: str
+    author: str
+    cover: str
+    
+URL = "https://openlibrary.org/search.json"
+def ext_search(query):
+    "searches book externally. returns books, error"
+    response = requests.get(URL,
+                            params={
+                                "q": query,
+                                "limit": 60
+                            },
+                            headers={"User-Agent": "ChupChapPathShala/1.0 (md.yeamin.sarder@g.bracu.ac.bd)"}
+                            )
+    json = response.json()
+    if 'error' in json:
+        return None, json['error']
+    books = []
+    for book in json["docs"]:
+        try:
+            title = book["title"]
+            author = ", ".join(book["author_name"])
+            cover = f"https://covers.openlibrary.org/b/olid/{book['cover_edition_key']}-M.jpg"
+            books.append(ExtBook(title, author, cover))
+        except KeyError as ke:
+            pass#print(book)
+    return books, None
+

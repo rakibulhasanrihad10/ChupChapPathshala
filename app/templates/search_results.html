@@ -4,9 +4,54 @@
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="mb-8">
+    <div>
+	  <form action="{{ url_for('main.search_ext') }}">
+		<input id='query' name=q value = {{ query }} type="text" class="px-6 py-4 min-w-24 bg-gray-200 rounded-l-full"></input>
+	  <button type="submit" class="inline bg-blue-500 text-white hover:bg-blue-600 rounded-r-full px-6 py-4 mb-8">
+		Search Externally
+	  </button>
+	  {% if ext_error %}
+	    <label for='query' class="text-red-400 border-red-300">
+		  {{ ext_error }}
+	    </label>
+	  {% endif %}
+      </form>
+	</div>
+	{% if ext_results %}
+	<div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900">
-            Search Results for "{{ query }}"
+            External Results for "{{ query }}"
+        </h1>
+        <p class="text-gray-500 mt-2">
+            {% if ext_results %}
+                Found {{ ext_results|length }} result(s)
+            {% else %}
+                No matches found.
+            {% endif %}
+        </p>
+    </div>
+    
+	  <div class="search-results-grid">
+		{% for book in ext_results %}
+		  <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+			<a href="#" class="book-cover-container group">
+			  <img src={{ book.cover }} alt={{ book.cover }}/>
+			</a>
+			<div class="p-4">
+              <h3 class="font-bold text-gray-900 truncate mb-1" title="{{ book.title }}">
+			    {{ book.title }}
+              </h3>
+              <p class="text-sm text-gray-600 mb-3 truncate">
+                by {{ book.author }}
+              </p>
+			</div>
+		  </div>
+		{% endfor %}
+	  </div>
+	{% endif %}
+	<div class="mt-16">
+        <h1 class="text-3xl font-bold text-gray-900">
+            Local Search Results for "{{ query }}"
         </h1>
         <p class="text-gray-500 mt-2">
             {% if results %}
@@ -16,11 +61,6 @@
             {% endif %}
         </p>
     </div>
-    <div>
-	  <div class="inline bg-blue-500 text-white hover:bg-blue-600 rounded-full p-4 mb-8">
-		Search Externally
-	  </div>
-	</div>
     {% if results %}
     <div class="search-results-grid mt-8">
         {% for book in results %}
