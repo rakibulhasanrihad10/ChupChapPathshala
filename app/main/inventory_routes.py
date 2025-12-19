@@ -121,7 +121,7 @@ def edit_book(book_id):
         flash(f"Successfully Edited '{book.title}'.", "success")
         return redirect(url_for("main.inventory"))
 
-    return render_template("edit_book.html", form=form, book=book)
+    return render_template("edit_book.html", form=form)
 
 
 @bp.route('/inventory/delete/<int:book_id>', methods=['POST'])

@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}Restock {{ book.title }}{% endblock %}
+{% block title %} Edit {{ form.title.data }}{% endblock %}
 
 {% block content %}
 
 <div class="max-w-md mx-auto card p-8">
     <h1 class="text-xl font-semibold mb-4">
-        Edit: {{ book.title }}
+        Edit: {{ form.title.data }}
     </h1>
 
     <form method="POST">
