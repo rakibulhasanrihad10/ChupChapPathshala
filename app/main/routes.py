@@ -3,12 +3,147 @@ from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 import os
 from app.main import bp
-from app.models import Book, User, Loan, Campaign, Category
+from app.models import Book, User, Loan, Campaign, Category, SupplyOrder, Sale
 from app import db
 from app.decorators import admin_required
 from app.main import featured_books_routes
 from app.main.inventory_forms import EditForm
 from datetime import datetime
+
+@bp.route('/admin/dashboard')
+@login_required
+def admin_dashboard():
+    if not current_user.is_staff():
+        flash('Access denied: Unauthorized.', 'danger')
+        return redirect(url_for('main.index'))
+    
+    from datetime import datetime, timedelta
+    from sqlalchemy import func, desc
+    
+    # Basic Stats
+    total_users = User.query.count()
+    total_books = Book.query.count()
+    active_loans = Loan.query.filter_by(status='active').count()
+    pending_orders = SupplyOrder.query.filter(SupplyOrder.status.in_(['shortlist', 'pending_review', 'placed'])).count()
+    
+    # Enhanced Stats with Trends
+    now = datetime.utcnow()
+    last_month = now - timedelta(days=30)
+    last_week = now - timedelta(days=7)
+    
+    # Calculate trends (comparing last 7 days vs previous 7 days)
+    def calculate_trend(current_count, previous_count):
+        if previous_count == 0:
+            return {'direction': 'up' if current_count > 0 else 'neutral', 'percentage': 0}
+        change = ((current_count - previous_count) / previous_count) * 100
+        return {
+            'direction': 'up' if change > 0 else 'down' if change < 0 else 'neutral',
+            'percentage': abs(round(change, 1))
+        }
+    
+    # User trend (simplified - would need created_at field for accuracy)
+    users_last_week = User.query.count()  
+    users_prev_week = max(0, users_last_week - 2)  
+    user_trend = calculate_trend(users_last_week, users_prev_week)
+    
+
+    
+    # Book trend (simplified)
+    books_trend = {'direction': 'neutral', 'percentage': 0}
+    
+    # Overdue Loans
+    overdue_loans = Loan.query.filter(
+        Loan.status == 'active',
+        Loan.due_date < now
+    ).all()
+    overdue_count = len(overdue_loans)
+    
+    # Stock Alerts (books with low stock)
+    STOCK_THRESHOLD = 5
+    low_stock_books = Book.query.filter(Book.stock_available < STOCK_THRESHOLD).all()
+    stock_alerts_count = len(low_stock_books)
+    
+    # Recent Activity (last 10 loans/returns)
+    recent_loans = Loan.query.order_by(desc(Loan.checkout_date)).limit(5).all()
+    recent_returns = Loan.query.filter(Loan.return_date.isnot(None)).order_by(desc(Loan.return_date)).limit(5).all()
+    
+    # Combine and sort recent activity
+    recent_activity = []
+    for loan in recent_loans:
+        recent_activity.append({
+            'type': 'borrow',
+            'user': loan.user.username if loan.user else 'Unknown',
+            'book': loan.book.title if loan.book else 'Unknown',
+            'date': loan.checkout_date,
+            'icon': 'fa-book-reader',
+            'color': 'blue'
+        })
+    for loan in recent_returns:
+        recent_activity.append({
+            'type': 'return',
+            'user': loan.user.username if loan.user else 'Unknown',
+            'book': loan.book.title if loan.book else 'Unknown',
+            'date': loan.return_date,
+            'icon': 'fa-undo',
+            'color': 'green'
+        })
+    recent_activity.sort(key=lambda x: x['date'], reverse=True)
+    recent_activity = recent_activity[:10]
+    
+    # Sales Trend Data (last 30 days) - Replaces Borrowing Trend
+    sales_trend = []
+    for i in range(30, -1, -1):
+        date = now - timedelta(days=i)
+        date_start = date.replace(hour=0, minute=0, second=0, microsecond=0)
+        date_end = date.replace(hour=23, minute=59, second=59, microsecond=999999)
+        
+        count = Sale.query.filter(
+            Sale.sale_date >= date_start,
+            Sale.sale_date <= date_end
+        ).count()
+        
+        sales_trend.append({
+            'date': date.strftime('%m/%d'),
+            'count': count
+        })
+    
+    # Top Selling Books (Most Sold)
+    top_selling_data = db.session.query(
+        Book.title,
+        func.count(Sale.id).label('sale_count')
+    ).join(Sale, Sale.book_id == Book.id)\
+     .group_by(Book.id, Book.title)\
+     .order_by(desc('sale_count'))\
+     .limit(5).all()
+    
+    top_selling_books = [{'title': title, 'count': count} for title, count in top_selling_data]
+    
+    # Stock Distribution by Category
+    stock_by_category = db.session.query(
+        Book.category,
+        func.sum(Book.stock_available).label('total_stock')
+    ).group_by(Book.category).all()
+    
+    category_data = [{'category': cat or 'Uncategorized', 'stock': int(stock or 0)} for cat, stock in stock_by_category]
+    
+    stats = {
+        'total_users': total_users,
+        'total_books': total_books,
+        'active_loans': active_loans,
+        'pending_supply_orders': pending_orders,
+        'user_trend': user_trend,
+        'books_trend': books_trend,
+        'overdue_count': overdue_count,
+        'stock_alerts_count': stock_alerts_count,
+        'overdue_loans': overdue_loans[:5],  # Top 5 overdue
+        'low_stock_books': low_stock_books[:5],  # Top 5 low stock
+        'recent_activity': recent_activity,
+        'sales_trend': sales_trend,
+        'top_selling_books': top_selling_books,
+        'category_data': category_data
+    }
+    
+    return render_template('admin/dashboard.html', stats=stats)
 
 @bp.route('/members')
 @login_required

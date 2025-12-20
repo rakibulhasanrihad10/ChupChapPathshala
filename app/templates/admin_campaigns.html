@@ -10,20 +10,25 @@
     </a>
 </div>
 
-<div class="bg-white rounded-xl shadow-sm overflow-hidden" style="background-color: var(--bg-card);">
+<div class="rounded-xl shadow-sm overflow-hidden"
+    style="background-color: var(--card-bg); border: 1px solid var(--border-color);">
     <div class="overflow-x-auto">
         <table class="w-full">
-            <thead style="background-color: var(--bg-offset);">
+            <thead style="background-color: var(--pill-bg);">
                 <tr>
-                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style="color: var(--text-muted);">Title</th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style="color: var(--text-muted);">Image</th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style="color: var(--text-muted);">Status</th>
-                    <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider" style="color: var(--text-muted);">Actions</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider"
+                        style="color: var(--text-muted);">Title</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider"
+                        style="color: var(--text-muted);">Image</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider"
+                        style="color: var(--text-muted);">Status</th>
+                    <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider"
+                        style="color: var(--text-muted);">Actions</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200" style="border-color: var(--border-color);">
+            <tbody class="divide-y" style="border-color: var(--border-color); border-bottom-width: 1px;">
                 {% for campaign in campaigns %}
-                <tr class="hover:bg-gray-50 transition-colors" style="border-color: var(--border-color);">
+                <tr class="transition-colors hover:opacity-80" style="border-color: var(--border-color);">
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm font-medium" style="color: var(--text-color);">{{ campaign.title }}</div>
                         <div class="text-xs" style="color: var(--text-muted);">{{ campaign.description[:50] }}...</div>
@@ -37,27 +42,32 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         {% if campaign.is_active %}
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                        <span
+                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-500/10 text-green-500 border border-green-500/20">
                             Active
                         </span>
                         {% else %}
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                        <span
+                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-500/10 text-gray-500 border border-gray-500/20">
                             Inactive
                         </span>
                         {% endif %}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div class="flex items-center justify-end gap-3">
-                            <a href="{{ url_for('main.edit_campaign', id=campaign.id) }}" class="text-indigo-600 hover:text-indigo-900 font-medium">Edit</a>
-                            <form action="{{ url_for('main.delete_campaign', id=campaign.id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure?');">
-                                <button type="submit" class="text-red-600 hover:text-red-900 font-medium">Delete</button>
+                            <a href="{{ url_for('main.edit_campaign', id=campaign.id) }}"
+                                class="text-indigo-500 hover:text-indigo-400 font-medium">Edit</a>
+                            <form action="{{ url_for('main.delete_campaign', id=campaign.id) }}" method="POST"
+                                class="inline" onsubmit="return confirm('Are you sure?');">
+                                <button type="submit"
+                                    class="text-red-500 hover:text-red-400 font-medium bg-transparent border-none p-0 cursor-pointer">Delete</button>
                             </form>
                         </div>
                     </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="4" class="px-6 py-12 text-center text-gray-500">
+                    <td colspan="4" class="px-6 py-12 text-center" style="color: var(--text-muted);">
                         No campaigns found. Create one to get started.
                     </td>
                 </tr>

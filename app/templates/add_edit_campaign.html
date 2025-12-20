@@ -5,11 +5,14 @@
 {% block content %}
 <div class="max-w-2xl mx-auto">
     <div class="mb-8">
-        <a href="{{ url_for('main.admin_campaigns') }}" class="text-indigo-600 hover:underline mb-2 inline-block">← Back to Campaigns</a>
-        <h2 class="text-2xl font-bold" style="color: var(--text-color);">{{ 'Edit' if campaign else 'New' }} Campaign</h2>
+        <a href="{{ url_for('main.admin_campaigns') }}"
+            class="text-indigo-500 hover:text-indigo-400 hover:underline mb-2 inline-block">← Back to Campaigns</a>
+        <h2 class="text-2xl font-bold" style="color: var(--text-color);">{{ 'Edit' if campaign else 'New' }} Campaign
+        </h2>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm p-6" style="background-color: var(--bg-card);">
+    <div class="rounded-xl shadow-sm p-6"
+        style="background-color: var(--card-bg); border: 1px solid var(--border-color);">
         <form method="POST" enctype="multipart/form-data">
             <div class="space-y-6">
                 <!-- Title -->
@@ -29,36 +32,43 @@
                 </div>
 
                 <!-- Image URL or Upload -->
-                <div class="p-4 rounded-lg border border-dashed border-gray-300" style="border-color: var(--border-color);">
-                    <label class="block text-sm font-medium mb-3" style="color: var(--text-color);">Campaign Image</label>
-                    
+                <div class="p-4 rounded-lg border border-dashed border-gray-300"
+                    style="border-color: var(--border-color);">
+                    <label class="block text-sm font-medium mb-3" style="color: var(--text-color);">Campaign
+                        Image</label>
+
                     <!-- Upload -->
                     <div class="mb-4">
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Upload Image</label>
+                        <label class="block text-xs font-medium mb-1" style="color: var(--text-muted);">Upload
+                            Image</label>
                         <input type="file" name="image_file" accept="image/*"
-                            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                            class="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-500/10 file:text-indigo-500 hover:file:bg-indigo-500/20"
+                            style="color: var(--text-muted);">
                     </div>
 
                     <div class="relative flex py-2 items-center">
-                        <div class="flex-grow border-t border-gray-200" style="border-color: var(--border-color);"></div>
-                        <span class="flex-shrink-0 mx-4 text-gray-400 text-xs">OR USE URL</span>
-                        <div class="flex-grow border-t border-gray-200" style="border-color: var(--border-color);"></div>
+                        <div class="flex-grow border-t" style="border-color: var(--border-color);"></div>
+                        <span class="flex-shrink-0 mx-4 text-xs" style="color: var(--text-muted);">OR USE URL</span>
+                        <div class="flex-grow border-t" style="border-color: var(--border-color);"></div>
                     </div>
 
                     <!-- URL -->
                     <div class="mt-2">
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Image URL</label>
-                        <input type="text" name="image_url" value="{{ campaign.image_url if campaign else '' }}" placeholder="https://..."
+                        <label class="block text-xs font-medium mb-1" style="color: var(--text-muted);">Image
+                            URL</label>
+                        <input type="text" name="image_url" value="{{ campaign.image_url if campaign else '' }}"
+                            placeholder="https://..."
                             class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                             style="background-color: var(--bg-color); color: var(--text-color); border-color: var(--border-color);">
                     </div>
-                    <p class="mt-2 text-xs text-gray-500">Ideally a landscape image.</p>
+                    <p class="mt-2 text-xs" style="color: var(--text-muted);">Ideally a landscape image.</p>
                 </div>
 
                 <!-- Button Text -->
                 <div>
                     <label class="block text-sm font-medium mb-1" style="color: var(--text-color);">Button Text</label>
-                    <input type="text" name="button_text" value="{{ campaign.button_text if campaign else 'Learn More' }}"
+                    <input type="text" name="button_text"
+                        value="{{ campaign.button_text if campaign else 'Learn More' }}"
                         class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         style="background-color: var(--bg-color); color: var(--text-color); border-color: var(--border-color);">
                 </div>
@@ -74,34 +84,40 @@
                 <!-- Schedule (Duration) -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium mb-1" style="color: var(--text-color);">Start Time (Optional)</label>
-                        <input type="datetime-local" name="start_time" 
+                        <label class="block text-sm font-medium mb-1" style="color: var(--text-color);">Start Time
+                            (Optional)</label>
+                        <input type="datetime-local" name="start_time"
                             value="{{ campaign.start_time.strftime('%Y-%m-%dT%H:%M') if campaign and campaign.start_time else '' }}"
-                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            style="background-color: var(--bg-color); color: var(--text-color); border-color: var(--border-color);">
-                        <p class="mt-1 text-xs text-gray-500">Campaign will only show after this time.</p>
+                            class="w-full rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            style="background-color: var(--bg-color); color: var(--text-color); border: 1px solid var(--border-color);">
+                        <p class="mt-1 text-xs" style="color: var(--text-muted);">Campaign will only show after this
+                            time.</p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1" style="color: var(--text-color);">End Time (Optional)</label>
-                        <input type="datetime-local" name="end_time" 
+                        <label class="block text-sm font-medium mb-1" style="color: var(--text-color);">End Time
+                            (Optional)</label>
+                        <input type="datetime-local" name="end_time"
                             value="{{ campaign.end_time.strftime('%Y-%m-%dT%H:%M') if campaign and campaign.end_time else '' }}"
-                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            style="background-color: var(--bg-color); color: var(--text-color); border-color: var(--border-color);">
-                        <p class="mt-1 text-xs text-gray-500">Campaign will stop showing after this time.</p>
+                            class="w-full rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            style="background-color: var(--bg-color); color: var(--text-color); border: 1px solid var(--border-color);">
+                        <p class="mt-1 text-xs" style="color: var(--text-muted);">Campaign will stop showing after this
+                            time.</p>
                     </div>
                 </div>
 
                 <!-- Active Status -->
                 <div class="flex items-center">
-                    <input type="checkbox" name="is_active" id="is_active" {{ 'checked' if not campaign or campaign.is_active else '' }}
-                        class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                    <input type="checkbox" name="is_active" id="is_active" {{ 'checked' if not campaign or
+                        campaign.is_active else '' }} class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 rounded"
+                        style="background-color: var(--bg-color); border: 1px solid var(--border-color);">
                     <label for="is_active" class="ml-2 block text-sm" style="color: var(--text-color);">
                         Active (Visible on Home Page)
                     </label>
                 </div>
 
-                <div class="pt-4 border-t border-gray-200">
-                    <button type="submit" class="btn btn-primary w-full sm:w-auto">
+                <div class="pt-4 border-t" style="border-color: var(--border-color);">
+                    <button type="submit" class="btn btn-primary w-full sm:w-auto"
+                        style="color: white; background-color: var(--primary-color);">
                         {{ 'Update' if campaign else 'Create' }} Campaign
                     </button>
                 </div>

@@ -1,0 +1,142 @@
+<div class="overflow-x-auto rounded-lg table-container p-6"
+    style="background-color: var(--card-bg); box-shadow: var(--shadow); height: 600px;">
+    <table class="min-w-full leading-normal table-sticky-header table-zebra table-mobile-cards">
+        <thead>
+            <th class="px-5 py-3 border-b-2 text-left text-xs font-semibold uppercase tracking-wider">
+                Order ID
+            </th>
+            <th class="px-5 py-3 border-b-2 text-left text-xs font-semibold uppercase tracking-wider">
+                Supplier
+            </th>
+            <th class="px-5 py-3 border-b-2 text-left text-xs font-semibold uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                onclick="toggleSort('{{ 'oldest' if request.args.get('sort') == 'newest' else 'newest' }}')">
+                Date
+                {% if request.args.get('sort') == 'oldest' %}
+                <i class="fas fa-arrow-up ml-1"></i>
+                {% else %}
+                <i class="fas fa-arrow-down ml-1"></i>
+                {% endif %}
+            </th>
+            <th class="px-5 py-3 border-b-2 text-left text-xs font-semibold uppercase tracking-wider">
+                Status
+            </th>
+            <th class="px-5 py-3 border-b-2 text-left text-xs font-semibold uppercase tracking-wider">
+                Items
+            </th>
+            <th class="px-5 py-3 border-b-2 text-right text-xs font-semibold uppercase tracking-wider">
+                Total Amount
+            </th>
+            <th class="px-5 py-3 border-b-2 text-center text-xs font-semibold uppercase tracking-wider">
+                Actions
+            </th>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr style="color: var(--text-color);">
+                <td class="px-5 py-5 border-b text-sm" style="border-color: var(--border-color);" data-label="Order ID">
+                    <p class="font-bold">#{{ order.id }}</p>
+                </td>
+                <td class="px-5 py-5 border-b text-sm" style="border-color: var(--border-color);" data-label="Supplier">
+                    <div class="flex items-center">
+                        <div class="ml-0">
+                            <p class="whitespace-no-wrap">
+                                {{ order.supplier.name if order.supplier else 'Not Assigned' }}
+                            </p>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-5 py-5 border-b text-sm" style="border-color: var(--border-color);" data-label="Date">
+                    <p class="whitespace-no-wrap">
+                        {{ order.created_at.strftime('%Y-%m-%d') }}
+                    </p>
+                </td>
+                <td class="px-5 py-5 border-b text-sm" style="border-color: var(--border-color);" data-label="Status">
+                    {% if order.status == 'completed' %}
+                    <span class="badge badge-green">Completed</span>
+                    {% elif order.status == 'placed' %}
+                    <span class="badge badge-blue">Placed</span>
+                    {% else %}
+                    <span class="badge badge-orange">{{ order.status|capitalize }}</span>
+                    {% endif %}
+                </td>
+                <td class="px-5 py-5 border-b text-sm" style="border-color: var(--border-color);" data-label="Items">
+                    <p class="whitespace-no-wrap">{{ order.total_items }}</p>
+                </td>
+                <td class="px-5 py-5 border-b text-sm text-right" style="border-color: var(--border-color);"
+                    data-label="Total Amount">
+                    <p class="whitespace-no-wrap font-mono font-bold">৳{{ "%.2f"|format(order.total_amount) }}</p>
+                </td>
+                <td class="px-5 py-5 border-b text-sm text-center" style="border-color: var(--border-color);"
+                    data-label="Actions">
+                    <a href="{{ url_for('main.supplier_order_detail', order_id=order.id) }}"
+                        class="btn-action hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2"
+                        title="View Details" style="color: var(--primary-color); width: fit-content; margin: 0 auto;">
+                        <i class="fas fa-eye"></i> <span class="md:hidden ml-2">View Details</span>
+                    </a>
+                </td>
+            </tr>
+            {% else %}
+            <td colspan="7" class="px-5 py-12 border-b text-sm text-center"
+                style="border-color: var(--border-color); color: var(--text-muted);">
+                <div class="flex flex-col items-center justify-center">
+                    <div class="bg-gray-100 dark:bg-gray-800 rounded-full p-6 mb-4">
+                        <i class="fas fa-search text-4xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-1">No orders found</h3>
+                    <p class="text-sm max-w-sm mx-auto">
+                        We couldn't find any orders matching your current filters. Try adjusting your search query or
+                        date range.
+                    </p>
+                    <button onclick="clearFilters()" class="mt-4 text-indigo-600 hover:text-indigo-800 font-medium">
+                        Clear all filters
+                    </button>
+                </div>
+            </td>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    {% if pagination.pages > 1 %}
+    <div class="px-5 py-5 border-t flex flex-col xs:flex-row items-center xs:justify-between sticky bottom-0 z-10"
+        style="border-color: var(--border-color); background-color: var(--card-bg);">
+        <span class="text-xs xs:text-sm" style="color: var(--text-color);">
+            Showing {{ (pagination.page - 1) * pagination.per_page + 1 }} to
+            {{ [pagination.page * pagination.per_page, pagination.total]|min }} of
+            {{ pagination.total }} Entries
+        </span>
+        <div class="inline-flex mt-2 xs:mt-0 gap-2">
+            {% if pagination.has_prev %}
+            <button onclick="changePage({{ pagination.prev_num }})" class="btn btn-secondary text-sm py-1 px-3"
+                style="border-color: var(--border-color); color: var(--text-color);">
+                Prev
+            </button>
+            {% endif %}
+
+            {% for page in pagination.iter_pages() %}
+            {% if page %}
+            {% if page != pagination.page %}
+            <button onclick="changePage({{ page }})" class="btn btn-secondary text-sm py-1 px-3 hidden md:block"
+                style="border-color: var(--border-color); color: var(--text-color);">
+                {{ page }}
+            </button>
+            {% else %}
+            <button class="btn btn-primary text-sm py-1 px-3" disabled>
+                {{ page }}
+            </button>
+            {% endif %}
+            {% else %}
+            <span class="px-2">...</span>
+            {% endif %}
+            {% endfor %}
+
+            {% if pagination.has_next %}
+            <button onclick="changePage({{ pagination.next_num }})" class="btn btn-secondary text-sm py-1 px-3"
+                style="border-color: var(--border-color); color: var(--text-color);">
+                Next
+            </button>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>

@@ -1,0 +1,449 @@
+{% extends "base.html" %}
+
+{% block title %}Track Orders{% endblock %}
+
+{% block content %}
+<!-- Flatpickr CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+    /* Custom style to match Tailwind inputs */
+    .flatpickr-input {
+        background-color: var(--card-bg) !important;
+        color: var(--text-color) !important;
+        border-color: var(--border-color) !important;
+    }
+
+    /* Flatpickr Dark Mode Overrides */
+    html[data-theme="dark"] .flatpickr-calendar {
+        background: var(--card-bg);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--border-color);
+    }
+
+    html[data-theme="dark"] .flatpickr-months .flatpickr-month {
+        background: var(--card-bg);
+        color: var(--text-color);
+        fill: var(--text-color);
+    }
+
+    html[data-theme="dark"] .flatpickr-current-month .flatpickr-monthDropdown-months {
+        background: var(--card-bg);
+        color: var(--text-color);
+    }
+
+    html[data-theme="dark"] .flatpickr-current-month input.cur-year {
+        color: var(--text-color);
+    }
+
+    html[data-theme="dark"] .flatpickr-current-month .flatpickr-monthDropdown-months .flatpickr-monthDropdown-month {
+        background-color: var(--card-bg);
+        color: var(--text-color);
+    }
+
+    html[data-theme="dark"] .flatpickr-months .flatpickr-prev-month,
+    html[data-theme="dark"] .flatpickr-months .flatpickr-next-month {
+        fill: var(--text-color);
+        color: var(--text-color);
+    }
+
+    html[data-theme="dark"] .flatpickr-months .flatpickr-prev-month:hover svg,
+    html[data-theme="dark"] .flatpickr-months .flatpickr-next-month:hover svg {
+        fill: var(--primary-color);
+    }
+
+    html[data-theme="dark"] .flatpickr-weekdays {
+        background: var(--card-bg);
+    }
+
+    html[data-theme="dark"] span.flatpickr-weekday {
+        background: var(--card-bg);
+        color: var(--text-muted);
+    }
+
+    html[data-theme="dark"] .flatpickr-day {
+        color: var(--text-color);
+    }
+
+    html[data-theme="dark"] .flatpickr-day.prevMonthDay,
+    html[data-theme="dark"] .flatpickr-day.nextMonthDay {
+        color: var(--text-muted);
+    }
+
+    html[data-theme="dark"] .flatpickr-day:hover,
+    html[data-theme="dark"] .flatpickr-day.prevMonthDay:hover,
+    html[data-theme="dark"] .flatpickr-day.nextMonthDay:hover,
+    html[data-theme="dark"] .flatpickr-day:focus {
+        background: var(--pill-hover);
+        border-color: var(--pill-hover);
+        color: var(--text-color);
+    }
+
+    html[data-theme="dark"] .flatpickr-day.today {
+        border-color: var(--text-muted);
+    }
+
+    html[data-theme="dark"] .flatpickr-day.today:hover {
+        background: var(--pill-hover);
+        color: var(--text-color);
+    }
+
+    html[data-theme="dark"] .flatpickr-day.selected,
+    html[data-theme="dark"] .flatpickr-day.startRange,
+    html[data-theme="dark"] .flatpickr-day.endRange,
+    html[data-theme="dark"] .flatpickr-day.selected.inRange,
+    html[data-theme="dark"] .flatpickr-day.startRange.inRange,
+    html[data-theme="dark"] .flatpickr-day.endRange.inRange {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        color: #fff;
+    }
+
+    html[data-theme="dark"] .flatpickr-day.inRange {
+        background: rgba(79, 70, 229, 0.2);
+        /* Low opacity primary color */
+        border-color: transparent;
+        box-shadow: -5px 0 0 rgba(79, 70, 229, 0.2), 5px 0 0 rgba(79, 70, 229, 0.2);
+    }
+
+    /* Arrow color fix */
+    .flatpickr-current-month .numInputWrapper span.arrowUp:after {
+        border-bottom-color: var(--text-muted);
+    }
+
+    .flatpickr-current-month .numInputWrapper span.arrowDown:after {
+        border-top-color: var(--text-muted);
+    }
+
+    /* Reliable Grid Layout for Filters */
+    .filter-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        align-items: end;
+    }
+
+    @media (min-width: 768px) {
+        .filter-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+
+    .input-group {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .input-icon {
+        position: absolute;
+        right: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        pointer-events: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .clear-btn-container {
+        margin-top: 1rem;
+        width: 100%;
+    }
+</style>
+
+<div class="container">
+    <div class="page-header">
+        <h2 class="page-title">Track Supply Orders</h2>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4" style="margin-bottom: 2rem;">
+        <form id="filterForm" class="flex flex-col gap-4">
+            <div class="filter-grid">
+                <!-- Supplier Filter -->
+                <div>
+                    <label for="supplier" class="block text-sm font-medium mb-1"
+                        style="color: var(--text-color)">Supplier</label>
+                    <select id="supplier" name="supplier_id" onchange="applyFilters()" class="form-control">
+                        <option value="">All Suppliers</option>
+                        {% for supplier in suppliers %}
+                        <option value="{{ supplier.id }}" {% if current_supplier_id==supplier.id %}selected{% endif %}>
+                            {{ supplier.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Search Filter -->
+                <div>
+                    <label for="global_search" class="block text-sm font-medium mb-1"
+                        style="color: var(--text-color)">Search Order ID</label>
+                    <div class="input-group">
+                        <input type="text" id="global_search" name="search" placeholder="#123..."
+                            onkeyup="debounceSearch()" class="form-control">
+                        <div class="input-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Single Date Filter -->
+                <div>
+                    <label for="date" class="block text-sm font-medium mb-1" style="color: var(--text-color)">Specific
+                        Date</label>
+                    <div class="input-group">
+                        <input type="text" id="date" name="date" placeholder="Select Date"
+                            value="{{ current_date or '' }}" class="form-control">
+                        <div class="input-icon">
+                            <i class="fas fa-calendar"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Date Range Filter -->
+                <div>
+                    <label class="block text-sm font-medium mb-1" style="color: var(--text-color)">Date Range</label>
+                    <div class="input-group">
+                        <input type="text" id="date_range" placeholder="Start -> End" class="form-control">
+                        <div class="input-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                    </div>
+                    <!-- Hidden inputs for actual submission if needed, but we handle via JS -->
+                    <input type="hidden" id="start_date" name="start_date" value="{{ current_start_date or '' }}">
+                    <input type="hidden" id="end_date" name="end_date" value="{{ current_end_date or '' }}">
+                </div>
+            </div>
+
+            <!-- Clear Buttons -->
+            <div class="clear-btn-container">
+                <button type="button" onclick="clearFilters()"
+                    class="w-full font-medium py-2 px-4 rounded-md shadow-sm transition duration-150 ease-in-out flex justify-center items-center gap-2"
+                    style="background-color: var(--pill-bg); color: var(--text-color); border: 1px solid var(--border-color); height: 38px;">
+                    <i class="fas fa-times"></i> Clear
+                </button>
+            </div>
+        </form>
+
+        <!-- Active Filters Display -->
+        <div id="active-filters" class="flex flex-wrap gap-2 mt-4 hidden">
+            <!-- Chips will be added here by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Orders Table Container -->
+    <div id="orders-table-container" class="relative min-h-[200px]">
+        <!-- Loading Overlay (Hidden by default) -->
+        <div id="loadingOverlay" class="absolute inset-0 z-10 hidden flex items-center justify-center rounded-lg"
+            style="background-color: var(--card-bg); opacity: 0.75;">
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2" style="border-color: var(--primary-color);">
+            </div>
+        </div>
+
+        <!-- Partial Template Include -->
+        <div id="orders-list-content">
+            {% include 'supplier/orders_table.html' %}
+        </div>
+    </div>
+</div>
+
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize Flatpickr for Date Range
+        const rangePicker = flatpickr("#date_range", {
+            mode: "range",
+            dateFormat: "Y-m-d",
+            defaultDate: [
+                "{{ current_start_date or '' }}",
+                "{{ current_end_date or '' }}"
+            ],
+            onChange: function (selectedDates, dateStr, instance) {
+                if (selectedDates.length === 2) {
+                    // Update hidden inputs
+                    document.getElementById('start_date').value = instance.formatDate(selectedDates[0], "Y-m-d");
+                    document.getElementById('end_date').value = instance.formatDate(selectedDates[1], "Y-m-d");
+
+                    applyFilters();
+                }
+            }
+        });
+
+        // Initialize Flatpickr for Single Date
+        const datePicker = flatpickr("#date", {
+            dateFormat: "Y-m-d",
+            defaultDate: "{{ current_date or '' }}",
+            onChange: function (selectedDates, dateStr, instance) {
+                applyFilters();
+            }
+        });
+
+        // Expose pickers to window for clear function
+        window.rangePicker = rangePicker;
+        window.datePicker = datePicker;
+    });
+
+    // Debounce function to prevent too many requests
+    // Debounce function to prevent too many requests
+    function debounce(func, wait) {
+        let timeout;
+        return function (...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+    }
+
+    const debounceSearch = debounce(() => {
+        applyFilters();
+    }, 500);
+
+    function applyFilters() {
+        showLoading();
+        updateFilterChips();
+        fetchOrders();
+    }
+
+    const fetchOrders = debounce(function () {
+        const params = new URLSearchParams();
+
+        const supplierId = document.getElementById('supplier').value;
+        const searchQuery = document.getElementById('global_search').value;
+        const specificDate = document.getElementById('date').value;
+        const startDate = document.getElementById('start_date').value;
+        const endDate = document.getElementById('end_date').value;
+
+        if (supplierId) params.append('supplier_id', supplierId);
+        if (searchQuery) params.append('search', searchQuery);
+        if (specificDate) params.append('date', specificDate);
+        if (startDate && endDate) {
+            params.append('start_date', startDate);
+            params.append('end_date', endDate);
+        }
+
+        params.append('page', 1);
+
+        const url = `{{ url_for('main.supplier_orders') }}?` + params.toString();
+        history.pushState(null, '', url);
+
+        fetch(url, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+            .then(response => response.text())
+            .then(html => {
+                const container = document.getElementById('orders-list-content');
+                if (container) container.innerHTML = html;
+            })
+            .catch(err => console.error(err))
+            .finally(() => hideLoading());
+    }, 300);
+
+    function updateFilterChips() {
+        const container = document.getElementById('active-filters');
+        if (!container) return; // Safety check
+
+        const supplierSelect = document.getElementById('supplier');
+        const startDate = document.getElementById('start_date').value;
+
+        container.innerHTML = '';
+        let hasFilters = false;
+
+        // Supplier Chip
+        if (supplierSelect.value) {
+            hasFilters = true;
+            const supplierName = supplierSelect.options[supplierSelect.selectedIndex].text;
+            addChip(`Supplier: ${supplierName}`, () => {
+                supplierSelect.value = '';
+                applyFilters();
+            });
+        }
+
+        // Date Chip
+        if (startDate || document.getElementById('date').value) {
+            hasFilters = true;
+            addChip(`Date Filter`, () => {
+                if (window.rangePicker) window.rangePicker.clear();
+                if (window.datePicker) window.datePicker.clear();
+                document.getElementById('start_date').value = '';
+                document.getElementById('end_date').value = '';
+                document.getElementById('date').value = '';
+                applyFilters();
+            });
+        }
+
+        if (hasFilters) {
+            container.classList.remove('hidden');
+        } else {
+            container.classList.add('hidden');
+        }
+    }
+
+    function addChip(label, removeCallback) {
+        const chip = document.createElement('div');
+        chip.className = 'badge badge-blue flex items-center gap-2 cursor-pointer hover:bg-blue-200 transition';
+        chip.innerHTML = `
+            <span>${label}</span>
+            <i class="fas fa-times text-xs"></i>
+        `;
+        chip.onclick = removeCallback;
+        document.getElementById('active-filters').appendChild(chip);
+    }
+
+    function showLoading() {
+        const overlay = document.getElementById('loadingOverlay');
+        if (overlay) overlay.classList.remove('hidden');
+    }
+
+    function hideLoading() {
+        const overlay = document.getElementById('loadingOverlay');
+        if (overlay) overlay.classList.add('hidden');
+    }
+
+    function clearFilters() {
+        document.getElementById('supplier').value = '';
+        document.getElementById('global_search').value = '';
+        document.getElementById('date').value = '';
+        if (window.rangePicker) window.rangePicker.clear();
+        if (window.datePicker) window.datePicker.clear();
+        document.getElementById('start_date').value = '';
+        document.getElementById('end_date').value = '';
+        applyFilters();
+    }
+
+    function toggleSort(sortOrder) {
+        // Update URL with new sort param
+        const url = new URL(window.location.href);
+        url.searchParams.set('sort', sortOrder);
+        url.searchParams.set('page', 1); // Reset to page 1 on sort change
+        history.pushState(null, '', url);
+        applyFilters(); // Trigger fetch
+    }
+
+    function changePage(page) {
+        showLoading();
+
+        const params = new URLSearchParams(window.location.search);
+        params.set('page', page);
+
+        const url = `{{ url_for('main.supplier_orders') }}?` + params.toString();
+        history.pushState(null, '', url);
+
+        fetch(url, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+            .then(response => response.text())
+            .then(html => {
+                const container = document.getElementById('orders-list-content');
+                if (container) container.innerHTML = html;
+            })
+            .catch(err => console.error(err))
+            .finally(() => {
+                hideLoading();
+            });
+    }
+
+</script>
+{% endblock %}

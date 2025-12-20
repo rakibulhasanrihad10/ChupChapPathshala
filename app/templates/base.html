@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
+    {% block head %}{% endblock %}
     <!-- Theme prevention flash script -->
     <script>
         (function () {
@@ -24,6 +25,7 @@
 </head>
 
 <body>
+    {% block navbar %}
     <nav class="navbar">
         <!-- Logo Section -->
         <div class="logo-section">
@@ -65,41 +67,8 @@
             <a href="{{ url_for('main.catalog', filter='offers') }}" class="nav-pill">🎁Offer</a>
             <a href="{{ url_for('main.ebook_list') }}" class="nav-pill">E-Book</a>
             <a href="{{ url_for('forum.index') }}" class="nav-pill">Forum</a>
-            {% if current_user.is_authenticated and current_user.is_admin() %}
-            <a href="{{ url_for('main.members') }}" class="nav-pill">Members</a>
-            <a href="{{ url_for('main.admin_loans') }}" class="nav-pill">Borrowed Books</a>
-            <a href="{{ url_for('main.admin_offers') }}" class="nav-pill">Manage Offers</a>
-            {% endif %}
             {% if current_user.is_authenticated and current_user.is_staff() %}
-            <a href="{{ url_for('main.inventory') }}" class="nav-pill">Inventory</a>
-            {% endif %}
-            {% if current_user.is_authenticated and (current_user.is_staff() or current_user.is_admin()) %}
-            <div class="relative group dropdown-container">
-                <button class="nav-pill flex items-center gap-1"
-                    onclick="document.getElementById('order-menu').classList.toggle('hidden')">
-                    Order <i class="fas fa-chevron-down text-xs"></i>
-                </button>
-                <div id="order-menu"
-                    class="absolute left-0 top-full mt-2 w-48 hidden group-hover:block dropdown-menu z-50">
-                    <div>
-                        {% if current_user.is_staff() %}
-                        <a href="{{ url_for('main.supplier_shortlist') }}" class="dropdown-item">Shortlist
-                        </a>
-                        {% endif %}
-
-                        {% if current_user.is_admin() %}
-                        <a href="{{ url_for('main.supplier_review') }}" class="dropdown-item">Order
-                        </a>
-                        <a href="{{ url_for('main.admin_campaigns') }}" class="dropdown-item">Campaigns
-                        </a>
-                        {% endif %}
-
-                        {% if current_user.is_staff() %}
-                        <a href="{{ url_for('main.supplier_receive_list') }}" class="dropdown-item">Received</a>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
+            <a href="{{ url_for('main.admin_dashboard') }}" class="nav-pill">Dashboard</a>
             {% endif %}
         </div>
 
@@ -176,8 +145,9 @@
             document.querySelector('.navbar').classList.toggle('mobile-menu-open');
         });
     </script>
+    {% endblock %}
 
-    <div class="container">
+    <div class="{% block container_class %}container{% endblock %}">
         <div class="flash-messages">
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -207,6 +177,7 @@
 
         {% block content %}{% endblock %}
     </div>
+    {% block footer %}
     <footer class="footer">
         <div class="container footer-content">
             <!-- Contact Info -->
@@ -228,8 +199,8 @@
             <div class="footer-col">
                 <h4>Support</h4>
                 <ul class="footer-list">
-                    <li><a href="#">FAQ </a></li>
-                    <li><a href="#">Help Desk</a></li>
+                    <li><a href="{{ url_for('main.index') }}">FAQ </a></li>
+                    <li><a href="{{ url_for('main.index') }}">Help Desk</a></li>
                 </ul>
             </div>
 
@@ -237,7 +208,7 @@
             <div class="footer-col">
                 <h4>About Us</h4>
                 <ul class="footer-list">
-                    <li><a href="#">About</a></li>
+                    <li><a href="{{ url_for('main.index') }}">About</a></li>
 
                 </ul>
             </div>
@@ -246,8 +217,8 @@
             <div class="footer-col">
                 <h4>Policy</h4>
                 <ul class="footer-list">
-                    <li><a href="#">Terms and Condition</a></li>
-                    <li><a href="#">Return & Refund Policy</a></li>
+                    <li><a href="{{ url_for('main.index') }}">Terms and Condition</a></li>
+                    <li><a href="{{ url_for('main.index') }}">Return & Refund Policy</a></li>
                 </ul>
             </div>
 
@@ -264,6 +235,7 @@
             </div>
         </div>
     </footer>
+    {% endblock %}
 
     <script>
         const searchInput = document.getElementById('searchInput');

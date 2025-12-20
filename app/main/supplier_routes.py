@@ -3,6 +3,110 @@ from flask_login import login_required, current_user
 from app.main import bp
 from app import db
 from app.models import Book, SupplyOrder, SupplyOrderItem, User, Supplier
+from datetime import datetime
+from sqlalchemy import func
+
+# ... (Existing code)
+
+@bp.route('/supplier/orders', methods=['GET'])
+@login_required
+def supplier_orders():
+    if not current_user.is_staff():
+        flash('Access denied: Staff only.', 'danger')
+        return redirect(url_for('main.index'))
+    
+    # Filter Parameters
+    supplier_id = request.args.get('supplier_id', type=int)
+    date_str = request.args.get('date')
+    start_date_str = request.args.get('start_date')
+    end_date_str = request.args.get('end_date')
+    search_query = request.args.get('search', '').strip()
+    sort_by = request.args.get('sort', 'newest')
+    
+    query = SupplyOrder.query
+    
+    # 0. Search Filter (Order ID)
+    if search_query:
+        if search_query.startswith('#'):
+            search_id = search_query[1:]
+        else:
+            search_id = search_query
+        
+        if search_id.isdigit():
+            query = query.filter(SupplyOrder.id == int(search_id))
+    
+    # 1. Supplier Filter
+    if supplier_id:
+        query = query.filter(SupplyOrder.supplier_id == supplier_id)
+        
+    # 2. Date Filtering
+    if date_str:
+        try:
+            filter_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            # Filter by exact date
+            query = query.filter(func.date(SupplyOrder.created_at) == filter_date)
+        except ValueError:
+            pass 
+            
+    elif start_date_str and end_date_str:
+        try:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
+            # Make end_date inclusive
+            end_date = end_date.replace(hour=23, minute=59, second=59)
+            
+            query = query.filter(SupplyOrder.created_at >= start_date, SupplyOrder.created_at <= end_date)
+        except ValueError:
+            pass
+
+    # 3. Sorting
+    if sort_by == 'newest':
+        query = query.order_by(SupplyOrder.created_at.desc())
+    elif sort_by == 'oldest':
+        query = query.order_by(SupplyOrder.created_at.asc())
+        
+    # 4. Pagination
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    orders = pagination.items
+    
+    # 5. Summary Statistics (Calculated on the filtered query)
+    stats = {
+        'total_orders': query.count(),
+        'pending': query.filter(SupplyOrder.status == 'placed').count(),
+        'completed': query.filter(SupplyOrder.status == 'completed').count(),
+        'total_amount': 0
+    }
+    
+    # Calculate Total Amount using join
+    # Note: We use a separate query to avoid messing with existing query structure if it had eager loads
+    # Fix: Call join BEFORE with_entities to maintain the join source (SupplyOrder)
+    # Fix: Clear order_by to avoid grouping error in aggregation
+    amount_query = query.order_by(None)\
+                        .join(SupplyOrderItem, SupplyOrderItem.order_id == SupplyOrder.id)\
+                        .join(Book, SupplyOrderItem.book_id == Book.id)\
+                        .with_entities(func.sum(SupplyOrderItem.mass * Book.price))
+    
+    stats['total_amount'] = amount_query.scalar() or 0
+
+    # Fetch suppliers for dropdown
+    suppliers = Supplier.query.order_by(Supplier.name).all()
+    
+    # Handle AJAX request for real-time updates
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+         return render_template('supplier/orders_table.html', orders=orders, pagination=pagination)
+
+    return render_template('supplier/orders.html', 
+                           orders=orders, 
+                           pagination=pagination, 
+                           suppliers=suppliers,
+                           current_supplier_id=supplier_id,
+                           current_date=date_str,
+                           current_start_date=start_date_str,
+                           current_end_date=end_date_str,
+                           current_sort=sort_by,
+                           stats=stats)
 
 THRESHOLD = 5
 
@@ -29,14 +133,17 @@ def supplier_shortlist():
     # Find all low stock books
     low_stock_books = Book.query.filter(Book.stock_available < THRESHOLD).all()
     
-    # Get IDs of books already in the shortlist
-    existing_item_book_ids = [item.book_id for item in order.items]
+    # Get IDs of books already in ANY active order (shortlist, pending, placed)
+    active_orders = SupplyOrder.query.filter(SupplyOrder.status.in_(['shortlist', 'pending_review', 'placed'])).all()
+    existing_item_book_ids = set()
+    for o in active_orders:
+        for item in o.items:
+            existing_item_book_ids.add(item.book_id)
     
     items_added = 0
     for book in low_stock_books:
-        # If book defies  (low stock) and isn't already floating (in list)
+        # If book is low stock and not already in any floating/pending order
         if book.id not in existing_item_book_ids:
-            # Lift it up!
             new_item = SupplyOrderItem(order_id=order.id, book_id=book.id, mass=5) 
             db.session.add(new_item)
             items_added += 1
@@ -146,19 +253,51 @@ def supplier_review():
 @login_required
 def supplier_launch(order_id):
     if not current_user.is_admin():
+        flash('Access denied.', 'danger')
         return redirect(url_for('main.index'))
 
     order = SupplyOrder.query.get_or_404(order_id)
     supplier_id = request.form.get('supplier_id')
-    if supplier_id:
-        order.supplier_id = int(supplier_id)
-    order.status = 'placed'
+    selected_item_ids = request.form.getlist('item_ids', type=int)
 
+    if not selected_item_ids:
+        flash('Please select at least one item to order.', 'warning')
+        return redirect(url_for('main.supplier_review'))
+
+    if not supplier_id:
+        flash('Please select a supplier.', 'warning')
+        return redirect(url_for('main.supplier_review'))
+
+    supplier_id = int(supplier_id)
+    all_item_ids = [item.id for item in order.items]
     
-    db.session.commit()
-    flash('Order Authorized! & transmitted to supplier.', 'success')
-    # Redirect to confirmation page instead of review list
-    return redirect(url_for('main.supplier_confirmation', order_id=order.id))
+    # Check if all items are selected
+    is_split = False
+    if set(selected_item_ids) != set(all_item_ids):
+        is_split = True
+
+    if not is_split:
+        # Standard case: Use the existing order
+        order.supplier_id = supplier_id
+        order.status = 'placed'
+        db.session.commit()
+        flash('Order Authorized! & transmitted to supplier.', 'success')
+        return redirect(url_for('main.supplier_confirmation', order_id=order.id))
+    else:
+        # Selective case: Create a new order for selected items
+        new_order = SupplyOrder(status='placed', supplier_id=supplier_id)
+        db.session.add(new_order)
+        db.session.flush() # Get new_order.id
+
+        # Move selected items to the new order
+        for item_id in selected_item_ids:
+            item = SupplyOrderItem.query.get(item_id)
+            if item and item.order_id == order.id:
+                item.order_id = new_order.id
+        
+        db.session.commit()
+        flash(f'Selective Order #{new_order.id} Authorized and split from Order #{order.id}.', 'success')
+        return redirect(url_for('main.supplier_confirmation', order_id=new_order.id))
 
 @bp.route('/supplier/confirmation/<int:order_id>', methods=['GET'])
 @login_required
@@ -274,3 +413,12 @@ def supplier_fusion(order_id):
     
     flash('Inventory Fusion Complete! Stock updated.', 'success')
     return redirect(url_for('main.supplier_receive_list'))
+
+@bp.route('/supplier/order/<int:order_id>', methods=['GET'])
+@login_required
+def supplier_order_detail(order_id):
+    if not current_user.is_staff():
+         return redirect(url_for('main.index'))
+         
+    order = SupplyOrder.query.get_or_404(order_id)
+    return render_template('supplier/order_detail.html', order=order)
