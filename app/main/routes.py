@@ -145,6 +145,61 @@ def admin_dashboard():
     
     return render_template('admin/dashboard.html', stats=stats)
 
+
+
+from flask import render_template
+from flask_login import login_required, current_user
+
+from app.models import (
+    Loan,
+    Sale,
+    ForumPost,
+    Cart
+)
+
+
+@bp.route("/dashboard")
+@login_required
+def dashboard():
+    user_id = current_user.id
+
+    # Loans
+    active_loans = Loan.query.filter(
+        Loan.user_id == user_id,
+        Loan.status == "active"
+    ).order_by(Loan.due_date.asc()).all()
+
+    overdue_loans = Loan.query.filter(
+        Loan.user_id == user_id,
+        Loan.status == "overdue"
+    ).order_by(Loan.due_date.asc()).all()
+
+    # Purchases (recent)
+    sales = Sale.query.filter(
+        Sale.user_id == user_id
+    ).order_by(Sale.sale_date.desc()).limit(10).all()
+
+    # Forum activity (recent)
+    forum_posts = ForumPost.query.filter(
+        ForumPost.user_id == user_id
+    ).order_by(ForumPost.created_at.desc()).limit(10).all()
+
+    # Cart snapshot (optional, safe if missing)
+    cart = Cart.query.filter_by(user_id=user_id).first()
+
+    return render_template(
+        "dashboard/index.html",
+        active_loans=active_loans,
+        overdue_loans=overdue_loans,
+        sales=sales,
+        forum_posts=forum_posts,
+        cart=cart
+    )
+
+
+
+
+
 @bp.route('/members')
 @login_required
 @admin_required

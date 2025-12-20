@@ -133,6 +133,9 @@ class Sale(db.Model):
     book_id = db.Column(db.Integer, db.ForeignKey('books.id'))
     sale_date = db.Column(db.DateTime, default=datetime.utcnow)
     price_at_sale = db.Column(db.Float)
+    
+    book = db.relationship('Book', backref='sales')
+    
 
 class Discount(db.Model):
     __tablename__ = 'discounts'
