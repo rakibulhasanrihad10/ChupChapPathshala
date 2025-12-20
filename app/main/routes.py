@@ -145,6 +145,18 @@ def admin_dashboard():
     
     return render_template('admin/dashboard.html', stats=stats)
 
+
+
+from flask import render_template
+from flask_login import login_required, current_user
+
+from app.models import (
+    Loan,
+    Sale,
+    ForumPost,
+    Cart
+)
+
 @bp.route('/members')
 @login_required
 @admin_required
