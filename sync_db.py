@@ -6,11 +6,11 @@ from app.extensions import db
 from app.models import (
     User, Book, Cart, CartItem, Loan, Sale, Discount, 
     Supplier, SupplyOrder, SupplyOrderItem, EBook, 
-    Campaign, Category, ForumPost, ForumComment
+    Campaign, Category, ForumPost, ForumComment, ChatMessage
 )
 from dotenv import load_dotenv
 
-# Load environment variables
+
 load_dotenv()
 
 def sync():
@@ -30,7 +30,7 @@ def sync():
     app = create_app()
     
     with app.app_context():
-        # Create engines and sessions
+        
         source_engine = create_engine(source_uri)
         SourceSession = sessionmaker(bind=source_engine)
         source_session = SourceSession()
@@ -60,7 +60,8 @@ def sync():
             Loan,
             Sale,
             SupplyOrder,
-            SupplyOrderItem
+            SupplyOrderItem,
+            ChatMessage
         ]
 
         try:
@@ -68,21 +69,21 @@ def sync():
                 table_name = model.__tablename__
                 print(f"Syncing table: {table_name}...", end=" ", flush=True)
                 
-                # Clear existing data in target table
+                
                 target_session.query(model).delete()
                 
-                # Fetch all data from source
+                
                 items = source_session.query(model).all()
                 
                 if not items:
                     print("Empty (skipped)")
                     continue
 
-                # Copy items to target
+                
                 for item in items:
-                    source_session.expunge(item) # Detach from source session
-                    make_transient(item)         # Make it look like a new object
-                    target_session.add(item)     # Add to target session
+                    source_session.expunge(item) 
+                    make_transient(item)         
+                    target_session.add(item)     
                 
                 target_session.commit()
                 print(f"Done ({len(items)} records)")

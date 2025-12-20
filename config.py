@@ -28,3 +28,7 @@ class Config:
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     ADMINS = [os.environ.get('MAIL_USERNAME') or 'your-email@example.com']
+    
+    # Gemini AI Chatbot Config
+    GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
+    GEMINI_MODEL = os.environ.get('GEMINI_MODEL') or 'gemini-flash-latest'
