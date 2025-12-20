@@ -21,6 +21,7 @@
     --placeholder-text: #1F2937;
 
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --white: #FFFFFF;
 }
 
 [data-theme="dark"] {
@@ -1096,4 +1097,212 @@ body {
     border-color: var(--primary-color);
     color: #818CF8;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* --- Track Order Redesign Styles --- */
+
+/* Summary Cards */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.summary-card {
+    background-color: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+}
+
+.summary-label {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.summary-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+/* Enhanced Table Styles */
+.table-sticky-header th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: var(--pill-bg);
+    /* Fallback */
+    background-color: var(--nav-bg);
+    /* Better context */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.table-zebra tbody tr:nth-child(even) {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+[data-theme="dark"] .table-zebra tbody tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* Status Badges - Pills */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.badge-gray {
+    background-color: #F3F4F6;
+    color: #374151;
+}
+
+[data-theme="dark"] .badge-gray {
+    background-color: #374151;
+    color: #F3F4F6;
+}
+
+.badge-blue {
+    background-color: #DBEAFE;
+    color: #1E40AF;
+}
+
+[data-theme="dark"] .badge-blue {
+    background-color: #1E3A8A;
+    color: #DBEAFE;
+}
+
+.badge-green {
+    background-color: #D1FAE5;
+    color: #065F46;
+}
+
+[data-theme="dark"] .badge-green {
+    background-color: #064E3B;
+    color: #D1FAE5;
+}
+
+.badge-orange {
+    background-color: #FFEDD5;
+    color: #9A3412;
+}
+
+[data-theme="dark"] .badge-orange {
+    background-color: #7C2D12;
+    color: #FFEDD5;
+}
+
+/* Global Search Input */
+.global-search-container {
+    position: relative;
+    width: 100%;
+}
+
+.global-search-input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    /* Space for icon */
+    font-size: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: all 0.2s;
+}
+
+.global-search-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.global-search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+/* Mobile Card View for Table */
+@media (max-width: 768px) {
+    .table-container {
+        background: transparent;
+        box-shadow: none;
+    }
+
+    .table-mobile-cards {
+        display: block;
+    }
+
+    .table-mobile-cards thead {
+        display: none;
+    }
+
+    .table-mobile-cards tbody {
+        display: block;
+    }
+
+    .table-mobile-cards tbody tr {
+        display: block;
+        background-color: var(--card-bg);
+        border-radius: 1rem;
+        box-shadow: var(--shadow);
+        margin-bottom: 1rem;
+        padding: 1rem;
+        border: 1px solid var(--border-color);
+    }
+
+    .table-mobile-cards tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--border-color);
+        text-align: right;
+    }
+
+    .table-mobile-cards tbody td:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+        justify-content: flex-end;
+        margin-top: 0.5rem;
+    }
+
+    .table-mobile-cards tbody td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-align: left;
+        margin-right: 1rem;
+    }
+}
+
+/* Hover Actions (Desktop Only) */
+@media (min-width: 768px) {
+    .table-zebra tbody tr .btn-action {
+        opacity: 0.5;
+        transition: all 0.2s;
+    }
+
+    .table-zebra tbody tr:hover .btn-action {
+        opacity: 1;
+        transform: scale(1.05);
+    }
 }

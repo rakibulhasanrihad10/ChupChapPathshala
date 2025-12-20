@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Order #{{ order.id }} Details{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto rounded-lg shadow-lg overflow-hidden my-8"
+    style="background-color: var(--card-bg); color: var(--text-color); border: 1px solid var(--border-color);">
+    <div class="px-6 py-4 border-b flex justify-between items-center"
+        style="background-color: var(--pill-bg); border-color: var(--border-color);">
+        <div>
+            <h2 class="text-xl font-bold">Order #{{ order.id }}</h2>
+            <p class="text-sm" style="color: var(--text-muted)">Created on {{ order.created_at.strftime('%Y-%m-%d
+                %H:%M') }}</p>
+        </div>
+        <div>
+            <span class="px-3 py-1 font-semibold leading-tight rounded-full
+                {% if order.status == 'completed' %}bg-green-100 text-green-800
+                {% elif order.status == 'placed' %}bg-blue-100 text-blue-800
+                {% else %}bg-orange-100 text-orange-800{% endif %}">
+                {{ order.status|capitalize }}
+            </span>
+        </div>
+    </div>
+
+    <div class="p-6">
+        <!-- Order Info -->
+        <div class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <h3 class="text-sm font-medium uppercase tracking-wider mb-2" style="color: var(--text-muted)">Supplier
+                </h3>
+                <p class="text-lg font-semibold">
+                    {{ order.supplier.name if order.supplier else 'Not Assigned' }}
+                </p>
+                {% if order.supplier %}
+                <p style="color: var(--text-muted)">{{ order.supplier.email }}</p>
+                <p style="color: var(--text-muted)">{{ order.supplier.phone }}</p>
+                {% endif %}
+            </div>
+            <div>
+                <h3 class="text-sm font-medium uppercase tracking-wider mb-2" style="color: var(--text-muted)">Summary
+                </h3>
+                <div class="flex justify-between items-center border-b py-2" style="border-color: var(--border-color);">
+                    <span style="color: var(--text-muted)">Total Items:</span>
+                    <span class="font-medium">{{ order.total_items }}</span>
+                </div>
+                <div class="flex justify-between items-center border-b py-2" style="border-color: var(--border-color);">
+                    <span style="color: var(--text-muted)">Estimated Amount:</span>
+                    <span class="font-bold text-indigo-600">৳{{ "%.2f"|format(order.total_amount) }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <h3 class="text-lg font-bold mb-4">Order Items</h3>
+        <div class="overflow-x-auto">
+            <table class="min-w-full leading-normal">
+                <thead>
+                    <tr>
+                        <th class="px-5 py-3 border-b-2 text-left text-xs font-semibold uppercase tracking-wider"
+                            style="background-color: var(--pill-bg); border-color: var(--border-color); color: var(--text-muted);">
+                            Book</th>
+                        <th class="px-5 py-3 border-b-2 text-center text-xs font-semibold uppercase tracking-wider"
+                            style="background-color: var(--pill-bg); border-color: var(--border-color); color: var(--text-muted);">
+                            Quantity</th>
+                        <th class="px-5 py-3 border-b-2 text-right text-xs font-semibold uppercase tracking-wider"
+                            style="background-color: var(--pill-bg); border-color: var(--border-color); color: var(--text-muted);">
+                            Unit Price</th>
+                        <th class="px-5 py-3 border-b-2 text-right text-xs font-semibold uppercase tracking-wider"
+                            style="background-color: var(--pill-bg); border-color: var(--border-color); color: var(--text-muted);">
+                            Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order.items %}
+                    <tr>
+                        <td class="px-5 py-5 border-b text-sm" style="border-color: var(--border-color);">
+                            <div class="flex items-center">
+                                <div class="ml-3">
+                                    <p class="font-medium">{{ item.book.title }}</p>
+                                    <p class="text-xs" style="color: var(--text-muted)">{{ item.book.author }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-5 py-5 border-b text-sm text-center" style="border-color: var(--border-color);">
+                            {{ item.mass }}
+                        </td>
+                        <td class="px-5 py-5 border-b text-sm text-right" style="border-color: var(--border-color);">
+                            ৳{{ "%.2f"|format(item.book.price) }}
+                        </td>
+                        <td class="px-5 py-5 border-b text-sm text-right font-medium"
+                            style="border-color: var(--border-color);">
+                            ৳{{ "%.2f"|format(item.mass * item.book.price) }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    <!-- Footer Row -->
+                    <tr style="background-color: var(--pill-bg);">
+                        <td colspan="3" class="px-5 py-5 border-b text-right font-bold"
+                            style="border-color: var(--border-color);">
+                            Grand Total</td>
+                        <td class="px-5 py-5 border-b text-right font-bold text-indigo-600"
+                            style="border-color: var(--border-color);">৳{{
+                            "%.2f"|format(order.total_amount) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-8 flex justify-end">
+            <a href="{{ url_for('main.supplier_orders') }}"
+                class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                Back to Orders
+            </a>
+            {% if order.status == 'placed' %}
+            <a href="{{ url_for('main.supplier_receive_detail', order_id=order.id) }}"
+                class="ml-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
+                Go to Receive
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

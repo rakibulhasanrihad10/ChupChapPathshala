@@ -167,6 +167,20 @@ class SupplyOrder(db.Model):
     
     items = db.relationship('SupplyOrderItem', backref='order', lazy='dynamic', cascade="all, delete-orphan")
 
+    @property
+    def total_items(self):
+        return self.items.with_entities(db.func.sum(SupplyOrderItem.mass)).scalar() or 0
+
+    @property
+    def total_amount(self):
+        # Calculate approximate total amount based on book retail price (since supply price isn't defined)
+        # Using python iteration over items for simplicity as calculation involves join
+        total = 0
+        for item in self.items:
+             if item.book and item.book.price:
+                 total += item.mass * item.book.price
+        return total
+
 class SupplyOrderItem(db.Model):
     __tablename__ = 'supply_order_items'
     id = db.Column(db.Integer, primary_key=True)

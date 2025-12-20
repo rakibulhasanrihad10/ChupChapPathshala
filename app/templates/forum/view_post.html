@@ -3,67 +3,129 @@
 {% block title %}{{ post.title }} - Forum{% endblock %}
 
 {% block content %}
-<div class="container my-4">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ url_for('forum.index') }}">Forum</a></li>
-            <li class="breadcrumb-item active" aria-current="page">{{ post.title }}</li>
+<div class="container my-4 max-w-4xl mx-auto px-4">
+    <!-- Modern Breadcrumb -->
+    <nav class="flex mb-6 text-sm font-medium" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+            <li class="inline-flex items-center">
+                <a href="{{ url_for('forum.index') }}" class="inline-flex items-center hover:underline"
+                    style="color: var(--primary-color);">
+                    <i class="fas fa-comments mr-2"></i>
+                    Forum
+                </a>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd"
+                            d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="ml-1 md:ml-2 line-clamp-1" style="color: var(--text-muted);">{{ post.title }}</span>
+                </div>
+            </li>
         </ol>
     </nav>
 
-    <div class="card">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h1 class="h3 card-title">{{ post.title }}</h1>
-                <span class="badge bg-{{ 'success' if post.post_type == 'trade' else 'info' }}">
-                    {{ post.post_type|title }}
+    <!-- Main Post Card -->
+    <div class="rounded-xl p-8 mb-8 shadow-xl border transition-colors"
+        style="background-color: var(--card-bg); border-color: var(--border-color); box-shadow: var(--shadow);">
+
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <h1 class="text-3xl md:text-4xl font-bold tracking-tight" style="color: var(--text-color);">
+                {{ post.title }}
+            </h1>
+            <span class="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider"
+                style="background-color: var(--pill-bg); color: var(--primary-color); border: 1px solid var(--border-color);">
+                {{ post.post_type|title }}
+            </span>
+        </div>
+
+        <div class="flex items-center gap-3 mb-8 pb-6 border-b" style="border-color: var(--border-color);">
+            <div class="flex flex-col">
+                <span class="text-sm font-semibold" style="color: var(--text-color);">
+                    Posted by <a href="{{ url_for('main.user_profile', username=post.user.username) }}"
+                        class="hover:underline" style="color: var(--primary-color);">{{ post.user.username }}</a>
+                </span>
+                <span class="text-xs font-medium" style="color: var(--text-muted);">
+                    {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}
                 </span>
             </div>
-            <h6 class="card-subtitle mb-4 text-muted">
-                Posted by {{ post.user.username }} on {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}
-            </h6>
-            <div class="card-text mb-4" style="white-space: pre-wrap;">{{ post.content }}</div>
-
-            {% if current_user == post.user %}
-            <div class="btn-group">
-                <a href="{{ url_for('forum.edit_post', post_id=post.id) }}" class="btn btn-warning">Edit</a>
-                <form action="{{ url_for('forum.delete_post', post_id=post.id) }}" method="POST"
-                    onsubmit="return confirm('Are you sure?');" style="display:inline;">
-                    <button type="submit" class="btn btn-danger">Delete</button>
-                </form>
-            </div>
-            {% endif %}
         </div>
+
+        <div class="prose max-w-none text-lg leading-relaxed mb-8"
+            style="color: var(--text-color); white-space: pre-wrap;">{{ post.content }}</div>
+
+        {% if current_user == post.user %}
+        <div class="flex gap-3 pt-6 border-t" style="border-color: var(--border-color);">
+            <a href="{{ url_for('forum.edit_post', post_id=post.id) }}"
+                class="btn inline-flex items-center px-4 py-2 rounded-lg font-semibold transition-all hover:scale-105"
+                style="background-color: var(--accent-color); color: white;">
+                <i class="fas fa-edit mr-2"></i> Edit
+            </a>
+            <form action="{{ url_for('forum.delete_post', post_id=post.id) }}" method="POST"
+                onsubmit="return confirm('Are you sure you want to delete this post?');" style="display:inline;">
+                <button type="submit"
+                    class="btn inline-flex items-center px-4 py-2 rounded-lg font-semibold transition-all hover:scale-105"
+                    style="background-color: #EF4444; color: white;">
+                    <i class="fas fa-trash-alt mr-2"></i> Delete
+                </button>
+            </form>
+        </div>
+        {% endif %}
     </div>
 
     <!-- Comments Section -->
-    <div class="mt-4">
-        <h3>Comments ({{ post.comments|length }})</h3>
+    <div class="mt-12">
+        <h3 class="text-2xl font-bold mb-6 flex items-center gap-2" style="color: var(--text-color);">
+            <i class="fas fa-comments opacity-50"></i>
+            Comments ({{ post.comments|length }})
+        </h3>
 
         {% if current_user.is_authenticated %}
-        <form method="POST" class="mb-4">
-            <div class="mb-3">
-                <textarea class="form-control" name="content" rows="3" placeholder="Add a comment..."
-                    required></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary">Post Comment</button>
-        </form>
+        <div class="rounded-xl p-6 mb-8 border"
+            style="background-color: var(--card-bg); border-color: var(--border-color);">
+            <form method="POST">
+                <div class="mb-4">
+                    <textarea
+                        class="w-full p-4 rounded-lg border focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                        name="content" rows="4" placeholder="Add a comment..."
+                        style="background-color: var(--pill-bg); border-color: var(--border-color); color: var(--text-color);"
+                        required></textarea>
+                </div>
+                <button type="submit"
+                    class="btn px-6 py-2.5 rounded-lg font-bold text-white transition-transform hover:scale-105"
+                    style="background-color: var(--primary-color);">
+                    Post Comment
+                </button>
+            </form>
+        </div>
         {% else %}
-        <p><a href="{{ url_for('auth.login') }}">Login</a> to comment.</p>
+        <div class="text-center py-6 rounded-xl border mb-8"
+            style="background-color: var(--pill-bg); border-color: var(--border-color);">
+            <p style="color: var(--text-muted);"><a href="{{ url_for('auth.login') }}"
+                    style="color: var(--primary-color); font-weight: 600;">Login</a> to join the discussion.</p>
+        </div>
         {% endif %}
 
-        {% for comment in post.comments %}
-        <div class="card mb-2">
-            <div class="card-body py-2">
-                <h6 class="card-subtitle mb-1 text-muted">
-                    <a href="{{ url_for('main.user_profile', username=comment.user.username) }}">{{
-                        comment.user.username }}</a>
-                    <small> on {{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
-                </h6>
-                <p class="card-text mb-0">{{ comment.content }}</p>
+        <div class="space-y-4">
+            {% for comment in post.comments|sort(attribute='created_at', reverse=True) %}
+            <div class="rounded-xl p-6 border transition-all hover:border-indigo-400"
+                style="background-color: var(--card-bg); border-color: var(--border-color);">
+                <div class="flex justify-between items-center mb-3">
+                    <a href="{{ url_for('main.user_profile', username=comment.user.username) }}"
+                        class="font-bold text-sm hover:underline" style="color: var(--primary-color);">
+                        {{ comment.user.username }}
+                    </a>
+                    <span class="text-xs font-medium" style="color: var(--text-muted);">
+                        {{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}
+                    </span>
+                </div>
+                <p class="text-base" style="color: var(--text-color);">{{ comment.content }}</p>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
     </div>
 </div>
 {% endblock %}

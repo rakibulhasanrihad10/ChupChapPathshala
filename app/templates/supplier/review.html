@@ -12,11 +12,14 @@
     {% if orders %}
     <div class="grid gap-8">
         {% for order in orders %}
-        <div class="rounded-xl shadow-lg overflow-hidden border" style="background-color: var(--card-bg); border-color: var(--border-color);">
-            <div class="px-6 py-4 flex justify-between items-center border-b" style="background-color: var(--bg-color); border-color: var(--border-color);">
+        <div class="rounded-xl shadow-lg overflow-hidden border"
+            style="background-color: var(--card-bg); border-color: var(--border-color);">
+            <div class="px-6 py-4 flex justify-between items-center border-b"
+                style="background-color: var(--bg-color); border-color: var(--border-color);">
                 <div>
                     <h3 class="font-bold text-lg" style="color: var(--text-color);">Order #{{ order.id }}</h3>
-                    <span class="text-sm" style="color: var(--text-muted);">Created: {{ order.created_at.strftime('%Y-%m-%d %H:%M')
+                    <span class="text-sm" style="color: var(--text-muted);">Created: {{
+                        order.created_at.strftime('%Y-%m-%d %H:%M')
                         }}</span>
                 </div>
                 <div class="flex items-center gap-4">
@@ -29,50 +32,65 @@
                 <table class="min-w-full divide-y mb-6" style="border-color: var(--border-color);">
                     <thead>
                         <tr>
-                            <th class="px-4 py-2 text-left text-xs font-medium uppercase" style="color: var(--text-muted);">Book</th>
-                            <th class="px-4 py-2 text-center text-xs font-medium uppercase" style="color: var(--text-muted);">Qty</th>
-                            <th class="px-4 py-2 text-center text-xs font-medium uppercase" style="color: var(--text-muted);">Action</th>
+                            <th class="px-4 py-2 text-left w-10">
+                                <input type="checkbox" onchange="toggleSelectAll({{ order.id }}, this)"
+                                    class="rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer">
+                            </th>
+                            <th class="px-4 py-2 text-left text-xs font-medium uppercase"
+                                style="color: var(--text-muted);">Book</th>
+                            <th class="px-4 py-2 text-center text-xs font-medium uppercase"
+                                style="color: var(--text-muted);">Qty</th>
+                            <th class="px-4 py-2 text-center text-xs font-medium uppercase"
+                                style="color: var(--text-muted);">Action</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y" style="border-color: var(--border-color);">
                         {% for item in order.items %}
                         <tr>
+                            <td class="px-4 py-2 text-left">
+                                <input type="checkbox" name="item_ids" value="{{ item.id }}"
+                                    form="launch-form-{{ order.id }}"
+                                    class="item-checkbox-{{ order.id }} rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer">
+                            </td>
                             <td class="px-4 py-2 text-sm" style="color: var(--text-color);">
                                 <div class="flex items-center gap-3">
-                                    <img src="{{ item.book.image_url or 'https://placehold.co/200x300?text=No+Cover' }}" 
-                                         alt="{{ item.book.title }}" 
-                                         class="w-10 h-14 object-cover rounded shadow-sm bg-gray-200">
+                                    <img src="{{ item.book.image_url or 'https://placehold.co/200x300?text=No+Cover' }}"
+                                        alt="{{ item.book.title }}"
+                                        class="w-10 h-14 object-cover rounded shadow-sm bg-gray-200">
                                     <span>{{ item.book.title }}</span>
                                 </div>
                             </td>
                             <td class="px-4 py-2 text-sm text-center" style="color: var(--text-color);">
                                 <div class="flex items-center justify-center">
-                                    <div class="flex items-center border rounded-md overflow-hidden shadow-sm" style="border-color: var(--border-color); background-color: var(--bg-color);">
-                                        <form action="{{ url_for('main.supplier_adjust_mass', item_id=item.id) }}" method="POST"
-                                            class="inline-block m-0">
+                                    <div class="flex items-center border rounded-md overflow-hidden shadow-sm"
+                                        style="border-color: var(--border-color); background-color: var(--bg-color);">
+                                        <form action="{{ url_for('main.supplier_adjust_mass', item_id=item.id) }}"
+                                            method="POST" class="inline-block m-0">
                                             <input type="hidden" name="action" value="decrease">
                                             <button type="submit"
-                                                class="w-7 h-7 flex items-center justify-center focus:outline-none transition-colors border-r group" style="border-color: var(--border-color); color: var(--text-color);">
-                                                <svg class="w-2.5 h-2.5 group-hover:scale-110 transition-transform" fill="none"
-                                                    stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                                        d="M20 12H4"></path>
+                                                class="w-7 h-7 flex items-center justify-center focus:outline-none transition-colors border-r group"
+                                                style="border-color: var(--border-color); color: var(--text-color);">
+                                                <svg class="w-2.5 h-2.5 group-hover:scale-110 transition-transform"
+                                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2.5" d="M20 12H4"></path>
                                                 </svg>
                                             </button>
                                         </form>
-                                        <div
-                                            class="w-10 h-7 flex items-center justify-center font-bold text-xs select-none" style="background-color: var(--bg-color); color: var(--text-color);">
+                                        <div class="w-10 h-7 flex items-center justify-center font-bold text-xs select-none"
+                                            style="background-color: var(--bg-color); color: var(--text-color);">
                                             {{ item.mass }}
                                         </div>
-                                        <form action="{{ url_for('main.supplier_adjust_mass', item_id=item.id) }}" method="POST"
-                                            class="inline-block m-0">
+                                        <form action="{{ url_for('main.supplier_adjust_mass', item_id=item.id) }}"
+                                            method="POST" class="inline-block m-0">
                                             <input type="hidden" name="action" value="increase">
                                             <button type="submit"
-                                                class="w-7 h-7 flex items-center justify-center focus:outline-none transition-colors border-l group" style="border-color: var(--border-color); color: var(--text-color);">
-                                                <svg class="w-2.5 h-2.5 group-hover:scale-110 transition-transform" fill="none"
-                                                    stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                                        d="M12 4v16m8-8H4"></path>
+                                                class="w-7 h-7 flex items-center justify-center focus:outline-none transition-colors border-l group"
+                                                style="border-color: var(--border-color); color: var(--text-color);">
+                                                <svg class="w-2.5 h-2.5 group-hover:scale-110 transition-transform"
+                                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2.5" d="M12 4v16m8-8H4"></path>
                                                 </svg>
                                             </button>
                                         </form>
@@ -80,10 +98,15 @@
                                 </div>
                             </td>
                             <td class="px-4 py-2 text-sm text-center">
-                                <form action="{{ url_for('main.supplier_drop', item_id=item.id) }}" method="POST" onsubmit="return confirm('Remove this item?');">
-                                    <button type="submit" class="text-red-500 hover:text-red-700 font-bold" title="Remove Item">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                <form action="{{ url_for('main.supplier_drop', item_id=item.id) }}" method="POST"
+                                    onsubmit="return confirm('Remove this item?');">
+                                    <button type="submit" class="text-red-500 hover:text-red-700 font-bold"
+                                        title="Remove Item">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                                            fill="currentColor">
+                                            <path fill-rule="evenodd"
+                                                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                                clip-rule="evenodd" />
                                         </svg>
                                     </button>
                                 </form>
@@ -94,13 +117,17 @@
                 </table>
 
                 <div class="flex justify-end gap-3">
-                    <form action="{{ url_for('main.supplier_launch', order_id=order.id) }}" method="POST" class="flex items-center gap-3">
-                        <select name="supplier_id" id="supplier_id" required
-                                class="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 min-w-[24rem] outline-none focus:ring-2 focus:ring-green-500 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors duration-200 appearance-none"
-                                >
-                            <option value="" disabled selected class="bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100">Select Supplier</option>
+                    <form action="{{ url_for('main.supplier_launch', order_id=order.id) }}" method="POST"
+                        id="launch-form-{{ order.id }}" class="flex items-center gap-3">
+                        <select name="supplier_id" id="supplier_id-{{ order.id }}" required
+                            class="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 min-w-[24rem] outline-none focus:ring-2 focus:ring-green-500 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors duration-200 appearance-none">
+                            <option value="" disabled selected
+                                class="bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100">Select Supplier
+                            </option>
                             {% for supplier in suppliers %}
-                                <option value="{{ supplier.id }}" class="bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100">{{ supplier.name }}</option>
+                            <option value="{{ supplier.id }}"
+                                class="bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100">{{ supplier.name }}
+                            </option>
                             {% endfor %}
                         </select>
                         <button type="submit"
@@ -120,4 +147,23 @@
     </div>
     {% endif %}
 </div>
+
+<script>
+    function toggleSelectAll(orderId, masterCheckbox) {
+        const checkboxes = document.querySelectorAll(`.item-checkbox-${orderId}`);
+        checkboxes.forEach(cb => {
+            cb.checked = masterCheckbox.checked;
+        });
+    }
+
+    // Pre-select all by default to maintain previous behavior but allow deselecting
+    document.addEventListener('DOMContentLoaded', function () {
+        const masterCheckboxes = document.querySelectorAll('input[onchange^="toggleSelectAll"]');
+        masterCheckboxes.forEach(mb => {
+            mb.checked = true;
+            const orderId = mb.getAttribute('onchange').match(/\d+/)[0];
+            toggleSelectAll(orderId, mb);
+        });
+    });
+</script>
 {% endblock %}
