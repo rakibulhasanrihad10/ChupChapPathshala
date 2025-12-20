@@ -1,0 +1,76 @@
+<!-- Chatbot Widget -->
+<div class="chatbot-widget">
+    <!-- Floating Chat Button -->
+    <button id="chatbot-button" class="chatbot-button" aria-label="Open chatbot">
+        <span>💬</span>
+    </button>
+
+    <!-- Chat Window -->
+    <div id="chatbot-window" class="chatbot-window">
+        <!-- Header -->
+        <div class="chatbot-header">
+            <div class="chatbot-header-info">
+                <div class="chatbot-avatar">🤖</div>
+                <div class="chatbot-title">
+                    <h3>Library Assistant</h3>
+                    <p>Online</p>
+                </div>
+            </div>
+            <button id="chatbot-close" class="chatbot-close" aria-label="Close chatbot">
+                <span>×</span>
+            </button>
+        </div>
+
+        <!-- Messages Area -->
+        <div id="chatbot-messages" class="chatbot-messages">
+            <!-- Welcome Message -->
+            <div class="welcome-message">
+                <div class="welcome-message-icon">🤖</div>
+                <h4>Hello! I'm your library assistant</h4>
+                <p>Ask me about books, check availability, or get recommendations!</p>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <button class="quick-action-btn" data-message="Show me all Bengali books">
+                📚 Bengali Books
+            </button>
+            <button class="quick-action-btn" data-message="Show me available books">
+                ✅ Available Books
+            </button>
+            <button class="quick-action-btn" data-message="Recommend me some books">
+                ⭐ Recommendations
+            </button>
+            {% if current_user.is_authenticated %}
+            <button class="quick-action-btn" data-message="What books have I borrowed?">
+                📖 My Loans
+            </button>
+            <button class="quick-action-btn" data-message="What's in my cart?">
+                🛒 My Cart
+            </button>
+            {% endif %}
+            {% if current_user.is_authenticated and current_user.is_staff() %}
+            <button class="quick-action-btn" data-message="Show low stock books">
+                📊 Low Stock
+            </button>
+            <button class="quick-action-btn" data-message="Top selling books this month">
+                📈 Top Sellers
+            </button>
+            {% endif %}
+        </div>
+
+        <!-- Input Area -->
+        <div class="chatbot-input">
+            <input 
+                type="text" 
+                id="chatbot-input" 
+                placeholder="Type your message..."
+                autocomplete="off"
+            />
+            <button id="chatbot-send" class="chatbot-send-btn" aria-label="Send message">
+                <span>➤</span>
+            </button>
+        </div>
+    </div>
+</div>

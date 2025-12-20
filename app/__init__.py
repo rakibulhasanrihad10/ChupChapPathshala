@@ -44,8 +44,13 @@ def create_app(config_class=Config):
     from app.forum import bp as forum_bp
     app.register_blueprint(forum_bp, url_prefix='/forum')
 
+
     from app.user import bp as user_bp
     app.register_blueprint(user_bp, url_prefix='/user')
+
+    from app.chatbot import bp as chatbot_bp
+    app.register_blueprint(chatbot_bp, url_prefix='/chatbot')
+
 
     return app
 

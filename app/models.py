@@ -258,3 +258,20 @@ class ForumComment(db.Model):
 
     def __repr__(self):
         return f'<ForumComment {self.content[:20]}>'
+
+class ChatMessage(db.Model):
+    __tablename__ = 'chat_messages'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  # Nullable for anonymous users
+    user = db.relationship('User', backref=db.backref('chat_messages', lazy=True))
+    session_id = db.Column(db.String(100), nullable=False, index=True)
+    message = db.Column(db.Text, nullable=False)
+    response = db.Column(db.Text, nullable=False)
+    intent = db.Column(db.String(50), nullable=True)  # 'search_books', 'check_availability'
+    function_data = db.Column(db.JSON, nullable=True)  # Store function call results (renamed from metadata)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<ChatMessage {self.session_id[:8]}>'
+
+
