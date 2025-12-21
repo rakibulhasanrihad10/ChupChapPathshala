@@ -76,39 +76,17 @@
 <div style="margin-bottom: 3rem;">
     <h2 style="font-size: 1.5rem; color: var(--text-color); font-weight: 700; margin-bottom: 1.5rem;">Shop by Category
     </h2>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-        <!-- Bengali -->
-        <a href="{{ url_for('main.catalog', category='Bengali') }}" style="text-decoration: none; color: inherit;">
-            <div style="background: linear-gradient(135deg, #75ced1, #44e9ef); padding: 0.75rem; border-radius: 0.75rem; color: white; text-align: center; transition: transform 0.2s;"
+    <div class="category-scroll-container">
+        {% for category in categories %}
+        <a href="{{ url_for('main.catalog', category=category.name) }}" class="category-item-link">
+            <div class="category-card"
+                style="background: linear-gradient(135deg, {{ loop.cycle('#75ced1, #44e9ef', '#2d6fd3, #8c82e4', '#60A5FA, #3B82F6', '#08e0d2, #12e4af', '#f59e0b, #fbbf24', '#ec4899, #f472b6') }});"
                 onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
-                <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700;">Bengali</h3>
-                <p style="margin: 0.5rem 0 0; opacity: 0.9; font-size: 0.9rem;">Literature & Classics</p>
+                <h3>{{ category.name }}</h3>
+                <p>Explore Collection</p>
             </div>
         </a>
-        <!-- Islamic -->
-        <a href="{{ url_for('main.catalog', category='Islamic') }}" style="text-decoration: none; color: inherit;">
-            <div style="background: linear-gradient(135deg, #2d6fd3, #8c82e4); padding: 0.75rem; border-radius: 0.75rem; color: white; text-align: center; transition: transform 0.2s;"
-                onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
-                <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700;">Islamic</h3>
-                <p style="margin: 0.5rem 0 0; opacity: 0.9; font-size: 0.9rem;">Religion & History</p>
-            </div>
-        </a>
-        <!-- Children -->
-        <a href="{{ url_for('main.catalog', category='Children') }}" style="text-decoration: none; color: inherit;">
-            <div style="background: linear-gradient(135deg, #60A5FA, #3B82F6); padding: 0.75rem; border-radius: 0.75rem; color: white; text-align: center; transition: transform 0.2s;"
-                onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
-                <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700;">Children</h3>
-                <p style="margin: 0.5rem 0 0; opacity: 0.9; font-size: 0.9rem;">Stories & Fun</p>
-            </div>
-        </a>
-        <!-- Academic -->
-        <a href="{{ url_for('main.catalog', category='Academic') }}" style="text-decoration: none; color: inherit;">
-            <div style="background: linear-gradient(135deg, #08e0d2, #12e4af); padding: 0.75rem; border-radius: 0.75rem; color: white; text-align: center; transition: transform 0.2s;"
-                onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
-                <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700;">Academic</h3>
-                <p style="margin: 0.5rem 0 0; opacity: 0.9; font-size: 0.9rem;">School & Learning</p>
-            </div>
-        </a>
+        {% endfor %}
     </div>
 </div>
 
@@ -145,6 +123,51 @@
         <a href="{{ url_for('main.catalog') }}"
             style="width: 100%; display: block; text-align: center; padding: 0.75rem; background: rgba(255,255,255,0.2); color: white; text-decoration: none; border-radius: 0.5rem; font-weight: 600; transition: background 0.2s;">Explore
             Full Catalog</a>
+    </div>
+</div>
+
+<!-- Owner/Management Section -->
+<div class="management-grid">
+    <!-- Top (Chairman) -->
+    <div class="management-row-top">
+        {% for member in management_members %}
+        {% if member.display_order == 1 %}
+        <div class="management-card">
+            <div class="management-header">{{ member.designation }}</div>
+            <div class="management-body">
+                <div class="management-name">{{ member.name }}</div>
+                <div class="management-img-wrapper">
+                    {% if member.image_file.startswith('http') %}
+                    <img src="{{ member.image_file }}" alt="{{ member.designation }}" class="management-img">
+                    {% else %}
+                    <img src="{{ url_for('static', filename=member.image_file) }}" alt="{{ member.designation }}" class="management-img">
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    
+    <!-- Others -->
+    <div class="management-row-bottom">
+        {% for member in management_members %}
+        {% if member.display_order != 1 %}
+        <div class="management-card">
+            <div class="management-header">{{ member.designation }}</div>
+            <div class="management-body">
+                <div class="management-name">{{ member.name }}</div>
+                <div class="management-img-wrapper">
+                    {% if member.image_file.startswith('http') %}
+                    <img src="{{ member.image_file }}" alt="{{ member.designation }}" class="management-img">
+                    {% else %}
+                    <img src="{{ url_for('static', filename=member.image_file) }}" alt="{{ member.designation }}" class="management-img">
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
     </div>
 </div>
 <script>

@@ -43,6 +43,10 @@
         </div>
 
         <div class="flex items-center gap-3 mb-8 pb-6 border-b" style="border-color: var(--border-color);">
+            <img src="{{ post.user.profile_photo or 'https://placehold.co/150x150?text=User' }}" 
+                 alt="{{ post.user.username }}" 
+                 class="w-10 h-10 rounded-full object-cover border"
+                 style="border-color: var(--border-color);">
             <div class="flex flex-col">
                 <span class="text-sm font-semibold" style="color: var(--text-color);">
                     Posted by <a href="{{ url_for('main.user_profile', username=post.user.username) }}"

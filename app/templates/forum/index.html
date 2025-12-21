@@ -20,6 +20,10 @@
         <div class="flex items-center gap-3 mb-4">
             <div class="inline-flex items-center px-3 py-1 rounded-full border"
                 style="background-color: var(--pill-bg); border-color: var(--border-color);">
+                <img src="{{ post.user.profile_photo or 'https://placehold.co/150x150?text=User' }}" 
+                     alt="{{ post.user.username }}" 
+                     class="w-6 h-6 rounded-full mr-2 object-cover border"
+                     style="border-color: var(--border-color);">
                 <span class="text-xs font-medium" style="color: var(--text-muted);">
                     {{ post.post_type|title }} by
                     <a href="{{ url_for('main.user_profile', username=post.user.username) }}" class="hover:underline"

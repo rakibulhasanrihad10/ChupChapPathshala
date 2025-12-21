@@ -51,6 +51,17 @@ def create_app(config_class=Config):
     from app.chatbot import bp as chatbot_bp
     app.register_blueprint(chatbot_bp, url_prefix='/chatbot')
 
+    from app.messages import bp as messages_bp
+    app.register_blueprint(messages_bp, url_prefix='/messages')
+
+    # Update last_seen timestamp on every request
+    @app.before_request
+    def before_request():
+        from flask_login import current_user
+        from datetime import datetime
+        if current_user.is_authenticated:
+            current_user.last_seen = datetime.utcnow()
+            db.session.commit()
 
     return app
 

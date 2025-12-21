@@ -39,16 +39,6 @@ def upload_cover(book_id):
             os.makedirs(current_app.config['UPLOAD_FOLDER'])
             
         file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], new_filename))
-        
-        # Update Database - Store relative path for frontend
-        # Note: 'static/uploads/covers/...' is how we access it in templates
-        # We need to construct the full URL or consistent path. 
-        # Given existing data uses full URLs in some cases, let's stick to a consistent path pattern.
-        # However, `url_for('static', ...)` is best practice. 
-        # But `book.image_url` is a string. Let's store the full url path relative to root or absolute?
-        # The template uses `img src="{{ book.image_url }}"`.
-        # So we should store: `/static/uploads/covers/filename`
-        
         image_path = url_for('static', filename=f'uploads/covers/{new_filename}')
         book.image_url = image_path
         db.session.commit()

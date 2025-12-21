@@ -35,6 +35,9 @@ class User(UserMixin, db.Model):
     # Profile Customization
     profile_photo = db.Column(db.String(500), default='https://placehold.co/150x150?text=User')
     cover_photo = db.Column(db.String(500), default='https://placehold.co/800x300?text=Cover')
+    
+    # Online/Offline Status Tracking
+    last_seen = db.Column(db.DateTime, default=datetime.utcnow)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -47,6 +50,12 @@ class User(UserMixin, db.Model):
 
     def is_staff(self):
         return self.role in ['admin', 'librarian']
+    
+    def is_online(self):
+        """Check if user is online (active in last 5 minutes)"""
+        if not self.last_seen:
+            return False
+        return (datetime.utcnow() - self.last_seen).total_seconds() < 300
 
     def get_reset_token(self, expires_sec=1800):
         s = jwt.encode(
@@ -273,5 +282,32 @@ class ChatMessage(db.Model):
     
     def __repr__(self):
         return f'<ChatMessage {self.session_id[:8]}>'
+
+class Message(db.Model):
+    __tablename__ = 'messages'
+    id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    recipient_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    body = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    is_read = db.Column(db.Boolean, default=False)
+
+    sender = db.relationship('User', foreign_keys=[sender_id], backref='sent_messages')
+    recipient = db.relationship('User', foreign_keys=[recipient_id], backref='received_messages')
+
+    def __repr__(self):
+        return f'<Message {self.body}>'
+
+
+class ManagementMember(db.Model):
+    __tablename__ = 'management_members'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, default='Name')
+    designation = db.Column(db.String(100), nullable=False, default='Designation')
+    image_file = db.Column(db.String(255), default='default_management.jpg')
+    display_order = db.Column(db.Integer, unique=True, nullable=False) # 1, 2, 3, 4
+
+    def __repr__(self):
+        return f'<ManagementMember {self.designation}>'
 
 

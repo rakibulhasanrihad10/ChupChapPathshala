@@ -22,12 +22,12 @@
                    class="hidden border rounded px-2 py-1 text-sm outline-none shadow-sm transition-all"
                    style="width: 120px; border-color: var(--border-color); background-color: var(--bg-color); color: var(--text-color);">
 
-            <a href="{{ url_for('main.catalog', sort=current_sort) }}" 
+            <a href="{{ url_for('main.catalog', sort=current_sort, per_page=current_per_page) }}" 
                class="filter-chip glass-chip {{ 'active' if not current_category else '' }}">
                All Books
             </a>
             {% for cat in categories %}
-            <a href="{{ url_for('main.catalog', category=cat, sort=current_sort) }}" 
+            <a href="{{ url_for('main.catalog', category=cat, sort=current_sort, per_page=current_per_page) }}" 
                class="filter-chip glass-chip {{ 'active' if current_category == cat else '' }}">
                {{ cat }}
             </a>
@@ -49,12 +49,12 @@
                    class="hidden border rounded px-2 py-1 text-sm outline-none shadow-sm transition-all"
                    style="width: 120px; border-color: var(--border-color); background-color: var(--bg-color); color: var(--text-color);">
 
-            <a href="{{ url_for('main.catalog', category=current_category, sort=current_sort) }}" 
+            <a href="{{ url_for('main.catalog', category=current_category, sort=current_sort, per_page=current_per_page) }}" 
                class="filter-chip glass-chip {{ 'active' if not current_author else '' }}">
                All Authors
             </a>
             {% for author in authors %}
-            <a href="{{ url_for('main.catalog', category=current_category, author=author, sort=current_sort) }}" 
+            <a href="{{ url_for('main.catalog', category=current_category, author=author, sort=current_sort, per_page=current_per_page) }}" 
                class="filter-chip glass-chip {{ 'active' if current_author == author else '' }}">
                {{ author }}
             </a>
@@ -72,14 +72,14 @@
             ] %}
             
             {% for value, label in sort_options %}
-            <a href="{{ url_for('main.catalog', category=current_category, sort=value) }}" 
+            <a href="{{ url_for('main.catalog', category=current_category, author=current_author, sort=value, per_page=current_per_page) }}" 
                class="filter-chip glass-chip {{ 'active' if current_sort == value else '' }}">
                {{ label }}
             </a>
             {% endfor %}
             
             {% if current_sort %}
-            <a href="{{ url_for('main.catalog', category=current_category) }}" 
+            <a href="{{ url_for('main.catalog', category=current_category, author=current_author, per_page=current_per_page) }}" 
                style="white-space: nowrap; padding: 0.4rem 1rem; text-decoration: none; font-size: 0.9em; color: #EF4444; font-weight: 500;">
                ✕ Clear Sort
             </a>
@@ -168,6 +168,70 @@
     {% endfor %}
 </div>
 
+<!-- Pagination Controls -->
+{% if pagination %}
+<div class="mt-12 flex flex-col gap-6">
+    {% if pagination.pages > 1 %}
+    <!-- Navigation Bar -->
+    <div class="flex items-center justify-between w-full">
+        <!-- PREV Button -->
+        <div class="w-20">
+        {% if pagination.has_prev %}
+            <a href="{{ url_for('main.catalog', page=pagination.prev_num, category=current_category, author=current_author, sort=current_sort, per_page=current_per_page) }}"
+               class="text-xs font-bold uppercase tracking-widest transition hover:text-red-600"
+               style="color: var(--text-muted);">
+                PREV
+            </a>
+        {% endif %}
+        </div>
+
+        <!-- Page Numbers Timeline -->
+        <nav class="flex items-center gap-1" aria-label="Pagination">
+            {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=3) %}
+                {% if p %}
+                    <a href="{{ url_for('main.catalog', page=p, category=current_category, author=current_author, sort=current_sort, per_page=current_per_page) }}"
+                       class="w-8 h-8 flex items-center justify-center text-xs font-bold rounded-lg transition-all"
+                       style="{{ 'background-color: #dc2626; color: #ffffff; box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);' if p == pagination.page else 'color: var(--text-color); background-color: rgba(128, 128, 128, 0.08);' }}">
+                        {{ p }}
+                    </a>
+                {% else %}
+                    <span class="px-1 text-xs" style="color: var(--text-muted);">...</span>
+                {% endif %}
+            {% endfor %}
+        </nav>
+
+        <!-- NEXT Button -->
+        <div class="w-20 text-right">
+        {% if pagination.has_next %}
+            <a href="{{ url_for('main.catalog', page=pagination.next_num, category=current_category, author=current_author, sort=current_sort, per_page=current_per_page) }}"
+               class="text-xs font-bold uppercase tracking-widest transition hover:text-red-600"
+               style="color: var(--text-muted);">
+                NEXT
+            </a>
+        {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Summary & Page Size Info -->
+    <div class="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-4">
+        <div class="flex items-center gap-2">
+            <span class="text-sm font-medium" style="color: var(--text-muted);">Show:</span>
+            <select onchange="updatePageSize(this.value)" 
+                    class="bg-transparent border rounded px-1 text-sm outline-none transition"
+                    style="color: var(--text-color); border-color: var(--border-color); background-color: var(--card-bg);">
+                {% for size in [5, 10, 20, 50] %}
+                <option value="{{ size }}" {{ 'selected' if current_per_page == size }}>{{ size }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <p class="text-sm font-medium" style="color: var(--text-muted);">
+            Showing {{ (pagination.page - 1) * pagination.per_page + 1 }} to {{ (pagination.page - 1) * pagination.per_page + books|length }} of {{ pagination.total }} ({{ pagination.pages }} Pages)
+        </p>
+    </div>
+</div>
+{% endif %}
+
 <script>
     function toggleFilterSearch(btn) {
         const input = btn.nextElementSibling;
@@ -245,6 +309,13 @@
             input.value = '';
         });
     }
+}
+
+function updatePageSize(size) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('per_page', size);
+    url.searchParams.set('page', 1); // Reset to page 1 on size change
+    window.location.href = url.toString();
 }
 </script>
 {% endblock %}

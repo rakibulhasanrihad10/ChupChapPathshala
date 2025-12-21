@@ -42,6 +42,15 @@
             </a>
             {% endif %}
 
+            <!-- Message Button -->
+            {% if current_user.is_authenticated and current_user.id != user.id %}
+            <button onclick="openChat({{ user.id }}, '{{ user.username }}', '{{ user.profile_photo }}')" 
+                    class="btn-action" style="background-color: var(--primary-color); color: white; width: auto;">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                Message
+            </button>
+            {% endif %}
+
             {% if current_user.is_authenticated and current_user.id == user.id %}
             <a href="{{ url_for('auth.edit_profile') }}" class="btn-action"
                 style="background: var(--pill-bg); color: var(--pill-text); width: auto;">
@@ -54,6 +63,29 @@
             </a>
             {% endif %}
         </div>
+    </div>
+</div>
+
+
+<!-- Profile Stats Grid -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 rounded-lg w-full mt-12 mb-8">
+    {% if current_user.is_authenticated and current_user.id == user.id %}
+    <div class="p-4 rounded-lg shadow-sm text-center transition" style="background-color: var(--card-bg); border: 1px solid var(--border-color);">
+        <p class="text-sm" style="color: var(--text-muted);">Active Loans</p>
+        <p class="text-3xl font-bold" style="color: var(--text-color);">{{ active_loans|length if active_loans else 0 }}</p>
+    </div>
+    <div class="p-4 rounded-lg shadow-sm text-center transition" style="background-color: var(--card-bg); border: 1px solid var(--border-color);">
+        <p class="text-sm" style="color: var(--text-muted);">Overdue</p>
+        <p class="text-3xl font-bold text-red-600">{{ overdue_loans|length if overdue_loans else 0 }}</p>
+    </div>
+    <div class="p-4 rounded-lg shadow-sm text-center transition" style="background-color: var(--card-bg); border: 1px solid var(--border-color);">
+        <p class="text-sm" style="color: var(--text-muted);">Purchases</p>
+        <p class="text-3xl font-bold" style="color: var(--text-color);">{{ sales.total if sales else 0 }}</p>
+    </div>
+    {% endif %}
+    <div class="p-4 rounded-lg shadow-sm text-center transition" style="background-color: var(--card-bg); border: 1px solid var(--border-color);">
+        <p class="text-sm" style="color: var(--text-muted);">Forum Posts</p>
+        <p class="text-3xl font-bold" style="color: var(--text-color);">{{ user.forum_posts|length }}</p>
     </div>
 </div>
 
@@ -117,8 +149,28 @@
         <!-- Borrowing History (Private) -->
         {% if current_user.is_authenticated and current_user.id == user.id %}
         {% if loans %}
-        <div class="p-6 rounded-xl shadow-sm" style="background-color: var(--card-bg);">
-            <h3 class="text-xl font-bold mb-6" style="color: var(--text-color);">Borrowing History</h3>
+        <div id="borrowing" class="p-6 rounded-xl shadow-sm scroll-mt-24" style="background-color: var(--card-bg);">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold" style="color: var(--text-color);">Borrowing History</h3>
+                <!-- Loan Status Filter -->
+                <div class="flex bg-gray-100 rounded-lg p-1" style="background-color: var(--bg-color); border: 1px solid var(--border-color);">
+                    <a href="{{ url_for('main.user_profile', username=user.username, loan_filter='all', loan_page=1) }}#borrowing" 
+                       class="px-3 py-1 text-xs font-semibold rounded-md transition-all {{ 'bg-white shadow-sm text-gray-900' if loan_filter == 'all' else 'text-gray-500 hover:text-gray-700' }}"
+                       style="{{ 'background-color: var(--card-bg); color: var(--text-color); box-shadow: 0 1px 2px rgba(0,0,0,0.1);' if loan_filter == 'all' else 'color: var(--text-muted);' }}">
+                       All
+                    </a>
+                    <a href="{{ url_for('main.user_profile', username=user.username, loan_filter='active', loan_page=1) }}#borrowing" 
+                       class="px-3 py-1 text-xs font-semibold rounded-md transition-all {{ 'bg-red-500 text-white shadow-sm' if loan_filter == 'active' else 'text-gray-500 hover:text-gray-700' }}"
+                       style="{{ 'background-color: var(--primary-color); color: white; box-shadow: 0 1px 2px rgba(220, 38, 38, 0.2);' if loan_filter == 'active' else 'color: var(--text-muted);' }}">
+                       Active
+                    </a>
+                    <a href="{{ url_for('main.user_profile', username=user.username, loan_filter='returned', loan_page=1) }}#borrowing" 
+                       class="px-3 py-1 text-xs font-semibold rounded-md transition-all {{ 'bg-white shadow-sm text-gray-900' if loan_filter == 'returned' else 'text-gray-500 hover:text-gray-700' }}"
+                       style="{{ 'background-color: var(--card-bg); color: var(--text-color); box-shadow: 0 1px 2px rgba(0,0,0,0.1);' if loan_filter == 'returned' else 'color: var(--text-muted);' }}">
+                       Returned
+                    </a>
+                </div>
+            </div>
 
             <div class="space-y-4">
                 {% for loan in loans %}
@@ -132,8 +184,8 @@
                     </div>
 
                     <div class="flex-1 min-w-0">
-                        <div class="flex justify-between items-center">
-                            <div>
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                            <div class="w-full sm:flex-1 min-w-0 pr-0 sm:pr-2">
                                 <h4 class="text-lg font-bold truncate" style="color: var(--text-color);">{{
                                     loan.book.title }}</h4>
                                 <p class="text-sm font-medium" style="color: var(--text-muted);">{{ loan.book.author }}
@@ -141,6 +193,7 @@
                             </div>
 
                             <!-- Status Badge -->
+                            <div class="self-start sm:self-center flex-shrink-0">
                             {% if loan.status == 'returned' %}
                             <span
                                 class="px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-md bg-green-100 text-green-800 border border-green-200">Returned</span>
@@ -151,6 +204,7 @@
                                 <span
                                     class="px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-md bg-blue-100 text-blue-800 border border-blue-200">Active</span>
                                 {% endif %}
+                            </div>
                         </div>
 
                         <div class="mt-4 grid grid-cols-2 gap-4 text-sm">
@@ -183,6 +237,68 @@
                 </div>
                 {% endfor %}
             </div>
+
+            <!-- Pagination Controls (Borrowing) -->
+            <div class="mt-8 flex flex-col gap-4 border-t pt-6" style="border-color: var(--border-color);">
+                {% if loans_pagination and loans_pagination.pages > 1 %}
+                <!-- Navigation Bar -->
+                <div class="flex items-center justify-between w-full">
+                    <!-- PREV Button -->
+                    <div class="w-20">
+                    {% if loans_pagination.has_prev %}
+                        <a href="{{ url_for('main.user_profile', username=user.username, loan_page=loans_pagination.prev_num, loan_filter=loan_filter) }}#borrowing"
+                           class="text-xs font-bold uppercase tracking-widest transition hover:text-red-600"
+                           style="color: var(--text-muted);">
+                            PREV
+                        </a>
+                    {% endif %}
+                    </div>
+
+                    <!-- Page Numbers Timeline -->
+                    <nav class="flex items-center gap-1" aria-label="Pagination">
+                        {% for p in loans_pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=3) %}
+                            {% if p %}
+                                <a href="{{ url_for('main.user_profile', username=user.username, loan_page=p, loan_filter=loan_filter) }}#borrowing"
+                                   class="w-8 h-8 flex items-center justify-center text-xs font-bold rounded-lg transition-all"
+                                   style="{{ 'background-color: #dc2626; color: #ffffff; box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);' if p == loans_pagination.page else 'color: var(--text-color); background-color: rgba(128, 128, 128, 0.08);' }}">
+                                    {{ p }}
+                                </a>
+                            {% else %}
+                                <span class="px-1 text-xs" style="color: var(--text-muted);">...</span>
+                            {% endif %}
+                        {% endfor %}
+                    </nav>
+
+                    <!-- NEXT Button -->
+                    <div class="w-20 text-right">
+                    {% if loans_pagination.has_next %}
+                        <a href="{{ url_for('main.user_profile', username=user.username, loan_page=loans_pagination.next_num, loan_filter=loan_filter) }}#borrowing"
+                           class="text-xs font-bold uppercase tracking-widest transition hover:text-red-600"
+                           style="color: var(--text-muted);">
+                            NEXT
+                        </a>
+                    {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Summary & Page Size Info -->
+                <div class="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-4">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-medium" style="color: var(--text-muted);">Show:</span>
+                        <select onchange="updatePageSize('loan', this.value)" 
+                                class="bg-transparent border rounded px-1 text-sm outline-none transition"
+                                style="color: var(--text-color); border-color: var(--border-color); background-color: var(--card-bg);">
+                            {% for size in [5, 10, 20, 50] %}
+                            <option value="{{ size }}" {{ 'selected' if loan_per_page == size }}>{{ size }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <p class="text-sm font-medium" style="color: var(--text-muted);">
+                        Showing {{ (loans_pagination.page - 1) * loans_pagination.per_page + 1 }} to {{ (loans_pagination.page - 1) * loans_pagination.per_page + loans|length }} of {{ loans_pagination.total }} ({{ loans_pagination.pages }} Pages)
+                    </p>
+                </div>
+            </div>
         </div>
         {% else %}
         <!-- Placeholder for Loans -->
@@ -207,31 +323,211 @@
         {% endif %}
 
         <!-- Forum Post History (Public) -->
-        <div class="p-6 rounded-xl shadow-sm" style="background-color: var(--card-bg);">
+        <div id="forum" class="p-6 rounded-xl shadow-sm scroll-mt-24" style="background-color: var(--card-bg);">
             <h3 class="text-xl font-bold mb-6" style="color: var(--text-color);">Forum Activity</h3>
-            {% if user.forum_posts %}
-            {% for post in user.forum_posts %}
-            <div class="card mb-3 bg-slate-900 border-none shadow-none" style="background-color: var(--bg-color);">
-                <div class="card-body p-4 rounded-lg border" style="border-color: var(--border-color);">
-                    <div class="flex justify-between items-center mb-2">
-                        <a href="{{ url_for('forum.view_post', post_id=post.id) }}"
-                            class="text-lg font-bold hover:text-blue-500 transition-colors"
-                            style="color: var(--text-color);">
-                            {{ post.title }}
-                        </a>
-                        <span class="text-xs text-muted">{{ post.created_at.strftime('%Y-%m-%d') }}</span>
+            {% if forum_posts %}
+            <div class="space-y-4">
+                {% for post in forum_posts %}
+                <div class="card mb-3 bg-slate-900 border-none shadow-none" style="background-color: var(--bg-color);">
+                    <div class="card-body p-4 rounded-lg border" style="border-color: var(--border-color);">
+                        <div class="flex justify-between items-center mb-2">
+                            <a href="{{ url_for('forum.view_post', post_id=post.id) }}"
+                                class="text-lg font-bold hover:text-blue-500 transition-colors"
+                                style="color: var(--text-color);">
+                                {{ post.title }}
+                            </a>
+                            <span class="text-xs text-muted">{{ post.created_at.strftime('%Y-%m-%d') }}</span>
+                        </div>
+                        <span
+                            class="inline-block px-2 py-1 tx-xs rounded bg-blue-100 text-blue-800 text-xs font-semibold uppercase">{{
+                            post.post_type }}</span>
+                        <p class="mt-2 text-sm line-clamp-2" style="color: var(--text-muted);">{{ post.content }}</p>
                     </div>
-                    <span
-                        class="inline-block px-2 py-1 tx-xs rounded bg-blue-100 text-blue-800 text-xs font-semibold uppercase">{{
-                        post.post_type }}</span>
-                    <p class="mt-2 text-sm line-clamp-2" style="color: var(--text-muted);">{{ post.content }}</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination Controls (Forum) -->
+            <div class="mt-8 flex flex-col gap-4 border-t pt-6" style="border-color: var(--border-color);">
+                {% if forum_pagination and forum_pagination.pages > 1 %}
+                <!-- Navigation Bar -->
+                <div class="flex items-center justify-between w-full">
+                    <!-- PREV Button -->
+                    <div class="w-20">
+                    {% if forum_pagination.has_prev %}
+                        <a href="{{ url_for('main.user_profile', username=user.username, forum_page=forum_pagination.prev_num) }}#forum"
+                           class="text-xs font-bold uppercase tracking-widest transition hover:text-red-600"
+                           style="color: var(--text-muted);">
+                            PREV
+                        </a>
+                    {% endif %}
+                    </div>
+
+                    <!-- Page Numbers Timeline -->
+                    <nav class="flex items-center gap-1" aria-label="Pagination">
+                        {% for p in forum_pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=3) %}
+                            {% if p %}
+                                <a href="{{ url_for('main.user_profile', username=user.username, forum_page=p) }}#forum"
+                                   class="w-8 h-8 flex items-center justify-center text-xs font-bold rounded-lg transition-all"
+                                   style="{{ 'background-color: #dc2626; color: #ffffff; box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);' if p == forum_pagination.page else 'color: var(--text-color); background-color: rgba(128, 128, 128, 0.08);' }}">
+                                    {{ p }}
+                                </a>
+                            {% else %}
+                                <span class="px-1 text-xs" style="color: var(--text-muted);">...</span>
+                            {% endif %}
+                        {% endfor %}
+                    </nav>
+
+                    <!-- NEXT Button -->
+                    <div class="w-20 text-right">
+                    {% if forum_pagination.has_next %}
+                        <a href="{{ url_for('main.user_profile', username=user.username, forum_page=forum_pagination.next_num) }}#forum"
+                           class="text-xs font-bold uppercase tracking-widest transition hover:text-red-600"
+                           style="color: var(--text-muted);">
+                            NEXT
+                        </a>
+                    {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Summary & Page Size Info -->
+                <div class="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-4">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-medium" style="color: var(--text-muted);">Show:</span>
+                        <select onchange="updatePageSize('forum', this.value)" 
+                                class="bg-transparent border rounded px-1 text-sm outline-none transition"
+                                style="color: var(--text-color); border-color: var(--border-color); background-color: var(--card-bg);">
+                            {% for size in [5, 10, 20, 50] %}
+                            <option value="{{ size }}" {{ 'selected' if forum_per_page == size }}>{{ size }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <p class="text-sm font-medium" style="color: var(--text-muted);">
+                        Showing {{ (forum_pagination.page - 1) * forum_pagination.per_page + 1 }} to {{ (forum_pagination.page - 1) * forum_pagination.per_page + forum_posts|length }} of {{ forum_pagination.total }} ({{ forum_pagination.pages }} Pages)
+                    </p>
                 </div>
             </div>
-            {% endfor %}
             {% else %}
             <p class="text-center py-4" style="color: var(--text-muted);">No forum posts yet.</p>
             {% endif %}
         </div>
 
+        <!-- Purchase History (Private) -->
+        {% if current_user.is_authenticated and current_user.id == user.id %}
+        <div id="purchases" class="p-6 rounded-xl shadow-sm scroll-mt-24" style="background-color: var(--card-bg);">
+            <h3 class="text-xl font-bold mb-6" style="color: var(--text-color);">Purchase History</h3>
+            {% if sales and sales.items %}
+            <div class="space-y-4">
+                {% for sale in sales.items %}
+                <div class="flex items-center justify-between p-4 rounded-lg border"
+                    style="border-color: var(--border-color); background-color: var(--bg-color);">
+                    <div class="flex items-center gap-4">
+                        <div class="flex-shrink-0 w-12 h-18 overflow-hidden rounded bg-gray-200">
+                            <img src="{{ sale.book.image_url or 'https://placehold.co/100x150?text=No+Cover' }}"
+                                alt="{{ sale.book.title }}" class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <h4 class="font-bold" style="color: var(--text-color);">{{ sale.book.title }}</h4>
+                            <p class="text-xs text-muted">{{ sale.sale_date.strftime('%b %d, %Y') }}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="font-bold" style="color: var(--primary-color);">TK {{ "%.2f"|format(sale.price_at_sale) }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination Controls -->
+            <div class="mt-8 flex flex-col gap-4 border-t pt-6" style="border-color: var(--border-color);">
+                {% if sales.pages > 1 %}
+                <!-- Navigation Bar -->
+                <div class="flex items-center justify-between w-full">
+                    <!-- PREV Button -->
+                    <div class="w-20">
+                    {% if sales.has_prev %}
+                        <a href="{{ url_for('main.user_profile', username=user.username, sale_page=sales.prev_num) }}#purchases"
+                           class="text-xs font-bold uppercase tracking-widest transition hover:text-red-600"
+                           style="color: var(--text-muted);">
+                            PREV
+                        </a>
+                    {% endif %}
+                    </div>
+
+                    <!-- Page Numbers Timeline -->
+                    <nav class="flex items-center gap-1" aria-label="Pagination">
+                        {% for p in sales.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=3) %}
+                            {% if p %}
+                                <a href="{{ url_for('main.user_profile', username=user.username, sale_page=p) }}#purchases"
+                                   class="w-8 h-8 flex items-center justify-center text-xs font-bold rounded-lg transition-all"
+                                   style="{{ 'background-color: #dc2626; color: #ffffff; box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);' if p == sales.page else 'color: var(--text-color); background-color: rgba(128, 128, 128, 0.08);' }}">
+                                    {{ p }}
+                                </a>
+                            {% else %}
+                                <span class="px-1 text-xs" style="color: var(--text-muted);">...</span>
+                            {% endif %}
+                        {% endfor %}
+                    </nav>
+
+                    <!-- NEXT Button -->
+                    <div class="w-20 text-right">
+                    {% if sales.has_next %}
+                        <a href="{{ url_for('main.user_profile', username=user.username, sale_page=sales.next_num) }}#purchases"
+                           class="text-xs font-bold uppercase tracking-widest transition hover:text-red-600"
+                           style="color: var(--text-muted);">
+                            NEXT
+                        </a>
+                    {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Summary & Page Size Info -->
+                <div class="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-4">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-medium" style="color: var(--text-muted);">Show:</span>
+                        <select onchange="updatePageSize('sale', this.value)" 
+                                class="bg-transparent border rounded px-1 text-sm outline-none transition"
+                                style="color: var(--text-color); border-color: var(--border-color); background-color: var(--card-bg);">
+                            {% for size in [5, 10, 20, 50] %}
+                            <option value="{{ size }}" {{ 'selected' if sale_per_page == size }}>{{ size }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <p class="text-sm font-medium" style="color: var(--text-muted);">
+                        Showing {{ (sales.page - 1) * sales.per_page + 1 }} to {{ (sales.page - 1) * sales.per_page + sales.items|length }} of {{ sales.total }} ({{ sales.pages }} Pages)
+                    </p>
+                </div>
+            </div>
+            {% else %}
+            <p class="text-center py-4" style="color: var(--text-muted);">No purchases yet.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
     </div>
+</div>
+    <script>
+    function updatePageSize(type, size) {
+        const url = new URL(window.location.href);
+        if (type === 'loan') {
+            url.searchParams.set('loan_per_page', size);
+            url.searchParams.set('loan_page', 1);
+            // Preserve filter
+            const filter = url.searchParams.get('loan_filter');
+            if (filter) url.searchParams.set('loan_filter', filter);
+            url.hash = 'borrowing';
+        } else if (type === 'sale') {
+            url.searchParams.set('sale_per_page', size);
+            url.searchParams.set('sale_page', 1);
+            url.hash = 'purchases';
+        } else if (type === 'forum') {
+            url.searchParams.set('forum_per_page', size);
+            url.searchParams.set('forum_page', 1);
+            url.hash = 'forum';
+        }
+        window.location.href = url.toString();
+    }
+    </script>
     {% endblock %}

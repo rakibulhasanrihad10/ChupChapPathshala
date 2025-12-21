@@ -1,0 +1,231 @@
+{% if current_user.is_authenticated %}
+
+<!-- Chat Window -->
+<template id="chat-window-template">
+    <div class="chatbot-window active" data-uid="" style="position: fixed; bottom: 0; right: 7rem; width: 328px; height: 455px; z-index: 999;">
+        <!-- Header -->
+        <div class="chatbot-header">
+            <div class="chatbot-header-info">
+                <img src="" class="chatbot-avatar user-avatar" style="object-fit: cover; padding: 0;">
+                <div class="chatbot-title">
+                    <h3 class="user-name">User</h3>
+                    <p>Online</p>
+                </div>
+            </div>
+            <button onclick="closeChat(event, this)" class="chatbot-close" aria-label="Close chat">
+                <span>×</span>
+            </button>
+        </div>
+        
+        <!-- Messages Area -->
+        <div class="chatbot-messages chat-messages">
+            <!-- Messages will be inserted here -->
+        </div>
+        
+        <!-- Input Area -->
+        <div class="chatbot-input">
+            <input 
+                type="text" 
+                name="body"
+                placeholder="Type your message..."
+                autocomplete="off"
+            />
+            <button type="button" onclick="sendMessageFromInput(this)" class="chatbot-send-btn" aria-label="Send message">
+                <span>➤</span>
+            </button>
+        </div>
+    </div>
+</template>
+
+<script>
+    const activeChats = new Set();
+    const chatWindows = new Map();
+    
+    function openChat(userId, username, photoUrl) {
+        if (activeChats.has(userId)) {
+            const existingWindow = chatWindows.get(userId);
+            if (existingWindow) {
+                existingWindow.style.zIndex = '1000';
+            }
+            return;
+        }
+        
+        if (activeChats.size >= 3) {
+            alert("Please close a chat window first (maximum 3 windows).");
+            return;
+        }
+        
+        activeChats.add(userId);
+        
+        const template = document.getElementById('chat-window-template');
+        const clone = template.content.cloneNode(true);
+        const win = clone.querySelector('.chatbot-window');
+        
+        win.setAttribute('data-uid', userId);
+        win.querySelector('.user-name').textContent = username;
+        
+        const img = win.querySelector('.user-avatar');
+        img.src = photoUrl || 'https://placehold.co/150x150';
+        
+        const windowIndex = activeChats.size - 1;
+        const baseRight = 7; 
+        const windowWidth = 328; 
+        const gap = 8; 
+        
+        if (windowIndex === 0) {
+            win.style.right = `${baseRight}rem`;
+        } else {
+            win.style.right = `calc(${baseRight}rem + ${windowIndex * (windowWidth + gap)}px)`;
+        }
+        
+        document.body.appendChild(win);
+        chatWindows.set(userId, win);
+        
+        loadMessages(userId, win.querySelector('.chat-messages'));
+        
+        // Start polling
+        win.pollInterval = setInterval(() => loadMessages(userId, win.querySelector('.chat-messages'), true), 5000);
+        
+        // Setup enter key
+        const input = win.querySelector('input[name="body"]');
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessageFromInput(win.querySelector('.chatbot-send-btn'));
+            }
+        });
+    }
+    
+    function closeChat(e, btn) {
+        e.stopPropagation();
+        const win = btn.closest('[data-uid]');
+        const uid = parseInt(win.getAttribute('data-uid'));
+        clearInterval(win.pollInterval);
+        activeChats.delete(uid);
+        chatWindows.delete(uid);
+        win.remove();
+    }
+    
+    async function loadMessages(userId, container, isPoll=false) {
+        try {
+            const res = await fetch(`/messages/history/${userId}`);
+            const data = await res.json();
+            
+            const messages = data.messages || [];
+            const otherUser = data.other_user || {};
+            
+            if (isPoll && container.childElementCount === messages.length) {
+                // Still update status even if no new messages
+                updateChatStatus(userId, otherUser);
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            if (messages.length === 0) {
+                container.innerHTML = `
+                    <div class="welcome-message">
+                        <div class="welcome-message-icon">💬</div>
+                        <h4>Start the conversation</h4>
+                        <p>Send a message to begin chatting!</p>
+                    </div>
+                `;
+            } else {
+                messages.forEach(msg => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `message ${msg.is_mine ? 'user' : ''}`;
+                    
+                    const avatar = document.createElement('div');
+                    avatar.className = 'message-avatar';
+                    
+                    // Use actual profile photo instead of emoji
+                    const avatarImg = document.createElement('img');
+                    avatarImg.src = msg.sender_photo || 'https://placehold.co/150x150';
+                    avatarImg.style.cssText = 'width: 100%; height: 100%; border-radius: 50%; object-fit: cover;';
+                    avatarImg.alt = msg.sender_name;
+                    avatar.appendChild(avatarImg);
+                    
+                    const content = document.createElement('div');
+                    content.className = 'message-content';
+                    content.textContent = msg.body;
+                    content.title = msg.timestamp;
+                    
+                    messageDiv.appendChild(avatar);
+                    messageDiv.appendChild(content);
+                    
+                    container.appendChild(messageDiv);
+                });
+            }
+            
+            container.scrollTop = container.scrollHeight;
+            
+            // Update status in header
+            updateChatStatus(userId, otherUser);
+            
+        } catch (e) {
+            console.error(e);
+        }
+    }
+    
+    function updateChatStatus(userId, otherUser) {
+        const win = chatWindows.get(userId);
+        if (!win) return;
+        
+        const statusElement = win.querySelector('.chatbot-title p');
+        if (!statusElement) return;
+        
+        if (otherUser.is_online) {
+            statusElement.textContent = 'Online';
+            statusElement.style.color = '#10b981'; 
+        } else if (otherUser.last_seen) {
+            const lastSeen = new Date(otherUser.last_seen);
+            const now = new Date();
+            const diffMinutes = Math.floor((now - lastSeen) / 60000);
+            
+            if (diffMinutes < 60) {
+                statusElement.textContent = `Active ${diffMinutes}m ago`;
+            } else if (diffMinutes < 1440) {
+                const hours = Math.floor(diffMinutes / 60);
+                statusElement.textContent = `Active ${hours}h ago`;
+            } else {
+                const days = Math.floor(diffMinutes / 1440);
+                statusElement.textContent = `Active ${days}d ago`;
+            }
+            statusElement.style.color = 'var(--text-muted)';
+        } else {
+            statusElement.textContent = 'Offline';
+            statusElement.style.color = 'var(--text-muted)';
+        }
+    }
+    
+    async function sendMessageFromInput(btn) {
+        const win = btn.closest('[data-uid]');
+        const uid = win.getAttribute('data-uid');
+        const input = win.querySelector('input[name="body"]');
+        const body = input.value.trim();
+        
+        if (!body) return;
+        
+        try {
+            const res = await fetch(`/messages/send/${uid}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({body: body})
+            });
+            
+            if (res.ok) {
+                input.value = '';
+                loadMessages(uid, win.querySelector('.chat-messages'));
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+    
+    function sendMessage(e, form) {
+        e.preventDefault();
+        const btn = form.querySelector('.chatbot-send-btn');
+        sendMessageFromInput(btn);
+    }
+</script>
+{% endif %}

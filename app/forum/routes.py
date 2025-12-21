@@ -17,6 +17,12 @@ def create_post():
         content = request.form['content']
         post_type = request.form.get('post_type', 'trade')
         
+        # Check for duplicates
+        existing_post = ForumPost.query.filter_by(title=title, content=content, user_id=current_user.id).first()
+        if existing_post:
+            flash('You have already posted this content.', 'warning')
+            return redirect(url_for('forum.view_post', post_id=existing_post.id))
+        
         post = ForumPost(title=title, content=content, user=current_user, post_type=post_type)
         db.session.add(post)
         db.session.commit()
