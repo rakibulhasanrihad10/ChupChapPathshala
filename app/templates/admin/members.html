@@ -1,8 +1,6 @@
-{% extends "base.html" %}
+{% extends "admin/admin_base.html" %}
 
-{% block title %}Members List{% endblock %}
-
-{% block content %}
+{% block admin_content %}
   
 <div class="page-header">
     <h1 class="page-title">Library Members</h1>
@@ -25,18 +23,21 @@
             {% for user in users %}
             <tr>
                 <td>#{{ user.id }}</td>
-                <td style="font-weight: 500; color: #111827;">{{ user.username }}</td>
+                <td style="font-weight: 500; color: var(--text-color);">{{ user.username }}</td>
                 <td>{{ user.email }}</td>
                 <td>
                     {% if user.role == 'admin' %}
                     <span 
-                        class="bg-amber-100 text-amber-600 py-[2px] px-2 rounded-full text-xs font-semibold"> Admin</span>
+                        class="px-2 py-0.5 rounded-full text-xs font-semibold" 
+                        style="background-color: rgba(245, 158, 11, 0.1); color: #f59e0b;">Admin</span>
                     {% elif user.role == 'librarian' %}
-			     	<span
-						class="bg-blue-100 text-blue-600 py-[2px] px-2 rounded-full text-xs font-semibold">Librarian</span>
-					{% else %}
-                    <span
-                        class="bg-gray-100 text-gray-600 py-[2px] px-2 rounded-full text-xs font-semibold">Customer</span>
+                    <span 
+                        class="px-2 py-0.5 rounded-full text-xs font-semibold" 
+                        style="background-color: rgba(59, 130, 246, 0.1); color: #3b82f6;">Librarian</span>
+                    {% else %}
+                    <span 
+                        class="px-2 py-0.5 rounded-full text-xs font-semibold" 
+                        style="background-color: var(--pill-bg); color: var(--text-muted);">Customer</span>
                     {% endif %}
                 </td>
                 <td>{{ user.membership_type|title }}</td>
@@ -45,7 +46,8 @@
                     {% if user.id != current_user.id %}
                     <form action="{{ url_for('main.delete_user', user_id=user.id) }}" method="POST" style="display:inline;">
                         <button type="submit" 
-                            style="background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s;"
+                            class="transition-all hover:scale-105 active:scale-95"
+                            style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; cursor: pointer;"
                             onclick="return confirm('Are you sure you want to delete this member? This action cannot be undone.');">
                             Delete
                         </button>
@@ -65,8 +67,9 @@
 </div>
 
 <div style="margin-top: 2rem;">
-    <a href="{{ url_for('main.index') }}"
-        style="color: #6B7280; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
+    <a href="{{ url_for('main.admin_dashboard') }}"
+        class="transition-colors hover:opacity-80"
+        style="color: var(--text-muted); text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="19" y1="12" x2="5" y2="12"></line>

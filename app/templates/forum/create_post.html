@@ -2,6 +2,27 @@
 
 {% block title %}{{ title }} - Forum{% endblock %}
 
+{% block head %}
+<style>
+    
+    select {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+
+    select option {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        border-radius: 8px;
+        padding: 8px;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="max-w-3xl mx-auto my-8">
     <!-- Breadcrumb -->
@@ -40,10 +61,10 @@
                 <div>
                     <label for="post_type" class="block text-sm font-medium mb-2"
                         style="color: var(--text-color);">Category</label>
-                    <div class="relative">
+                    <div class="relative w-full">
                         <select id="post_type" name="post_type"
                             class="w-full appearance-none rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium cursor-pointer"
-                            style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color);">
+                            style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-color); max-width: 100%;">
                             <option value="trade" {% if post and post.post_type=='trade' %}selected{% endif %}>Trade
                                 Request</option>
                             <option value="sale" {% if post and post.post_type=='sale' %}selected{% endif %}>For Sale
@@ -81,9 +102,9 @@
                         Cancel
                     </a>
                     <button type="submit"
-                        class="px-8 py-3 rounded-lg font-bold shadow-lg transform hover:-translate-y-0.5 transition-all duration-200"
-                        style="background-color: var(--primary-color); color: #ffffff; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
-                        {{ 'Update Post' if post else 'Publish Post' }}
+                        class="inline-flex items-center px-3 py-1.5 text-sm rounded-md font-semibold text-white transition-all hover:opacity-90"
+                        style="background-color: var(--primary-color);">
+                        <i class="fas fa-paper-plane mr-1" style="font-size: 0.875rem;"></i> {{ 'Update Post' if post else 'Publish Post' }}
                     </button>
                 </div>
             </form>

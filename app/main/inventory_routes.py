@@ -19,7 +19,7 @@ def inventory():
     target = request.args.get('target',None,type=int)
     if target:
         books = PaginateProxy([Book.query.get(target)])
-        return render_template('inventory.html', books=books, single=True)
+        return render_template('admin/inventory.html', books=books, single=True)
     page = request.args.get('page', 1, type=int)
     search_query = request.args.get('q')
     
@@ -28,7 +28,7 @@ def inventory():
         query = query.filter(Book.title.ilike(f'{search_query}%'))
         
     books = query.paginate(page=page, per_page=10, error_out=False)
-    return render_template('inventory.html', books=books, single=False, search_query=search_query)
+    return render_template('admin/inventory.html', books=books, single=False, search_query=search_query)
 
 @bp.route('/inventory/add', methods=['GET', 'POST'])
 @login_required
@@ -62,7 +62,7 @@ def add_book():
         db.session.commit()
         flash('Book added to inventory!')
         return redirect(url_for('main.inventory'))
-    return render_template('add_book.html', categories=categories)
+    return render_template('admin/add_book.html', categories=categories)
 
 
 
@@ -83,7 +83,7 @@ def restock_book(book_id):
         flash(f"Successfully restocked {qty} copies of '{book.title}'.", "success")
         return redirect(url_for("main.inventory"))
 
-    return render_template("restock.html", form=form, book=book)
+    return render_template("admin/restock.html", form=form, book=book)
 
 
 @bp.route("/inventory/edit/<int:book_id>", methods=["GET", "POST"])
@@ -122,7 +122,7 @@ def edit_book(book_id):
         flash(f"Successfully Edited '{book.title}'.", "success")
         return redirect(url_for("main.inventory"))
 
-    return render_template("edit_book.html", form=form)
+    return render_template("admin/edit_book.html", form=form)
 
 
 
@@ -181,7 +181,7 @@ def add_ext_book():
         flash(f"Successfully Added '{book.title}'.", "success")
         return redirect(url_for("main.inventory"))
 
-    return render_template("edit_book.html", form=form, action='add_ext_book')
+    return render_template("admin/edit_book.html", form=form, action='add_ext_book')
 
 
 @bp.route('/inventory/delete/<int:book_id>', methods=['POST'])

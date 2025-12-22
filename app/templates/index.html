@@ -3,6 +3,56 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
+<style>
+    /* Campaign Mobile Responsiveness */
+    @media (max-width: 768px) {
+        .campaignSwiper .hero {
+            min-height: 300px !important;
+            padding: 1.5rem 1rem !important;
+        }
+        
+        .campaignSwiper .hero h1 {
+            font-size: 1.5rem !important;
+            margin-bottom: 0.75rem !important;
+            line-height: 1.3 !important;
+        }
+        
+        .campaignSwiper .hero p {
+            font-size: 0.95rem !important;
+            margin-bottom: 1rem !important;
+            line-height: 1.5 !important;
+        }
+        
+        .campaignSwiper .btn {
+            font-size: 0.9rem !important;
+            padding: 0.625rem 1.5rem !important;
+        }
+    }
+    
+    @media (max-width: 640px) {
+        .campaignSwiper .hero {
+            min-height: 280px !important;
+            padding: 1.25rem 0.875rem !important;
+        }
+        
+        .campaignSwiper .hero h1 {
+            font-size: 1.25rem !important;
+            margin-bottom: 0.5rem !important;
+        }
+        
+        .campaignSwiper .hero p {
+            font-size: 0.875rem !important;
+            margin-bottom: 0.875rem !important;
+            max-width: 100% !important;
+        }
+        
+        .campaignSwiper .btn {
+            font-size: 0.875rem !important;
+            padding: 0.5rem 1.25rem !important;
+        }
+    }
+</style>
+
 <!-- Hero Section -->
 <div class="hero-swiper swiper campaignSwiper" style="border-radius: 1rem; overflow: hidden; margin-bottom: 2rem;">
     <div class="swiper-wrapper">

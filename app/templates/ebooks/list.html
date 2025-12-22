@@ -3,40 +3,113 @@
 {% block title %}E-Library - ChupChap Pathshala{% endblock %}
 
 {% block content %}
+<style>
+    /* E-Library Mobile and Desktop Optimizations */
+    
+    /* Responsive grid system */
+    .ebook-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    @media (min-width: 640px) {
+        .ebook-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    @media (min-width: 1024px) {
+        .ebook-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+    
+    /* Mobile header optimization */
+    @media (max-width: 640px) {
+        .ebook-header {
+            flex-direction: column;
+            align-items: stretch !important;
+            gap: 1rem;
+        }
+        
+        .ebook-header h1 {
+            font-size: 1.5rem !important;
+        }
+        
+        .ebook-upload-btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+    
+    /* Mobile book card optimizations */
+    @media (max-width: 768px) {
+        .ebook-card-image {
+            height: 12rem !important;
+        }
+        
+        .ebook-card-content {
+            padding: 0.875rem !important;
+        }
+        
+        .ebook-card-title {
+            font-size: 1rem !important;
+        }
+        
+        .ebook-card-author {
+            font-size: 0.8125rem !important;
+        }
+        
+        /* Compact audio player on mobile */
+        .ebook-audio {
+            height: 2rem !important;
+        }
+    }
+    
+    /* Touch-friendly buttons */
+    @media (max-width: 640px) {
+        .ebook-read-btn,
+        .ebook-edit-btn {
+            padding: 0.625rem 1rem !important;
+            font-size: 0.875rem !important;
+        }
+    }
+</style>
+
 <div class="py-6">
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex justify-between items-center mb-6 ebook-header">
         <h1 class="text-3xl font-bold" style="color: var(--text-color);">E-Library</h1>
         {% if current_user.is_authenticated and current_user.is_admin() %}
         <a href="{{ url_for('main.ebook_upload') }}"
-            class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-150">
+            class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-150 ebook-upload-btn">
             <i class="fas fa-upload mr-2"></i>Upload E-Book
         </a>
         {% endif %}
     </div>
 
     {% if ebooks %}
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="ebook-grid">
         {% for ebook in ebooks %}
         <div
             class="rounded-lg shadow-sm border overflow-hidden hover:shadow-md transition-shadow duration-200 flex flex-col h-full"
             style="background-color: var(--card-bg); border-color: var(--border-color);">
-            <div class="h-64 flex items-center justify-center overflow-hidden relative group" style="background-color: var(--bg-color);">
+            <div class="h-64 flex items-center justify-center overflow-hidden relative group ebook-card-image" style="background-color: var(--bg-color);">
                 <img src="{{ ebook.cover_image_url }}" alt="{{ ebook.title }}" class="h-full w-auto max-w-full rounded-md" style="object-fit: contain;">
-                <!-- Debug URL: {{ ebook.cover_image_url }} -->
             </div>
-            <div class="p-4 flex-grow flex flex-col">
-                <h3 class="font-semibold text-lg mb-1 line-clamp-2" style="color: var(--text-color);">{{ ebook.title }}</h3>
-                <p class="text-sm mb-2" style="color: var(--text-muted);">{{ ebook.author }}</p>
+            <div class="p-4 flex-grow flex flex-col ebook-card-content">
+                <h3 class="font-semibold text-lg mb-1 line-clamp-2 ebook-card-title" style="color: var(--text-color);">{{ ebook.title }}</h3>
+                <p class="text-sm mb-2 ebook-card-author" style="color: var(--text-muted);">{{ ebook.author }}</p>
 
-                <div class="mt-auto space-y-4">
+                <div class="mt-auto space-y-3">
                     <a href="{{ url_for('main.ebook_read', id=ebook.id) }}"
-                        class="block w-full text-center font-medium py-2 rounded border transition-colors duration-150"
-                        style="background-color: var(--bg-color); color: var(--primary-color); border-color: var(--border-color);">
-                        Read Book
+                        class="block w-full text-center font-medium py-2 rounded border transition-colors duration-150 ebook-read-btn"
+                        style="background-color: var(--primary-color); color: white; border-color: var(--primary-color);">
+                        <i class="fas fa-book-open mr-1"></i> Read Book
                     </a>
                     {% if ebook.audio_path %}
-                    <div class="mt-2 w-full">
-                        <audio controls class="w-full h-8" onplay="stopOthers(this)">
+                    <div class="w-full">
+                        <audio controls class="w-full ebook-audio" style="height: 2rem;" onplay="stopOthers(this)">
                             <source src="{{ url_for('static', filename='ebooks/audio/' + ebook.audio_path) }}"
                                 type="audio/mpeg">
                             Your browser does not support the audio element.
@@ -46,9 +119,9 @@
                     {% if current_user.is_authenticated and current_user.is_admin() %}
                     <div>
                         <a href="{{ url_for('main.ebook_edit', id=ebook.id) }}"
-                            class="block w-full text-center text-sm font-medium py-1.5 rounded border transition-colors duration-150"
+                            class="block w-full text-center text-sm font-medium py-1.5 rounded border transition-colors duration-150 ebook-edit-btn"
                             style="background-color: var(--bg-color); color: var(--text-color); border-color: var(--border-color);">
-                            Edit
+                            <i class="fas fa-edit mr-1"></i> Edit
                         </a>
                     </div>
                     {% endif %}

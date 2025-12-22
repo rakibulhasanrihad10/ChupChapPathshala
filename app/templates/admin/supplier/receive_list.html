@@ -1,8 +1,32 @@
-{% extends "base.html" %}
+{% extends "admin/admin_base.html" %}
 
-{% block title %}Receive Orders - Delivery Re-Entry{% endblock %}
-
-{% block content %}
+{% block admin_content %}
+<style>
+    /* Mobile responsive styles */
+    @media (max-width: 768px) {
+        .receive-table th,
+        .receive-table td {
+            padding: 0.75rem 0.5rem !important;
+            font-size: 0.8rem;
+        }
+        
+        .receive-table .btn-receive {
+            padding: 0.5rem 0.75rem !important;
+            font-size: 0.75rem;
+            white-space: nowrap;
+        }
+        
+        .receive-table th:first-child,
+        .receive-table td:first-child {
+            padding-left: 1rem !important;
+        }
+        
+        .receive-table th:last-child,
+        .receive-table td:last-child {
+            padding-right: 1rem !important;
+        }
+    }
+</style>
 <div class="container mx-auto px-4 py-8">
     <div class="mb-8">
         <h1 class="text-3xl font-bold" style="color: var(--text-color);">Delivery Re-Entry (Receive Orders)</h1>
@@ -12,7 +36,9 @@
     {% if orders %}
     <div class="rounded-xl shadow overflow-hidden border"
         style="background-color: var(--card-bg); border-color: var(--border-color);">
-        <table class="min-w-full divide-y" style="border-color: var(--border-color);">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y receive-table" style="border-color: var(--border-color);">
+
             <thead style="background-color: var(--bg-color);">
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
@@ -38,15 +64,18 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <a href="{{ url_for('main.supplier_receive_detail', order_id=order.id) }}"
-                            class="border rounded px-3 py-1 transition-all duration-200"
-                            style="color: var(--primary-color); border-color: var(--primary-color);">
+                            class="border rounded px-4 py-2 transition-all duration-200 inline-block font-semibold btn-receive"
+                            style="background-color: var(--primary-color); color: white; border-color: var(--primary-color);"
+                            onmouseover="this.style.opacity='0.85'"
+                            onmouseout="this.style.opacity='1'">
                             Begin Re-Entry
                         </a>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
-        </table>
+            </table>
+        </div>
     </div>
     {% else %}
     <div class="rounded-xl shadow p-8 text-center"

@@ -6,8 +6,6 @@ from app.models import Book, SupplyOrder, SupplyOrderItem, User, Supplier
 from datetime import datetime
 from sqlalchemy import func
 
-# ... (Existing code)
-
 @bp.route('/supplier/orders', methods=['GET'])
 @login_required
 def supplier_orders():
@@ -25,7 +23,6 @@ def supplier_orders():
     
     query = SupplyOrder.query
     
-    # 0. Search Filter (Order ID)
     if search_query:
         if search_query.startswith('#'):
             search_id = search_query[1:]
@@ -35,11 +32,10 @@ def supplier_orders():
         if search_id.isdigit():
             query = query.filter(SupplyOrder.id == int(search_id))
     
-    # 1. Supplier Filter
     if supplier_id:
         query = query.filter(SupplyOrder.supplier_id == supplier_id)
         
-    # 2. Date Filtering
+    # Date Filtering
     if date_str:
         try:
             filter_date = datetime.strptime(date_str, '%Y-%m-%d').date()
@@ -59,19 +55,19 @@ def supplier_orders():
         except ValueError:
             pass
 
-    # 3. Sorting
+    # Sorting
     if sort_by == 'newest':
         query = query.order_by(SupplyOrder.created_at.desc())
     elif sort_by == 'oldest':
         query = query.order_by(SupplyOrder.created_at.asc())
         
-    # 4. Pagination
+    # Pagination
     page = request.args.get('page', 1, type=int)
     per_page = 20
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     orders = pagination.items
     
-    # 5. Summary Statistics (Calculated on the filtered query)
+    # Summary Statistics (Calculated on the filtered query)
     stats = {
         'total_orders': query.count(),
         'pending': query.filter(SupplyOrder.status == 'placed').count(),
@@ -79,10 +75,6 @@ def supplier_orders():
         'total_amount': 0
     }
     
-    # Calculate Total Amount using join
-    # Note: We use a separate query to avoid messing with existing query structure if it had eager loads
-    # Fix: Call join BEFORE with_entities to maintain the join source (SupplyOrder)
-    # Fix: Clear order_by to avoid grouping error in aggregation
     amount_query = query.order_by(None)\
                         .join(SupplyOrderItem, SupplyOrderItem.order_id == SupplyOrder.id)\
                         .join(Book, SupplyOrderItem.book_id == Book.id)\
@@ -90,14 +82,13 @@ def supplier_orders():
     
     stats['total_amount'] = amount_query.scalar() or 0
 
-    # Fetch suppliers for dropdown
     suppliers = Supplier.query.order_by(Supplier.name).all()
     
     # Handle AJAX request for real-time updates
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-         return render_template('supplier/orders_table.html', orders=orders, pagination=pagination)
+         return render_template('admin/supplier/orders_table.html', orders=orders, pagination=pagination)
 
-    return render_template('supplier/orders.html', 
+    return render_template('admin/supplier/orders.html', 
                            orders=orders, 
                            pagination=pagination, 
                            suppliers=suppliers,
@@ -157,10 +148,9 @@ def supplier_shortlist():
 
     items = order.items.all()
     
-    # Calculate total mass
     total_mass = sum(item.mass for item in items)
 
-    return render_template('supplier/shortlist.html', order=order, items=items, total_mass=total_mass)
+    return render_template('admin/supplier/shortlist.html', order=order, items=items, total_mass=total_mass)
 
 @bp.route('/supplier/lift/<int:book_id>', methods=['POST'])
 @login_required
@@ -186,7 +176,6 @@ def supplier_lift(book_id):
 @login_required
 def supplier_drop(item_id):
     item = SupplyOrderItem.query.get_or_404(item_id)
-    # Ensure modifying the shortlist OR pending review
     if item.order.status not in ['shortlist', 'pending_review']:
         flash('Cannot drop items from a locked order.', 'danger')
         return redirect(url_for('main.supplier_shortlist'))
@@ -195,7 +184,6 @@ def supplier_drop(item_id):
     db.session.commit()
     flash('Item dropped successfully.', 'success')
     
-    # Redirect
     if item.order.status == 'pending_review':
         return redirect(url_for('main.supplier_review'))
     return redirect(url_for('main.supplier_shortlist'))
@@ -218,7 +206,6 @@ def supplier_adjust_mass(item_id):
     
     db.session.commit()
     
-    # Redirect
     if item.order.status == 'pending_review':
         return redirect(url_for('main.supplier_review'))
     return redirect(url_for('main.supplier_shortlist'))
@@ -247,7 +234,7 @@ def supplier_review():
     # Find orders pending review
     orders = SupplyOrder.query.filter_by(status='pending_review').all()
     suppliers = Supplier.query.all()
-    return render_template('supplier/review.html', orders=orders, suppliers=suppliers)
+    return render_template('admin/supplier/review.html', orders=orders, suppliers=suppliers)
 
 @bp.route('/supplier/launch/<int:order_id>', methods=['POST'])
 @login_required
@@ -287,7 +274,7 @@ def supplier_launch(order_id):
         # Selective case: Create a new order for selected items
         new_order = SupplyOrder(status='placed', supplier_id=supplier_id)
         db.session.add(new_order)
-        db.session.flush() # Get new_order.id
+        db.session.flush()
 
         # Move selected items to the new order
         for item_id in selected_item_ids:
@@ -309,13 +296,13 @@ def supplier_confirmation(order_id):
     item_details = "\n".join([f"- {item.book.title} (Qty: {item.mass})" for item in items])
     whatsapp_text = f"Hello {order.supplier.name}, Here is supply order #{order.id}:\n\n{item_details}\n\nPlease check the attached invoice."
     
-    return render_template('supplier/confirmation.html', order=order, whatsapp_text=whatsapp_text)
+    return render_template('admin/supplier/confirmation.html', order=order, whatsapp_text=whatsapp_text)
 
 @bp.route('/supplier/preview_invoice/<int:order_id>', methods=['GET'])
 @login_required
 def preview_invoice(order_id):
     order = SupplyOrder.query.get_or_404(order_id)
-    return render_template('supplier/invoice.html', order=order)
+    return render_template('admin/supplier/invoice.html', order=order)
 
 from io import BytesIO
 from xhtml2pdf import pisa
@@ -327,7 +314,7 @@ def download_invoice(order_id):
     order = SupplyOrder.query.get_or_404(order_id)
     
     # Render HTML template with data
-    html = render_template('supplier/invoice.html', order=order)
+    html = render_template('admin/supplier/invoice.html', order=order)
     
     # Create PDF buffer
     buffer = BytesIO()
@@ -353,7 +340,7 @@ def supplier_receive_list():
          
     # List orders that are placed and waiting for delivery
     orders = SupplyOrder.query.filter_by(status='placed').all()
-    return render_template('supplier/receive_list.html', orders=orders)
+    return render_template('admin/supplier/receive_list.html', orders=orders)
 
 @bp.route('/supplier/receive/<int:order_id>', methods=['GET'])
 @login_required
@@ -362,7 +349,7 @@ def supplier_receive_detail(order_id):
          return redirect(url_for('main.index'))
          
     order = SupplyOrder.query.get_or_404(order_id)
-    return render_template('supplier/receive.html', order=order)
+    return render_template('admin/supplier/receive.html', order=order)
 
 @bp.route('/supplier/update_payload/<int:item_id>', methods=['POST'])
 @login_required
@@ -421,4 +408,4 @@ def supplier_order_detail(order_id):
          return redirect(url_for('main.index'))
          
     order = SupplyOrder.query.get_or_404(order_id)
-    return render_template('supplier/order_detail.html', order=order)
+    return render_template('admin/supplier/order_detail.html', order=order)

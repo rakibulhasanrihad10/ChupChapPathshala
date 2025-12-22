@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 import os
 from app.main import bp
-from app.models import Book, User, Loan, Campaign, Category, SupplyOrder, Sale
+from app.models import Book, User, Loan, Campaign, Category, SupplyOrder, Sale, ManagementMember
 from app import db
 from app.decorators import admin_required
 from app.main import featured_books_routes
@@ -63,49 +63,94 @@ def admin_dashboard():
     low_stock_books = Book.query.filter(Book.stock_available < STOCK_THRESHOLD).all()
     stock_alerts_count = len(low_stock_books)
     
-    # Recent Activity (last 10 loans/returns)
-    recent_loans = Loan.query.order_by(desc(Loan.checkout_date)).limit(5).all()
-    recent_returns = Loan.query.filter(Loan.return_date.isnot(None)).order_by(desc(Loan.return_date)).limit(5).all()
+    # Recent Activity (Paginated)
+    activity_page = request.args.get('activity_page', 1, type=int)
+    activity_per_page = request.args.get('activity_per_page', 5, type=int)
     
-    # Combine and sort recent activity
-    recent_activity = []
-    for loan in recent_loans:
-        recent_activity.append({
-            'type': 'borrow',
-            'user': loan.user.username if loan.user else 'Unknown',
-            'book': loan.book.title if loan.book else 'Unknown',
-            'date': loan.checkout_date,
-            'icon': 'fa-book-reader',
-            'color': 'blue'
-        })
-    for loan in recent_returns:
-        recent_activity.append({
-            'type': 'return',
-            'user': loan.user.username if loan.user else 'Unknown',
-            'book': loan.book.title if loan.book else 'Unknown',
-            'date': loan.return_date,
-            'icon': 'fa-undo',
-            'color': 'green'
-        })
-    recent_activity.sort(key=lambda x: x['date'], reverse=True)
-    recent_activity = recent_activity[:10]
+    from sqlalchemy import union_all, literal_column
     
-    # Sales Trend Data (last 30 days) - Replaces Borrowing Trend
-    sales_trend = []
-    for i in range(30, -1, -1):
+    # Unified Query for Recent Activity
+    # Type 1: Borrow
+    q_borrow = db.session.query(
+        literal_column("'borrow'").label('type'),
+        User.username.label('user'),
+        Book.title.label('book'),
+        Loan.checkout_date.label('date'),
+        literal_column("'fa-book-reader'").label('icon'),
+        literal_column("'blue'").label('color')
+    ).join(User, Loan.user_id == User.id)\
+     .join(Book, Loan.book_id == Book.id)\
+     .filter(Loan.checkout_date.isnot(None))
+
+    # Type 2: Return
+    q_return = db.session.query(
+        literal_column("'return'").label('type'),
+        User.username.label('user'),
+        Book.title.label('book'),
+        Loan.return_date.label('date'),
+        literal_column("'fa-undo'").label('icon'),
+        literal_column("'green'").label('color')
+    ).join(User, Loan.user_id == User.id)\
+     .join(Book, Loan.book_id == Book.id)\
+     .filter(Loan.return_date.isnot(None))
+
+    # Type 3: Sale
+    q_sale = db.session.query(
+        literal_column("'sale'").label('type'),
+        User.username.label('user'),
+        Book.title.label('book'),
+        Sale.sale_date.label('date'),
+        literal_column("'fa-shopping-cart'").label('icon'),
+        literal_column("'amber'").label('color')
+    ).join(User, Sale.user_id == User.id)\
+     .join(Book, Sale.book_id == Book.id)
+
+    # Combine all
+    unified_activity = q_borrow.union_all(q_return, q_sale).order_by(desc('date'))
+    recent_activity_pagination = unified_activity.paginate(page=activity_page, per_page=activity_per_page, error_out=False)
+    recent_activity = recent_activity_pagination.items
+    
+    # Sales Trend Data
+    # Daily (Last 30 days)
+    daily_sales = []
+    for i in range(29, -1, -1):
         date = now - timedelta(days=i)
         date_start = date.replace(hour=0, minute=0, second=0, microsecond=0)
         date_end = date.replace(hour=23, minute=59, second=59, microsecond=999999)
+        count = Sale.query.filter(Sale.sale_date >= date_start, Sale.sale_date <= date_end).count()
+        daily_sales.append({'label': date.strftime('%m/%d'), 'count': count})
+
+    # Monthly (Last 12 months)
+    monthly_sales = []
+    for i in range(11, -1, -1):
+        # Calculate start of month i months ago
+        first_of_this_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        # Use a simple way to go back months
+        month_date = first_of_this_month - timedelta(days=i*30) 
+        # Adjust to the actual first day of that month
+        month_start = month_date.replace(day=1)
+        # Next month start
+        if month_start.month == 12:
+            next_month_start = month_start.replace(year=month_start.year + 1, month=1)
+        else:
+            next_month_start = month_start.replace(month=month_start.month + 1)
         
-        count = Sale.query.filter(
-            Sale.sale_date >= date_start,
-            Sale.sale_date <= date_end
-        ).count()
-        
-        sales_trend.append({
-            'date': date.strftime('%m/%d'),
-            'count': count
-        })
+        count = Sale.query.filter(Sale.sale_date >= month_start, Sale.sale_date < next_month_start).count()
+        monthly_sales.append({'label': month_start.strftime('%b %Y'), 'count': count})
+
+    # Yearly (Last 5 years)
+    yearly_sales = []
+    for i in range(4, -1, -1):
+        year_start = now.replace(year=now.year - i, month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+        year_end = year_start.replace(year=year_start.year + 1)
+        count = Sale.query.filter(Sale.sale_date >= year_start, Sale.sale_date < year_end).count()
+        yearly_sales.append({'label': year_start.strftime('%Y'), 'count': count})
+
+    sales_trends = {
+        'daily': daily_sales,
+        'monthly': monthly_sales,
+        'yearly': yearly_sales
+    }
     
     # Top Selling Books (Most Sold)
     top_selling_data = db.session.query(
@@ -126,6 +171,13 @@ def admin_dashboard():
     
     category_data = [{'category': cat or 'Uncategorized', 'stock': int(stock or 0)} for cat, stock in stock_by_category]
     
+    management_members = ManagementMember.query.order_by(ManagementMember.display_order).all()
+    
+    # Additional data for modals
+    all_users = User.query.order_by(User.username).all()
+    all_active_loans = Loan.query.filter_by(status='active').order_by(Loan.due_date).all()
+    all_pending_orders = SupplyOrder.query.filter(SupplyOrder.status.in_(['shortlist', 'pending_review', 'placed'])).order_by(SupplyOrder.created_at.desc()).all()
+    
     stats = {
         'total_users': total_users,
         'total_books': total_books,
@@ -136,14 +188,24 @@ def admin_dashboard():
         'overdue_count': overdue_count,
         'stock_alerts_count': stock_alerts_count,
         'overdue_loans': overdue_loans[:5],  # Top 5 overdue
-        'low_stock_books': low_stock_books[:5],  # Top 5 low stock
+        'low_stock_books': low_stock_books[:10],  # Top 10 low stock
         'recent_activity': recent_activity,
-        'sales_trend': sales_trend,
+        'recent_activity_pagination': recent_activity_pagination,
+        'sales_trends': sales_trends,
         'top_selling_books': top_selling_books,
-        'category_data': category_data
+        'category_data': category_data,
+        # Modal data
+        'all_users': all_users,
+        'all_active_loans': all_active_loans,
+        'all_pending_orders': all_pending_orders,
+        'current_datetime': now  # For template datetime comparisons
     }
     
-    return render_template('admin/dashboard.html', stats=stats)
+    # Only return the partial if this is a pagination request for recent activity
+    if request.headers.get('HX-Request') and ('activity_page' in request.args or 'activity_per_page' in request.args):
+        return render_template('admin/partials/_recent_activity.html', stats=stats)
+        
+    return render_template('admin/dashboard.html', stats=stats, management_members=management_members)
 
 
 
@@ -162,7 +224,7 @@ from app.models import (
 @admin_required
 def members():
     users = User.query.all()
-    return render_template('members.html', users=users)
+    return render_template('admin/members.html', users=users)
 
 @bp.route('/admin/offers', methods=['GET', 'POST'])
 @login_required
@@ -217,7 +279,7 @@ def admin_offers():
     page = request.args.get('page', 1, type=int)
     books = query.order_by(Book.title).paginate(page=page, per_page=10, error_out=False)
     
-    return render_template('admin_offers.html', books=books, search_query=search_query)
+    return render_template('admin/offers.html', books=books, search_query=search_query)
 
 @bp.route('/admin/loans')
 @login_required
@@ -228,27 +290,22 @@ def admin_loans():
         if loan.status == 'active':
             delta = loan.due_date - datetime.utcnow() 
             loan.days_remaining = delta.days
-    return render_template('admin_loans.html', loans=loans)
+    return render_template('admin/loans.html', loans=loans)
 
 @bp.route('/admin/loans/return/<int:loan_id>', methods=['POST'])
 @login_required
 @admin_required
 def mark_returned(loan_id):
-    loan = Loan.query.get_or_404(loan_id)
-    if loan.status != 'active':
-        flash('Loan is already returned or invalid.', 'warning')
-        return redirect(url_for('main.admin_loans'))
-        
-    loan.status = 'returned'
-    loan.return_date = datetime.utcnow()
+    """Admin endpoint to mark a loan as returned."""
+    try:
+        from app.services import LoanService
+        loan = LoanService.admin_return_loan(loan_id)
+        flash(f'Book "{loan.book.title}" returned successfully.', 'success')
+    except ValueError as e:
+        flash(str(e), 'warning')
+    except Exception as e:
+        flash('An error occurred while processing the return.', 'error')
     
-    book = loan.book
-    if book:
-        book.stock_borrowed = max(0, book.stock_borrowed - 1)
-        book.stock_available += 1
-        
-    db.session.commit()
-    flash(f'Book returned successfully.', 'success')
     return redirect(url_for('main.admin_loans'))
 
 @bp.route('/members/delete/<int:user_id>', methods=['POST'])
@@ -278,88 +335,77 @@ def delete_user(user_id):
 @admin_required
 def admin_campaigns():
     campaigns = Campaign.query.order_by(Campaign.created_at.desc()).all()
-    return render_template('admin_campaigns.html', campaigns=campaigns)
+    return render_template('admin/campaigns.html', campaigns=campaigns)
 
 @bp.route('/admin/campaigns/add', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def add_campaign():
-    if request.method == 'POST':
-        title = request.form.get('title')
-        description = request.form.get('description')
-        image_url = request.form.get('image_url')
-        button_text = request.form.get('button_text')
-        button_link = request.form.get('button_link')
+    from app.forms import CampaignForm
+    form = CampaignForm()
+    
+    if form.validate_on_submit():
+        image_url = form.image_url.data
         
-        # Handle File Upload
-        if 'image_file' in request.files:
-            file = request.files['image_file']
-            if file and file.filename != '':
-                filename = secure_filename(file.filename)
-                upload_folder = os.path.join(current_app.root_path, 'static', 'images', 'campaigns')
-                os.makedirs(upload_folder, exist_ok=True)
-                file.save(os.path.join(upload_folder, filename))
-                image_url = url_for('static', filename=f'images/campaigns/{filename}')
-
-        # Parse Dates
-        start_time_str = request.form.get('start_time')
-        end_time_str = request.form.get('end_time')
+        # Handle file upload (overrides URL if provided)
+        if form.image_file.data:
+            filename = secure_filename(form.image_file.data.filename)
+            upload_folder = os.path.join(current_app.root_path, 'static', 'images', 'campaigns')
+            os.makedirs(upload_folder, exist_ok=True)
+            form.image_file.data.save(os.path.join(upload_folder, filename))
+            image_url = url_for('static', filename=f'images/campaigns/{filename}')
         
-        start_time = datetime.strptime(start_time_str, '%Y-%m-%dT%H:%M') if start_time_str else None
-        end_time = datetime.strptime(end_time_str, '%Y-%m-%dT%H:%M') if end_time_str else None
-
         campaign = Campaign(
-            title=title,
-            description=description,
-            image_url=image_url if image_url else None,
-            button_text=button_text,
-            button_link=button_link,
-            is_active=True,
-            start_time=start_time,
-            end_time=end_time
+            title=form.title.data,
+            description=form.description.data,
+            image_url=image_url,
+            button_text=form.button_text.data,
+            button_link=form.button_link.data,
+            is_active=form.is_active.data,
+            start_time=form.start_time.data,
+            end_time=form.end_time.data
         )
         db.session.add(campaign)
         db.session.commit()
         flash('Campaign added successfully.', 'success')
         return redirect(url_for('main.admin_campaigns'))
-    return render_template('add_edit_campaign.html')
+    
+    return render_template('admin/add_edit_campaign.html', form=form, campaign=None)
 
 @bp.route('/admin/campaigns/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def edit_campaign(id):
+    from app.forms import CampaignForm
     campaign = Campaign.query.get_or_404(id)
-    if request.method == 'POST':
-        campaign.title = request.form.get('title')
-        campaign.description = request.form.get('description')
-        new_url = request.form.get('image_url')
-        if new_url:
-            campaign.image_url = new_url
-        campaign.button_text = request.form.get('button_text')
-        campaign.button_link = request.form.get('button_link')
-        campaign.is_active = 'is_active' in request.form
+    form = CampaignForm(obj=campaign)
+    
+    if form.validate_on_submit():
+        campaign.title = form.title.data
+        campaign.description = form.description.data
+        campaign.button_text = form.button_text.data
+        campaign.button_link = form.button_link.data
+        campaign.is_active = form.is_active.data
+        campaign.start_time = form.start_time.data
+        campaign.end_time = form.end_time.data
         
-        # Date Updates
-        start_time_str = request.form.get('start_time')
-        end_time_str = request.form.get('end_time')
-        campaign.start_time = datetime.strptime(start_time_str, '%Y-%m-%dT%H:%M') if start_time_str else None
-        campaign.end_time = datetime.strptime(end_time_str, '%Y-%m-%dT%H:%M') if end_time_str else None
+        # Update image URL if provided
+        if form.image_url.data:
+            campaign.image_url = form.image_url.data
         
-        # Handle File Upload (Override URL)
-        if 'image_file' in request.files:
-            file = request.files['image_file']
-            if file and file.filename != '':
-                filename = secure_filename(file.filename)
-                upload_folder = os.path.join(current_app.root_path, 'static', 'images', 'campaigns')
-                os.makedirs(upload_folder, exist_ok=True)
-                file.save(os.path.join(upload_folder, filename))
-                campaign.image_url = url_for('static', filename=f'images/campaigns/{filename}')
+        # Handle file upload (overrides URL)
+        if form.image_file.data:
+            filename = secure_filename(form.image_file.data.filename)
+            upload_folder = os.path.join(current_app.root_path, 'static', 'images', 'campaigns')
+            os.makedirs(upload_folder, exist_ok=True)
+            form.image_file.data.save(os.path.join(upload_folder, filename))
+            campaign.image_url = url_for('static', filename=f'images/campaigns/{filename}')
         
         db.session.commit()
         flash('Campaign updated successfully.', 'success')
         return redirect(url_for('main.admin_campaigns'))
-        
-    return render_template('add_edit_campaign.html', campaign=campaign)
+    
+    return render_template('admin/add_edit_campaign.html', form=form, campaign=campaign)
 
 @bp.route('/admin/campaigns/delete/<int:id>', methods=['POST'])
 @login_required
@@ -389,14 +435,22 @@ def index():
     except:
         campaigns = []
         
-    return render_template('index.html', books=books, campaigns=campaigns)
+    categories = Category.query.order_by(Category.name).all()
+    try:
+        management_members = ManagementMember.query.order_by(ManagementMember.display_order).all()
+    except:
+        management_members = []
+        
+    return render_template('index.html', books=books, campaigns=campaigns, categories=categories, management_members=management_members)
 
 @bp.route('/catalog')
 def catalog():
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
     category = request.args.get('category')
     author = request.args.get('author')
     sort = request.args.get('sort')
-    
+
     # Fetch all categories from DB
     categories = [c.name for c in Category.query.order_by(Category.name).all()]
     # Fetch distinct authors
@@ -421,9 +475,13 @@ def catalog():
         elif sort == 'high to low':
             query = query.order_by(Book.price.desc())
             
-    books = query.all()
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    books = pagination.items
         
-    return render_template('catalog.html', books=books, current_category=category, current_author=author, categories=categories, authors=authors, current_sort=sort)
+    return render_template('catalog.html', books=books, current_category=category, 
+                           current_author=author, categories=categories, 
+                           authors=authors, current_sort=sort, 
+                           pagination=pagination, current_per_page=per_page)
 
 @bp.route('/profile')
 @login_required
@@ -439,13 +497,92 @@ def user_profile(username):
     # If Owner: Show Loans and Posts
     # If Public: Show Post Only (Loans Hidden in Template)
     
-    loans = None
+    loan_page = request.args.get('loan_page', 1, type=int)
+    sale_page = request.args.get('sale_page', 1, type=int)
+    forum_page = request.args.get('forum_page', 1, type=int)
+    loan_per_page = request.args.get('loan_per_page', 5, type=int)
+    sale_per_page = request.args.get('sale_per_page', 5, type=int)
+    forum_per_page = request.args.get('forum_per_page', 5, type=int)
+    loan_filter = request.args.get('loan_filter', 'all')
+    
+    # Paginate forum posts (Forum Activity) - Publicly visible
+    forum_pagination = ForumPost.query.filter_by(user_id=user.id).order_by(ForumPost.created_at.desc()).paginate(page=forum_page, per_page=forum_per_page, error_out=False)
+    forum_posts = forum_pagination.items
+    
+    forum_posts = forum_pagination.items
+    
+    # Initialize private variables for public view
+    loans = []
+    sales = None
+    active_loans = []
+    overdue_loans = []
+    loans_pagination = None
+    
     if current_user.is_authenticated and current_user.id == user.id:
-        loans = Loan.query.filter_by(user_id=user.id).order_by(Loan.checkout_date.desc()).all()
-        # Calculate days remaining/overdue for each loan
+        # Paginate loans (Borrowing History)
+        query = Loan.query.filter_by(user_id=user.id)
+        
+        if loan_filter == 'active':
+            query = query.filter_by(status='active')
+        elif loan_filter == 'returned':
+            query = query.filter_by(status='returned')
+            
+        # Sort: Active first (asc works because 'active' < 'returned'), then checkout date desc
+        loans_pagination = query.order_by(Loan.status.asc(), Loan.checkout_date.desc()).paginate(page=loan_page, per_page=loan_per_page, error_out=False)
+        loans = loans_pagination.items
+        
+        # Paginate sales (Purchase History)
+        sales = Sale.query.filter_by(user_id=user.id).order_by(Sale.sale_date.desc()).paginate(page=sale_page, per_page=sale_per_page, error_out=False)
+        
+        # Stats are calculated from all active loans (not just current page)
+        all_active = Loan.query.filter_by(user_id=user.id, status='active').all()
+        active_loans = all_active
+        overdue_loans = [l for l in all_active if l.due_date < datetime.utcnow()]
+        
+        # Calculate days remaining for loans on the current page
         for loan in loans:
             if loan.status == 'active':
                 delta = loan.due_date - datetime.utcnow()
                 loan.days_remaining = delta.days
     
-    return render_template('profile.html', user=user, loans=loans)
+    return render_template('profile.html', user=user, loans=loans, sales=sales, 
+                           forum_posts=forum_posts, forum_pagination=forum_pagination,
+                           loans_pagination=loans_pagination,
+                           loan_per_page=loan_per_page, sale_per_page=sale_per_page,
+                           forum_per_page=forum_per_page, loan_filter=loan_filter,
+                           active_loans=active_loans, overdue_loans=overdue_loans)
+
+@bp.route('/admin/management/update', methods=['POST'])
+@login_required
+@admin_required
+def update_management_member():
+    member_id = request.form.get('id')
+    member = ManagementMember.query.get(member_id)
+    if not member:
+        flash('Member not found', 'danger')
+        return redirect(url_for('main.admin_dashboard'))
+    
+    if request.form.get('name'):
+        member.name = request.form.get('name')
+    if request.form.get('designation'):
+        member.designation = request.form.get('designation')
+        
+    if 'image' in request.files:
+        file = request.files['image']
+        if file and file.filename != '':
+            filename = secure_filename(file.filename)
+            import uuid
+            _, ext = os.path.splitext(filename)
+            unique_filename = f"management_{member.id}_{uuid.uuid4().hex[:8]}{ext}"
+            
+            # Save to 'app/static/images'
+            images_dir = os.path.join(current_app.root_path, 'static', 'images')
+            if not os.path.exists(images_dir):
+                os.makedirs(images_dir)
+            
+            file.save(os.path.join(images_dir, unique_filename))
+            member.image_file = f"images/{unique_filename}"
+            
+    db.session.commit()
+    flash('Member updated successfully', 'success')
+    return redirect(url_for('main.admin_dashboard'))

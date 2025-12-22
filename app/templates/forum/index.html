@@ -3,8 +3,63 @@
 {% block title %}Forum - Book Trade{% endblock %}
 
 {% block content %}
+<style>
+    /* Mobile optimizations for forum */
+    @media (max-width: 768px) {
+        .forum-header {
+            flex-direction: column;
+            align-items: stretch !important;
+        }
+        
+        .forum-header h1 {
+            font-size: 1.5rem !important;
+            margin-bottom: 0.75rem;
+        }
+        
+        .forum-header .btn {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .forum-post-card {
+            padding: 1rem !important;
+        }
+        
+        .forum-post-card h2 {
+            font-size: 1.25rem !important;
+        }
+        
+        .forum-user-pill {
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .forum-user-pill span {
+            font-size: 0.75rem !important;
+        }
+        
+        .forum-post-body {
+            font-size: 0.875rem !important;
+        }
+    }
+    
+    @media (max-width: 640px) {
+        .forum-header h1 {
+            font-size: 1.25rem !important;
+        }
+        
+        .forum-post-card {
+            padding: 0.875rem !important;
+        }
+        
+        .forum-post-card h2 {
+            font-size: 1.125rem !important;
+        }
+    }
+</style>
+
 <div class="container my-4">
-    <div class="flex flex-row justify-between items-center mb-6 gap-4">
+    <div class="flex flex-row justify-between items-center mb-6 gap-4 forum-header">
         <h1 class="mb-0 text-3xl font-bold">Community Forum</h1>
         <a href="{{ url_for('forum.create_post') }}" class="btn btn-primary whitespace-nowrap">
             <i class="fas fa-plus"></i> Create Post
@@ -13,23 +68,36 @@
 
     {% for post in posts %}
     <!-- Adaptive Card -->
-    <div class="rounded-xl p-6 mb-6 shadow-xl border transition-colors feature-card"
+    <div class="rounded-xl p-6 mb-6 shadow-xl border transition-colors feature-card forum-post-card"
         style="background-color: var(--card-bg); border-color: var(--border-color); box-shadow: var(--shadow);">
 
         <!-- Header: User Pill & Date -->
-        <div class="flex items-center gap-3 mb-4">
-            <div class="inline-flex items-center px-3 py-1 rounded-full border"
+        <div class="flex items-center gap-3 mb-4 flex-wrap">
+            <div class="inline-flex items-center px-3 py-1 rounded-full border forum-user-pill"
                 style="background-color: var(--pill-bg); border-color: var(--border-color);">
-                <img src="{{ post.user.profile_photo or 'https://placehold.co/150x150?text=User' }}" 
-                     alt="{{ post.user.username }}" 
-                     class="w-6 h-6 rounded-full mr-2 object-cover border"
-                     style="border-color: var(--border-color);">
+                <a href="{{ url_for('main.user_profile', username=post.user.username) }}">
+                    <img src="{{ post.user.profile_photo or 'https://placehold.co/150x150?text=User' }}" 
+                         alt="{{ post.user.username }}" 
+                         class="w-6 h-6 rounded-full mr-2 object-cover border cursor-pointer hover:opacity-80 transition-opacity"
+                         style="border-color: var(--border-color);">
+                </a>
                 <span class="text-xs font-medium" style="color: var(--text-muted);">
                     {{ post.post_type|title }} by
                     <a href="{{ url_for('main.user_profile', username=post.user.username) }}" class="hover:underline"
                         style="color: var(--primary-color);">
                         {{ post.user.username }}
                     </a>
+                    {% if current_user.is_authenticated and current_user.id != post.user.id %}
+                    <button onclick="openChat({{ post.user.id }}, '{{ post.user.username }}', '{{ post.user.profile_photo or 'https://placehold.co/150x150' }}')" 
+                            title="Send message to {{ post.user.username }}"
+                            style="background: none; border: none; cursor: pointer; padding: 0 0.25rem; opacity: 0.7; transition: opacity 0.2s; vertical-align: middle;"
+                            onmouseover="this.style.opacity='1'" 
+                            onmouseout="this.style.opacity='0.7'">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                    </button>
+                    {% endif %}
                 </span>
             </div>
             <span class="text-xs font-medium" style="color: var(--text-muted);">
@@ -46,7 +114,7 @@
         </h2>
 
         <!-- Body -->
-        <p class="text-base leading-relaxed mb-6 line-clamp-3 font-normal" style="color: var(--text-muted);">
+        <p class="text-base leading-relaxed mb-6 line-clamp-3 font-normal forum-post-body" style="color: var(--text-muted);">
             {{ post.content }}
         </p>
 
@@ -54,7 +122,7 @@
         <div class="flex items-center">
             <a href="{{ url_for('forum.view_post', post_id=post.id) }}"
                 class="inline-flex items-center text-sm font-semibold transition-colors group"
-                style="color: var(--primary-color);">
+                style="color: var(--primary-color); padding: 0.5rem 1rem; border-radius: 0.5rem; background-color: var(--pill-bg);">
                 Read more
                 <svg class="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none"
                     stroke="currentColor" viewBox="0 0 24 24">

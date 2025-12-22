@@ -1,8 +1,6 @@
-{% extends "base.html" %}
+{% extends "admin/admin_base.html" %}
 
-{% block title %}Manage Campaigns{% endblock %}
-
-{% block content %}
+{% block admin_content %}
 <div class="mb-8 flex justify-between items-center">
     <h2 class="text-2xl font-bold" style="color: var(--text-color);">Promotional Campaigns</h2>
     <a href="{{ url_for('main.add_campaign') }}" class="btn btn-primary">

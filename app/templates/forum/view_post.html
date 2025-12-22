@@ -3,9 +3,67 @@
 {% block title %}{{ post.title }} - Forum{% endblock %}
 
 {% block content %}
+<style>
+    /* Mobile optimizations for forum post view */
+    @media (max-width: 768px) {
+        .forum-breadcrumb {
+            font-size: 0.75rem !important;
+        }
+        
+        .forum-post-main {
+            padding: 1rem !important;
+        }
+        
+        .forum-post-title-section {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 0.75rem !important;
+        }
+        
+        .forum-post-title {
+            font-size: 1.5rem !important;
+        }
+        
+        .forum-post-badge {
+            align-self: flex-start;
+        }
+        
+        .forum-comment-card {
+            padding: 1rem !important;
+        }
+        
+        .forum-comment-textarea {
+            font-size: 0.875rem !important;
+        }
+        
+        .forum-comment-btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+    
+    @media (max-width: 640px) {
+        .forum-post-main {
+            padding: 0.875rem !important;
+        }
+        
+        .forum-post-title {
+            font-size: 1.25rem !important;
+        }
+        
+        .forum-post-content {
+            font-size: 0.9375rem !important;
+        }
+        
+        .forum-comment-card {
+            padding: 0.875rem !important;
+        }
+    }
+</style>
+
 <div class="container my-4 max-w-4xl mx-auto px-4">
     <!-- Modern Breadcrumb -->
-    <nav class="flex mb-6 text-sm font-medium" aria-label="Breadcrumb">
+    <nav class="flex mb-6 text-sm font-medium forum-breadcrumb" aria-label="Breadcrumb">
         <ol class="inline-flex items-center space-x-1 md:space-x-3">
             <li class="inline-flex items-center">
                 <a href="{{ url_for('forum.index') }}" class="inline-flex items-center hover:underline"
@@ -29,28 +87,41 @@
     </nav>
 
     <!-- Main Post Card -->
-    <div class="rounded-xl p-8 mb-8 shadow-xl border transition-colors"
+    <div class="rounded-xl p-8 mb-8 shadow-xl border transition-colors forum-post-main"
         style="background-color: var(--card-bg); border-color: var(--border-color); box-shadow: var(--shadow);">
 
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-            <h1 class="text-3xl md:text-4xl font-bold tracking-tight" style="color: var(--text-color);">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 forum-post-title-section">
+            <h1 class="text-3xl md:text-4xl font-bold tracking-tight forum-post-title" style="color: var(--text-color);">
                 {{ post.title }}
             </h1>
-            <span class="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider"
+            <span class="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider forum-post-badge"
                 style="background-color: var(--pill-bg); color: var(--primary-color); border: 1px solid var(--border-color);">
                 {{ post.post_type|title }}
             </span>
         </div>
 
         <div class="flex items-center gap-3 mb-8 pb-6 border-b" style="border-color: var(--border-color);">
-            <img src="{{ post.user.profile_photo or 'https://placehold.co/150x150?text=User' }}" 
-                 alt="{{ post.user.username }}" 
-                 class="w-10 h-10 rounded-full object-cover border"
-                 style="border-color: var(--border-color);">
+            <a href="{{ url_for('main.user_profile', username=post.user.username) }}">
+                <img src="{{ post.user.profile_photo or 'https://placehold.co/150x150?text=User' }}" 
+                     alt="{{ post.user.username }}" 
+                     class="w-10 h-10 rounded-full object-cover border cursor-pointer hover:opacity-80 transition-opacity"
+                     style="border-color: var(--border-color);">
+            </a>
             <div class="flex flex-col">
                 <span class="text-sm font-semibold" style="color: var(--text-color);">
                     Posted by <a href="{{ url_for('main.user_profile', username=post.user.username) }}"
                         class="hover:underline" style="color: var(--primary-color);">{{ post.user.username }}</a>
+                    {% if current_user.is_authenticated and current_user.id != post.user.id %}
+                    <button onclick="openChat({{ post.user.id }}, '{{ post.user.username }}', '{{ post.user.profile_photo or 'https://placehold.co/150x150' }}')" 
+                            title="Send message to {{ post.user.username }}"
+                            style="background: none; border: none; cursor: pointer; padding: 0 0.25rem; opacity: 0.7; transition: opacity 0.2s; vertical-align: middle;"
+                            onmouseover="this.style.opacity='1'" 
+                            onmouseout="this.style.opacity='0.7'">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                    </button>
+                    {% endif %}
                 </span>
                 <span class="text-xs font-medium" style="color: var(--text-muted);">
                     {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}
@@ -58,22 +129,22 @@
             </div>
         </div>
 
-        <div class="prose max-w-none text-lg leading-relaxed mb-8"
+        <div class="prose max-w-none text-lg leading-relaxed mb-8 forum-post-content"
             style="color: var(--text-color); white-space: pre-wrap;">{{ post.content }}</div>
 
         {% if current_user == post.user %}
-        <div class="flex gap-3 pt-6 border-t" style="border-color: var(--border-color);">
+        <div class="flex gap-2 pt-6 border-t" style="border-color: var(--border-color);">
             <a href="{{ url_for('forum.edit_post', post_id=post.id) }}"
-                class="btn inline-flex items-center px-4 py-2 rounded-lg font-semibold transition-all hover:scale-105"
+                class="inline-flex items-center px-2.5 py-1 text-xs rounded-md font-medium transition-all hover:opacity-90"
                 style="background-color: var(--accent-color); color: white;">
-                <i class="fas fa-edit mr-2"></i> Edit
+                <i class="fas fa-edit mr-1" style="font-size: 0.75rem;"></i> Edit
             </a>
             <form action="{{ url_for('forum.delete_post', post_id=post.id) }}" method="POST"
                 onsubmit="return confirm('Are you sure you want to delete this post?');" style="display:inline;">
                 <button type="submit"
-                    class="btn inline-flex items-center px-4 py-2 rounded-lg font-semibold transition-all hover:scale-105"
+                    class="inline-flex items-center px-2.5 py-1 text-xs rounded-md font-medium transition-all hover:opacity-90"
                     style="background-color: #EF4444; color: white;">
-                    <i class="fas fa-trash-alt mr-2"></i> Delete
+                    <i class="fas fa-trash-alt mr-1" style="font-size: 0.75rem;"></i> Delete
                 </button>
             </form>
         </div>
@@ -88,20 +159,20 @@
         </h3>
 
         {% if current_user.is_authenticated %}
-        <div class="rounded-xl p-6 mb-8 border"
+        <div class="rounded-xl p-6 mb-8 border forum-comment-card"
             style="background-color: var(--card-bg); border-color: var(--border-color);">
             <form method="POST">
                 <div class="mb-4">
                     <textarea
-                        class="w-full p-4 rounded-lg border focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                        name="content" rows="4" placeholder="Add a comment..."
+                        class="w-full p-4 rounded-lg border focus:ring-2 focus:ring-indigo-500 outline-none transition-all forum-comment-textarea"
+                        name="content" rows="3" placeholder="Add a comment..."
                         style="background-color: var(--pill-bg); border-color: var(--border-color); color: var(--text-color);"
                         required></textarea>
                 </div>
                 <button type="submit"
-                    class="btn px-6 py-2.5 rounded-lg font-bold text-white transition-transform hover:scale-105"
+                    class="inline-flex items-center px-3 py-1.5 text-sm rounded-md font-semibold text-white transition-all hover:opacity-90 forum-comment-btn"
                     style="background-color: var(--primary-color);">
-                    Post Comment
+                    <i class="fas fa-paper-plane mr-1" style="font-size: 0.875rem;"></i> Post Comment
                 </button>
             </form>
         </div>
@@ -115,13 +186,24 @@
 
         <div class="space-y-4">
             {% for comment in post.comments|sort(attribute='created_at', reverse=True) %}
-            <div class="rounded-xl p-6 border transition-all hover:border-indigo-400"
+            <div class="rounded-xl p-6 border transition-all hover:border-indigo-400 forum-comment-card"
                 style="background-color: var(--card-bg); border-color: var(--border-color);">
-                <div class="flex justify-between items-center mb-3">
+                <div class="flex justify-between items-center mb-3 flex-wrap gap-2">
                     <a href="{{ url_for('main.user_profile', username=comment.user.username) }}"
                         class="font-bold text-sm hover:underline" style="color: var(--primary-color);">
                         {{ comment.user.username }}
                     </a>
+                    {% if current_user.is_authenticated and current_user.id != comment.user.id %}
+                    <button onclick="openChat({{ comment.user.id }}, '{{ comment.user.username }}', '{{ comment.user.profile_photo or 'https://placehold.co/150x150' }}')" 
+                            title="Send message to {{ comment.user.username }}"
+                            style="background: none; border: none; cursor: pointer; padding: 0 0.25rem; opacity: 0.7; transition: opacity 0.2s; vertical-align: middle;"
+                            onmouseover="this.style.opacity='1'" 
+                            onmouseout="this.style.opacity='0.7'">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                    </button>
+                    {% endif %}
                     <span class="text-xs font-medium" style="color: var(--text-muted);">
                         {{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}
                     </span>

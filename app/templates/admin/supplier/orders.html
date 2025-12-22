@@ -1,8 +1,6 @@
-{% extends "base.html" %}
+{% extends "admin/admin_base.html" %}
 
-{% block title %}Track Orders{% endblock %}
-
-{% block content %}
+{% block admin_content %}
 <!-- Flatpickr CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <style>
@@ -243,7 +241,7 @@
 
         <!-- Partial Template Include -->
         <div id="orders-list-content">
-            {% include 'supplier/orders_table.html' %}
+            {% include 'admin/supplier/orders_table.html' %}
         </div>
     </div>
 </div>

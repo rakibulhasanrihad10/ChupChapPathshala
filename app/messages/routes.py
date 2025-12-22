@@ -53,14 +53,20 @@ def get_history(user_id):
     result = []
     for msg in messages:
         sender = User.query.get(msg.sender_id)
+        
+        # Show placeholder for deleted messages
+        message_body = "This message was deleted" if msg.is_deleted else msg.body
+        
         result.append({
             'id': msg.id,
             'sender_id': msg.sender_id,
             'sender_photo': sender.profile_photo if sender else 'https://placehold.co/150x150',
             'sender_name': sender.username if sender else 'User',
-            'body': msg.body,
+            'body': message_body,
             'timestamp': msg.timestamp.strftime('%H:%M' if msg.timestamp.date() == datetime.today().date() else '%b %d'),
-            'is_mine': msg.sender_id == current_user.id
+            'is_mine': msg.sender_id == current_user.id,
+            'is_deleted': msg.is_deleted,
+            'edited_at': msg.edited_at.isoformat() if msg.edited_at else None
         })
     
     # Include other user's online status
@@ -166,3 +172,66 @@ def get_unread_list():
     total_unread = Message.query.filter_by(recipient_id=current_user.id, is_read=False).count()
     
     return jsonify({'messages': result[:10], 'total_count': total_unread})
+
+@bp.route('/edit/<int:message_id>', methods=['PUT'])
+@login_required
+def edit_message(message_id):
+    """Edit a message (only by sender)"""
+    msg = Message.query.get_or_404(message_id)
+    
+    # Check if current user is the sender
+    if msg.sender_id != current_user.id:
+        return jsonify({'error': 'You can only edit your own messages'}), 403
+    
+    # Check if message is deleted
+    if msg.is_deleted:
+        return jsonify({'error': 'Cannot edit a deleted message'}), 400
+    
+    data = request.get_json()
+    new_body = data.get('body')
+    
+    if not new_body or not new_body.strip():
+        return jsonify({'error': 'Message body cannot be empty'}), 400
+    
+    # Update message
+    msg.body = new_body.strip()
+    msg.edited_at = datetime.utcnow()
+    db.session.commit()
+    
+    return jsonify({
+        'status': 'success',
+        'message': {
+            'id': msg.id,
+            'body': msg.body,
+            'edited_at': msg.edited_at.isoformat()
+        }
+    })
+
+@bp.route('/delete/<int:message_id>', methods=['DELETE'])
+@login_required
+def delete_message(message_id):
+    """Soft delete a message (only by sender)"""
+    msg = Message.query.get_or_404(message_id)
+    
+    # Check if current user is the sender
+    if msg.sender_id != current_user.id:
+        return jsonify({'error': 'You can only delete your own messages'}), 403
+    
+    # Check if already deleted
+    if msg.is_deleted:
+        return jsonify({'error': 'Message already deleted'}), 400
+    
+    # Soft delete
+    msg.is_deleted = True
+    msg.deleted_at = datetime.utcnow()
+    db.session.commit()
+    
+    return jsonify({
+        'status': 'success',
+        'message': {
+            'id': msg.id,
+            'is_deleted': True,
+            'deleted_at': msg.deleted_at.isoformat()
+        }
+    })
+

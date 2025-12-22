@@ -1,0 +1,98 @@
+<div id="recent-activity-container" class="space-y-2">
+    <div class="space-y-2 max-h-[400px] overflow-y-auto">
+        {% for activity in stats.recent_activity %}
+        <div class="activity-item">
+            <div class="activity-icon {{ activity.color }}">
+                <i class="fas {{ activity.icon }}"></i>
+            </div>
+            <div class="flex-1">
+                <p class="text-sm font-semibold" style="color: var(--text-color);">{{ activity.user }}</p>
+                <p class="text-xs" style="color: var(--text-muted);">
+                    {% if activity.type == 'borrow' %}
+                    Borrowed
+                    {% elif activity.type == 'return' %}
+                    Returned
+                    {% elif activity.type == 'sale' %}
+                    Purchased
+                    {% endif %}
+                    "{{ activity.book }}"
+                </p>
+                <p class="text-xs" style="color: var(--text-muted);">{{ activity.date.strftime('%b %d, %I:%M %p') }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Activity Pagination -->
+    {% if stats.recent_activity_pagination and stats.recent_activity_pagination.pages > 1 %}
+    <div class="mt-8 flex flex-col gap-4 border-t pt-6" style="border-color: var(--border-color);">
+        <!-- Navigation Bar -->
+        <div class="flex items-center justify-between w-full">
+            <!-- PREV Button -->
+            <div class="w-20">
+            {% if stats.recent_activity_pagination.has_prev %}
+                <button hx-get="{{ url_for('main.admin_dashboard', activity_page=stats.recent_activity_pagination.prev_num) }}"
+                   hx-target="#recent-activity-container"
+                   hx-swap="outerHTML"
+                   class="text-xs font-bold uppercase tracking-widest transition hover:text-red-600"
+                   style="color: var(--text-muted); background: none; border: none; cursor: pointer;">
+                    PREV
+                </button>
+            {% endif %}
+            </div>
+
+            <!-- Page Numbers Timeline -->
+            <nav class="flex items-center gap-1" aria-label="Pagination">
+                {% for p in stats.recent_activity_pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=3) %}
+                    {% if p %}
+                        <button hx-get="{{ url_for('main.admin_dashboard', activity_page=p) }}"
+                           hx-target="#recent-activity-container"
+                           hx-swap="outerHTML"
+                           class="w-8 h-8 flex items-center justify-center text-xs font-bold rounded-lg transition-all"
+                           style="{{ 'background-color: #dc2626; color: #ffffff; box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);' if p == stats.recent_activity_pagination.page else 'color: var(--text-color); background-color: rgba(128, 128, 128, 0.08);' }} border: none; cursor: pointer;">
+                            {{ p }}
+                        </button>
+                    {% else %}
+                        <span class="px-1 text-xs" style="color: var(--text-muted);">...</span>
+                    {% endif %}
+                {% endfor %}
+            </nav>
+
+            <!-- NEXT Button -->
+            <div class="w-20 text-right">
+            {% if stats.recent_activity_pagination.has_next %}
+                <button hx-get="{{ url_for('main.admin_dashboard', activity_page=stats.recent_activity_pagination.next_num) }}"
+                   hx-target="#recent-activity-container"
+                   hx-swap="outerHTML"
+                   class="text-xs font-bold uppercase tracking-widest transition hover:text-red-600"
+                   style="color: var(--text-muted); background: none; border: none; cursor: pointer;">
+                    NEXT
+                </button>
+            {% endif %}
+            </div>
+        </div>
+
+        <!-- Summary & Page Size Info -->
+        <div class="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <span class="text-sm font-medium" style="color: var(--text-muted);">Show:</span>
+                <select name="activity_per_page" 
+                        hx-get="{{ url_for('main.admin_dashboard') }}"
+                        hx-target="#recent-activity-container"
+                        hx-swap="outerHTML"
+                        hx-trigger="change"
+                        hx-vals='{"activity_page": 1}'
+                        class="bg-transparent border rounded px-1 text-sm outline-none transition"
+                        style="color: var(--text-color); border-color: var(--border-color); background-color: var(--card-bg);">
+                    {% for size in [5, 10, 20, 50] %}
+                    <option value="{{ size }}" {{ 'selected' if stats.recent_activity_pagination.per_page == size }}>{{ size }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <p class="text-xs font-medium" style="color: var(--text-muted);">
+                Showing {{ (stats.recent_activity_pagination.page - 1) * stats.recent_activity_pagination.per_page + 1 }} to {{ (stats.recent_activity_pagination.page - 1) * stats.recent_activity_pagination.per_page + stats.recent_activity|length }} of {{ stats.recent_activity_pagination.total }} ({{ stats.recent_activity_pagination.pages }} Pages)
+            </p>
+        </div>
+    </div>
+    {% endif %}
+</div>

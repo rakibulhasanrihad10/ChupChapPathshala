@@ -11,6 +11,8 @@ from flask import current_app
 @bp.route('/checkout/review', methods=['POST'])
 @login_required
 def checkout_review():
+    from app.forms import CheckoutForm
+    
     cart = current_user.cart
     if not cart:
         flash('Cart is empty', 'warning')
@@ -47,8 +49,13 @@ def checkout_review():
              elif discount.discount_type == 'fixed':
                  discount_amount = discount.value
              total -= discount_amount
+    
+    # Create form and pre-populate with user data
+    form = CheckoutForm()
+    form.name.data = current_user.username
 
     return render_template('checkout.html', 
+                           form=form,
                            items=selected_items, 
                            subtotal=subtotal, 
                            delivery_charge=delivery_charge, 
@@ -60,23 +67,63 @@ def checkout_review():
 @bp.route('/checkout/confirm', methods=['POST'])
 @login_required
 def confirm_checkout():
+    from app.forms import CheckoutForm
+    form = CheckoutForm()
+    
+    # Pre-populate name if form is empty
+    if not form.name.data:
+        form.name.data = current_user.username
+    
     cart = current_user.cart
     if not cart:
         return redirect(url_for('main.index'))
-        
+    
     selected_ids_str = request.form.get('selected_ids')
     if not selected_ids_str:
         return redirect(url_for('main.view_cart'))
-        
+    
     selected_ids = selected_ids_str.split(',')
     coupon_code = request.form.get('coupon_code')
     
-    # Shipping Info
-    shipping_name = request.form.get('name')
-    shipping_phone = request.form.get('phone')
-    shipping_address = request.form.get('address')
-    shipping_city = request.form.get('city')
-
+    # Validate form
+    if not form.validate_on_submit():
+        # Re-render checkout page with errors
+        all_items = cart.items.all()
+        items = [item for item in all_items if str(item.id) in selected_ids]
+        subtotal = sum(item.book.sale_price * item.quantity for item in items if item.action == 'buy')
+        delivery_charge = 60.0 if subtotal > 0 else 0
+        
+        # Calculate discount
+        discount_amount = 0
+        if coupon_code:
+            discount_obj = Discount.query.filter_by(code=coupon_code).first()
+            if discount_obj and discount_obj.is_valid():
+                if discount_obj.discount_type == 'percent':
+                    discount_amount = subtotal * (discount_obj.value/100)
+                elif discount_obj.discount_type == 'fixed':
+                    discount_amount = discount_obj.value
+        
+        total = subtotal + delivery_charge - discount_amount
+        
+        # Flash validation errors
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f'{getattr(form, field).label.text}: {error}', 'danger')
+        
+        return render_template('checkout.html',
+                             form=form,
+                             items=items,
+                             subtotal=subtotal,
+                             delivery_charge=delivery_charge,
+                             total=total,
+                             discount=discount_amount,
+                             coupon_code=coupon_code,
+                             selected_ids=selected_ids_str)
+    
+    # Get shipping info from form
+    shipping_name = form.name.data
+    shipping_phone = form.phone.data
+    shipping_address = form.address.data
     
     all_items = cart.items.all()
     items = [item for item in all_items if str(item.id) in selected_ids]
@@ -146,7 +193,7 @@ def confirm_checkout():
             'name': shipping_name,
             'phone': shipping_phone,
             'address': shipping_address,
-            'city': shipping_city
+            'city': None  # Not collected anymore
         }
 
         send_order_email(current_user, items, delivery_info)

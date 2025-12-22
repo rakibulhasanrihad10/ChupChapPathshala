@@ -1,0 +1,243 @@
+{% extends "admin/admin_base.html" %}
+
+{% block admin_content %}
+<style>
+    /* Mobile-optimized styles for borrowed books */
+    @media (max-width: 768px) {
+        .loans-table-wrapper {
+            display: none;
+        }
+        
+        .loans-mobile-cards {
+            display: block;
+        }
+        
+        .loan-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .loan-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .loan-card-section {
+            margin-bottom: 0.75rem;
+        }
+        
+        .loan-card-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+        
+        .loan-card-value {
+            color: var(--text-color);
+            font-weight: 500;
+        }
+        
+        .page-header {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .page-header .flex {
+            width: 100%;
+        }
+        
+        .page-header .btn-action {
+            width: 100%;
+            text-align: center;
+        }
+    }
+    
+    @media (min-width: 769px) {
+        .loans-table-wrapper {
+            display: block;
+        }
+        
+        .loans-mobile-cards {
+            display: none;
+        }
+    }
+</style>
+
+<div class="page-header">
+    <h1 class="page-title">Borrowed Books Tracking</h1>
+    <div class="flex gap-3">
+        <a href="{{ url_for('main.members') }}" class="btn-action" style="background: var(--card-bg); color: var(--text-color); border: 1px solid var(--border-color); width: auto;">
+            Manage Members
+        </a>
+    </div>
+</div>
+
+<!-- Desktop Table View -->
+<div class="loans-table-wrapper">
+    <div class="card" style="background: var(--card-bg); overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; min-width: 800px;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--border-color); text-align: left;">
+                    <th style="padding: 1rem; color: var(--text-muted); font-weight: 600;">User</th>
+                    <th style="padding: 1rem; color: var(--text-muted); font-weight: 600;">Book Info</th>
+                    <th style="padding: 1rem; color: var(--text-muted); font-weight: 600;">Dates</th>
+                    <th style="padding: 1rem; color: var(--text-muted); font-weight: 600;">Status</th>
+                    <th style="padding: 1rem; color: var(--text-muted); font-weight: 600;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for loan in loans %}
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <!-- User Info -->
+                    <td style="padding: 1rem;">
+                        <div style="font-weight: 600; color: var(--text-color);">{{ loan.user.username }}</div>
+                        <div style="font-size: 0.875rem; color: var(--text-muted);">{{ loan.user.email }}</div>
+                    </td>
+                    
+                    <!-- Book Info -->
+                    <td style="padding: 1rem;">
+                        <div style="font-weight: 600; color: var(--text-color);">{{ loan.book.title }}</div>
+                        <div style="font-size: 0.875rem; color: var(--text-muted);">{{ loan.book.author }}</div>
+                    </td>
+                    
+                    <!-- Dates -->
+                    <td style="padding: 1rem;">
+                        <div style="font-size: 0.9rem;">
+                            <span style="color: var(--text-muted);">Out:</span> 
+                            <span style="color: var(--text-color);">{{ loan.checkout_date.strftime('%Y-%m-%d') }}</span>
+                        </div>
+                        <div style="font-size: 0.9rem;">
+                            <span style="color: var(--text-muted);">Due:</span> 
+                            <span style="color: var(--text-color);">{{ loan.due_date.strftime('%Y-%m-%d') }}</span>
+                        </div>
+                    </td>
+                    
+                    <!-- Status -->
+                    <td style="padding: 1rem;">
+                        {% if loan.status == 'returned' %}
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Returned</span>
+                        {% elif loan.days_remaining < 0 %}
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Overdue ({{ loan.days_remaining|abs }} days)</span>
+                        {% else %}
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Active</span>
+                            <div style="font-size: 0.75rem; margin-top: 0.25rem; color: var(--primary-color);">{{ loan.days_remaining }} days left</div>
+                        {% endif %}
+                    </td>
+                    
+                    <!-- Actions -->
+                    <td style="padding: 1rem;">
+                        {% if loan.status == 'active' %}
+                        <form action="{{ url_for('main.mark_returned', loan_id=loan.id) }}" method="POST" onsubmit="return confirm('Mark this book as returned?');">
+                            <button type="submit" class="btn-action" style="padding: 0.5rem 1rem; font-size: 0.875rem; background: var(--bg-color); color: var(--text-color); border: 1px solid var(--border-color); width: auto;">
+                                Mark Returned
+                            </button>
+                        </form>
+                        {% else %}
+                        <span style="color: var(--text-muted); font-size: 0.875rem;">{{ loan.return_date.strftime('%Y-%m-%d') }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" style="padding: 3rem; text-align: center; color: var(--text-muted);">
+                        No borrowing records found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Mobile Card View -->
+<div class="loans-mobile-cards">
+    {% for loan in loans %}
+    <div class="loan-card">
+        <!-- Header with User and Status -->
+        <div class="loan-card-header">
+            <div>
+                <div style="font-weight: 600; color: var(--text-color); font-size: 1rem;">{{ loan.user.username }}</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.125rem;">{{ loan.user.email }}</div>
+            </div>
+            <div>
+                {% if loan.status == 'returned' %}
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Returned</span>
+                {% elif loan.days_remaining < 0 %}
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Overdue</span>
+                {% else %}
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Active</span>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Book Info -->
+        <div class="loan-card-section">
+            <div class="loan-card-label">Book</div>
+            <div class="loan-card-value" style="font-size: 0.95rem;">{{ loan.book.title }}</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.125rem;">{{ loan.book.author }}</div>
+        </div>
+        
+        <!-- Dates -->
+        <div class="loan-card-section">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                <div>
+                    <div class="loan-card-label">Checkout</div>
+                    <div class="loan-card-value" style="font-size: 0.875rem;">{{ loan.checkout_date.strftime('%b %d, %Y') }}</div>
+                </div>
+                <div>
+                    <div class="loan-card-label">Due Date</div>
+                    <div class="loan-card-value" style="font-size: 0.875rem;">{{ loan.due_date.strftime('%b %d, %Y') }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Days Remaining / Return Date -->
+        {% if loan.status == 'active' %}
+            {% if loan.days_remaining < 0 %}
+            <div class="loan-card-section">
+                <div style="color: #ef4444; font-size: 0.875rem; font-weight: 600;">
+                    <i class="fas fa-exclamation-triangle"></i> {{ loan.days_remaining|abs }} days overdue
+                </div>
+            </div>
+            {% else %}
+            <div class="loan-card-section">
+                <div style="color: var(--primary-color); font-size: 0.875rem; font-weight: 500;">
+                    <i class="fas fa-clock"></i> {{ loan.days_remaining }} days remaining
+                </div>
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="loan-card-section">
+                <div class="loan-card-label">Returned On</div>
+                <div class="loan-card-value" style="font-size: 0.875rem;">{{ loan.return_date.strftime('%b %d, %Y') }}</div>
+            </div>
+        {% endif %}
+        
+        <!-- Action Button -->
+        {% if loan.status == 'active' %}
+        <form action="{{ url_for('main.mark_returned', loan_id=loan.id) }}" method="POST" onsubmit="return confirm('Mark this book as returned?');" style="margin-top: 0.75rem;">
+            <button type="submit" class="btn-action" style="width: 100%; padding: 0.75rem; font-size: 0.875rem; background: var(--primary-color); color: white; border: none; border-radius: 0.5rem; font-weight: 600;">
+                <i class="fas fa-check-circle"></i> Mark as Returned
+            </button>
+        </form>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="loan-card" style="text-align: center; padding: 3rem 1rem;">
+        <div style="color: var(--text-muted); font-size: 0.875rem;">
+            <i class="fas fa-book-open" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+            <div>No borrowing records found.</div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

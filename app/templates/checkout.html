@@ -2,6 +2,57 @@
 
 {% block title %}Checkout{% endblock %}
 
+{% block head %}
+<style>
+    /* Checkout Layout */
+    .checkout-layout {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 2rem;
+        align-items: start;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .checkout-layout {
+            grid-template-columns: 1fr;
+        }
+        
+        .order-summary-sticky {
+            position: static !important;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .checkout-layout {
+            gap: 1.5rem;
+        }
+        
+        .card {
+            padding: 1.25rem !important;
+        }
+        
+        .page-header h1 {
+            font-size: 1.5rem !important;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .checkout-layout {
+            gap: 1rem;
+        }
+        
+        .card {
+            padding: 1rem !important;
+        }
+        
+        .card h2 {
+            font-size: 1.25rem !important;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
     <h1 class="page-title">Checkout</h1>
@@ -12,11 +63,12 @@
 </div>
 
 <form action="{{ url_for('main.confirm_checkout') }}" method="POST">
+    {{ form.hidden_tag() }}
     <!-- Hidden Fields -->
     <input type="hidden" name="selected_ids" value="{{ selected_ids }}">
     <input type="hidden" name="coupon_code" value="{{ coupon_code or '' }}">
     
-    <div style="display: grid; grid-template-columns: 1fr 400px; gap: 2rem; align-items: start;">
+    <div class="checkout-layout">
         
         <!-- Shipping Information -->
         <div class="card" style="background: var(--card-bg); box-shadow: var(--shadow);">
@@ -25,45 +77,35 @@
             <div style="display: grid; gap: 1.5rem;">
                 <!-- Name -->
                 <div>
-                    <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-color);">Full Name</label>
-                    <input type="text" name="name" required value="{{ current_user.username }}"
-                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); border-radius: 0.5rem; outline: none;">
+                    {{ form.name.label(style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-color);") }}
+                    {{ form.name(class="form-control", style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); border-radius: 0.5rem; outline: none;") }}
+                    {% if form.name.errors %}
+                        <div style="color: #EF4444; font-size: 0.875rem; margin-top: 0.25rem;">{{ form.name.errors[0] }}</div>
+                    {% endif %}
                 </div>
                 
                 <!-- Phone -->
                 <div>
-                    <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-color);">Phone Number</label>
-                    <input type="tel" name="phone" required placeholder="017..." pattern="[0-9]*" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); border-radius: 0.5rem; outline: none;">
+                    {{ form.phone.label(style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-color);") }}
+                    {{ form.phone(class="form-control", placeholder="01712345678", style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); border-radius: 0.5rem; outline: none;") }}
+                    {% if form.phone.errors %}
+                        <div style="color: #EF4444; font-size: 0.875rem; margin-top: 0.25rem;">{{ form.phone.errors[0] }}</div>
+                    {% endif %}
                 </div>
                 
                 <!-- Address -->
                 <div>
-                    <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-color);">Address</label>
-                    <textarea name="address" required rows="3" placeholder="House #, Road #, Area..."
-                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); border-radius: 0.5rem; outline: none; font-family: inherit;"></textarea>
-                </div>
-                
-                <!-- City -->
-                <div>
-                    <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-color);">City</label>
-                    <select name="city" required 
-                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem; outline: none; background: var(--bg-color); color: var(--text-color);">
-                        <option value="Dhaka">Dhaka</option>
-                        <option value="Chittagong">Chittagong</option>
-                        <option value="Sylhet">Sylhet</option>
-                        <option value="Rajshahi">Rajshahi</option>
-                        <option value="Khulna">Khulna</option>
-                        <option value="Barisal">Barisal</option>
-                        <option value="Rangpur">Rangpur</option>
-                        <option value="Mymensingh">Mymensingh</option>
-                    </select>
+                    {{ form.address.label(style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-color);") }}
+                    {{ form.address(class="form-control", rows="3", placeholder="House #, Road #, Area...", style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); border-radius: 0.5rem; outline: none; font-family: inherit;") }}
+                    {% if form.address.errors %}
+                        <div style="color: #EF4444; font-size: 0.875rem; margin-top: 0.25rem;">{{ form.address.errors[0] }}</div>
+                    {% endif %}
                 </div>
             </div>
         </div>
 
         <!-- Order Summary -->
-        <div class="card" style="position: sticky; top: 2rem; background: var(--card-bg); box-shadow: var(--shadow);">
+        <div class="card order-summary-sticky" style="position: sticky; top: 2rem; background: var(--card-bg); box-shadow: var(--shadow);">
             <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--text-color);">Order Summary</h2>
             
             <div style="margin-bottom: 1.5rem; max-height: 300px; overflow-y: auto;">

@@ -1,0 +1,250 @@
+{% extends "base.html" if not request.headers.get('HX-Request') else "admin/htmx_base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block container_class %}{% endblock %}
+
+{% block head %}
+{{ super() }}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Dashboard CSS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+    {% if not request.headers.get('HX-Request') %}
+    <!-- Mobile Hamburger -->
+    <button class="mobile-hamburger" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <aside class="dashboard-sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <i class="fas fa-book-open"></i>
+                <span class="sidebar-text ml-2">ChupChap</span>
+            </div>
+            <button class="sidebar-toggle" onclick="toggleSidebarCollapse()">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav" hx-target="#adminContentTarget" hx-push-url="true">
+            <!-- Dashboard -->
+            <div class="sidebar-section">
+                <a href="{{ url_for('main.admin_dashboard') }}" class="sidebar-link active tooltip" data-tooltip="Dashboard"
+                    aria-label="Dashboard" aria-current="page" hx-get="{{ url_for('main.admin_dashboard') }}">
+                    <span class="sidebar-icon"><i class="fas fa-th-large"></i></span>
+                    <span class="sidebar-text">Dashboard</span>
+                </a>
+            </div>
+
+            <!-- Administration -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Administration</div>
+                {% if current_user.is_admin() %}
+                <a href="{{ url_for('main.members') }}" class="sidebar-link tooltip" data-tooltip="Members"
+                    aria-label="Manage library members" hx-get="{{ url_for('main.members') }}">
+                    <span class="sidebar-icon"><i class="fas fa-users"></i></span>
+                    <span class="sidebar-text">Members</span>
+                </a>
+
+                <a href="{{ url_for('main.admin_dashboard') }}#management-team-section" class="sidebar-link tooltip" data-tooltip="Manage Team"
+                    aria-label="Manage Team" onclick="if(document.getElementById('management-team-section')) { document.getElementById('management-team-section').scrollIntoView({behavior: 'smooth'}); return false; }">
+                    <span class="sidebar-icon"><i class="fas fa-user-tie"></i></span>
+                    <span class="sidebar-text">Manage Team</span>
+                </a>
+                {% endif %}
+                <a href="{{ url_for('main.admin_loans') }}" class="sidebar-link tooltip" data-tooltip="Borrowed Books"
+                    aria-label="Manage borrowed books and loans" hx-get="{{ url_for('main.admin_loans') }}">
+                    <span class="sidebar-icon"><i class="fas fa-book-reader"></i></span>
+                    <span class="sidebar-text">Borrowed Books</span>
+                </a>
+                <a href="{{ url_for('main.inventory') }}" class="sidebar-link tooltip" data-tooltip="Inventory"
+                    aria-label="Manage book inventory and stock" hx-get="{{ url_for('main.inventory') }}">
+                    <span class="sidebar-icon"><i class="fas fa-boxes"></i></span>
+                    <span class="sidebar-text">Inventory</span>
+                </a>
+            </div>
+
+            <!-- Marketing -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Marketing</div>
+                <a href="{{ url_for('main.admin_offers') }}" class="sidebar-link tooltip" data-tooltip="Manage Offers"
+                    aria-label="Manage discounts and offers" hx-get="{{ url_for('main.admin_offers') }}">
+                    <span class="sidebar-icon"><i class="fas fa-tags"></i></span>
+                    <span class="sidebar-text">Manage Offers</span>
+                </a>
+                <a href="{{ url_for('main.admin_campaigns') }}" class="sidebar-link tooltip" data-tooltip="Campaigns"
+                    aria-label="Manage marketing campaigns" hx-get="{{ url_for('main.admin_campaigns') }}">
+                    <span class="sidebar-icon"><i class="fas fa-bullhorn"></i></span>
+                    <span class="sidebar-text">Campaigns</span>
+                </a>
+            </div>
+
+            <!-- Supply Chain -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Supply Chain</div>
+                {% if current_user.is_admin() %}
+                <a href="{{ url_for('main.supplier_review') }}" class="sidebar-link tooltip" data-tooltip="Review Orders"
+                    aria-label="Review and approve supply orders" hx-get="{{ url_for('main.supplier_review') }}">
+                    <span class="sidebar-icon"><i class="fas fa-clipboard-check"></i></span>
+                    <span class="sidebar-text">Review Orders</span>
+                </a>
+                {% endif %}
+                <a href="{{ url_for('main.supplier_orders') }}" class="sidebar-link tooltip" data-tooltip="Track Orders"
+                    aria-label="Track supply orders" hx-get="{{ url_for('main.supplier_orders') }}">
+                    <span class="sidebar-icon"><i class="fas fa-search-location"></i></span>
+                    <span class="sidebar-text">Track Orders</span>
+                </a>
+                <a href="{{ url_for('main.supplier_shortlist') }}" class="sidebar-link tooltip" data-tooltip="Shortlist"
+                    aria-label="Manage supply order shortlist" hx-get="{{ url_for('main.supplier_shortlist') }}">
+                    <span class="sidebar-icon"><i class="fas fa-list-ol"></i></span>
+                    <span class="sidebar-text">Shortlist</span>
+                </a>
+                <a href="{{ url_for('main.supplier_receive_list') }}" class="sidebar-link tooltip" data-tooltip="Received"
+                    aria-label="View received supply orders" hx-get="{{ url_for('main.supplier_receive_list') }}">
+                    <span class="sidebar-icon"><i class="fas fa-file-invoice-dollar"></i></span>
+                    <span class="sidebar-text">Received</span>
+                </a>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="{{ url_for('main.index') }}" class="sidebar-link">
+                <span class="sidebar-icon"><i class="fas fa-home"></i></span>
+                <span class="sidebar-text">Back to Site</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dashboard-main" id="mainContent">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header" style="padding: 1rem 1.5rem;">
+            <div class="flex items-center justify-between gap-4">
+                <!-- Search Bar -->
+                <div class="flex-1 max-w-xl relative">
+                    <div class="relative">
+                        <input type="text" id="globalSearch" placeholder="Search books, members, orders... (Ctrl+K)"
+                            class="w-full px-4 py-2 pl-10 pr-4 rounded-lg border transition-all focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            style="background-color: var(--bg-color); border-color: var(--border-color); color: var(--text-color);"
+                            aria-label="Global search">
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 opacity-50"></i>
+                    </div>
+                </div>
+                <!-- Right Side Actions -->
+                <div class="flex items-center gap-4">
+                    <!-- Theme Toggle -->
+                    <button class="theme-toggle-btn p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                        aria-label="Toggle theme" style="background: none; border: none; cursor: pointer; color: var(--text-color); display: flex; align-items: center; justify-content: center;">
+                        <!-- Sun Icon -->
+                        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                        <!-- Moon Icon -->
+                        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                    </button>
+
+                    <!-- Notifications -->
+                    <div class="relative">
+                        <button class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative"
+                            aria-label="Notifications">
+                            <i class="fas fa-bell text-xl" style="color: var(--text-color);"></i>
+                            {% if stats and stats.overdue_count and stats.stock_alerts_count %}
+                                {% if stats.overdue_count > 0 or stats.stock_alerts_count > 0 %}
+                                <span
+                                    class="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                                    {{ stats.overdue_count + stats.stock_alerts_count }}
+                                </span>
+                                {% endif %}
+                            {% endif %}
+                        </button>
+                    </div>
+
+                    <!-- User Profile -->
+                    <div class="flex items-center gap-2">
+                        <div
+                            class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold">
+                            {{ current_user.username[0].upper() }}
+                        </div>
+                        <span class="text-sm font-semibold hidden md:block" style="color: var(--text-color);">{{
+                            current_user.username }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="adminContentTarget" class="p-6">
+    {% endif %}
+
+            <!-- Flash Messages for Admin Dashboard -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="flash-messages" style="margin-bottom: 1.5rem;">
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category if category != 'message' else 'info' }}" style="padding: 1rem; border-radius: 0.5rem; margin-bottom: 0.75rem; display: flex; align-items: center; justify-content: space-between;">
+                    <span>{{ message }}</span>
+                    <button onclick="this.parentElement.remove()" style="background: none; border: none; color: inherit; opacity: 0.7; cursor: pointer; font-size: 1.25rem; padding: 0 0.5rem;">&times;</button>
+                </div>
+                {% endfor %}
+            </div>
+            <script>
+                // Auto-dismiss flash messages after 4 seconds
+                document.querySelectorAll('.alert').forEach(alert => {
+                    setTimeout(() => {
+                        alert.style.transition = 'opacity 0.5s ease';
+                        alert.style.opacity = '0';
+                        setTimeout(() => alert.remove(), 500);
+                    }, 4000);
+                });
+            </script>
+            {% endif %}
+            {% endwith %}
+
+            {% block admin_content %}{% endblock %}
+
+    {% if not request.headers.get('HX-Request') %}
+        </div>
+    </main>
+
+    <script>
+        // Sidebar Toggle Functions
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('mobile-open');
+        }
+
+        function toggleSidebarCollapse() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('sidebar-collapsed');
+        }
+
+        // Add visual feedback for active links
+        document.body.addEventListener('htmx:beforeRequest', function(evt) {
+            const sidebarLinks = document.querySelectorAll('.sidebar-link');
+            sidebarLinks.forEach(link => link.classList.remove('active'));
+            evt.detail.elt.classList.add('active');
+        });
+    </script>
+    {% endif %}
+{% endblock %}
