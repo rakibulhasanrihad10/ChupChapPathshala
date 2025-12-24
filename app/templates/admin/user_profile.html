@@ -1,0 +1,135 @@
+{% extends "admin/admin_base.html" %}
+
+{% block title %}{{ user.username }} - User Profile{% endblock %}
+
+{% block admin_content %}
+<div class="p-6">
+    <!-- User Header -->
+    <div class="mb-6 p-6 rounded-lg" style="background-color: var(--card-bg); border: 1px solid var(--border-color);">
+        <div class="flex items-center gap-4">
+            <img src="{{ user.profile_photo }}" 
+                 alt="{{ user.username }}" 
+                 class="w-24 h-24 rounded-full object-cover">
+            <div class="flex-1">
+                <h1 class="text-2xl font-bold mb-1" style="color: var(--text-color);">{{ user.username }}</h1>
+                <p class="text-sm mb-2" style="color: var(--text-secondary);">{{ user.email }}</p>
+                <div class="flex items-center gap-2">
+                    <span class="px-3 py-1 rounded text-xs font-semibold" 
+                          style="background-color: {% if user.role == 'admin' %}rgba(239, 68, 68, 0.1); color: rgb(239, 68, 68){% elif user.role == 'librarian' %}rgba(59, 130, 246, 0.1); color: rgb(59, 130, 246){% else %}rgba(107, 114, 128, 0.1); color: rgb(107, 114, 128){% endif %}">
+                        {{ user.role|capitalize }}
+                    </span>
+                    {% if user.membership_type == 'premium' %}
+                    <span class="px-3 py-1 rounded text-xs font-semibold" 
+                          style="background-color: rgba(234, 179, 8, 0.1); color: rgb(234, 179, 8);">
+                        Premium Member
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="p-4 rounded-lg text-center" style="background-color: var(--card-bg); border: 1px solid var(--border-color);">
+            <p class="text-sm mb-1" style="color: var(--text-secondary);">Active Loans</p>
+            <p class="text-2xl font-bold" style="color: var(--text-color);">{{ active_loans|length }}</p>
+        </div>
+        <div class="p-4 rounded-lg text-center" style="background-color: var(--card-bg); border: 1px solid var(--border-color);">
+            <p class="text-sm mb-1" style="color: var(--text-secondary);">Overdue</p>
+            <p class="text-2xl font-bold text-red-600">{{ overdue_loans|length }}</p>
+        </div>
+        <div class="p-4 rounded-lg text-center" style="background-color: var(--card-bg); border: 1px solid var(--border-color);">
+            <p class="text-sm mb-1" style="color: var(--text-secondary);">Total Purchases</p>
+            <p class="text-2xl font-bold" style="color: var(--text-color);">{{ total_purchases }}</p>
+        </div>
+        <div class="p-4 rounded-lg text-center" style="background-color: var(--card-bg); border: 1px solid var(--border-color);">
+            <p class="text-sm mb-1" style="color: var(--text-secondary);">Forum Posts</p>
+            <p class="text-2xl font-bold" style="color: var(--text-color);">{{ user.forum_posts|length }}</p>
+        </div>
+    </div>
+
+    <!-- Borrowing History -->
+    {% if loans %}
+    <div class="mb-6 p-6 rounded-lg" style="background-color: var(--card-bg);">
+        <h2 class="text-xl font-semibold mb-4" style="color: var(--text-color);">Borrowing History</h2>
+        <div class="overflow-x-auto rounded-lg border" style="border-color: var(--border-color);">
+            <table class="w-full">
+                <thead style="background-color: var(--hover-bg);">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-semibold" style="color: var(--text-color);">Book</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold" style="color: var(--text-color);">Checkout Date</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold" style="color: var(--text-color);">Due Date</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold" style="color: var(--text-color);">Status</th>
+                    </tr>
+                </thead>
+                <tbody style="background-color: var(--card-bg);">
+                    {% for loan in loans[:10] %}
+                    <tr class="border-t" style="border-color: var(--border-color);">
+                        <td class="px-4 py-3 text-sm" style="color: var(--text-color);">{{ loan.book.title }}</td>
+                        <td class="px-4 py-3 text-sm" style="color: var(--text-secondary);">{{ loan.checkout_date.strftime('%Y-%m-%d') }}</td>
+                        <td class="px-4 py-3 text-sm" style="color: var(--text-secondary);">{{ loan.due_date.strftime('%Y-%m-%d') if loan.due_date else 'N/A' }}</td>
+                        <td class="px-4 py-3 text-sm">
+                            <span class="px-2 py-1 rounded text-xs" 
+                                  style="background-color: {% if loan.status == 'active' %}rgba(34, 197, 94, 0.1); color: rgb(34, 197, 94){% elif loan.status == 'overdue' %}rgba(239, 68, 68, 0.1); color: rgb(239, 68, 68){% else %}rgba(107, 114, 128, 0.1); color: rgb(107, 114, 128){% endif %}">
+                                {{ loan.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Purchase History -->
+    {% if sales %}
+    <div class="mb-6 p-6 rounded-lg" style="background-color: var(--card-bg);">
+        <h2 class="text-xl font-semibold mb-4" style="color: var(--text-color);">Purchase History</h2>
+        <div class="overflow-x-auto rounded-lg border" style="border-color: var(--border-color);">
+            <table class="w-full">
+                <thead style="background-color: var(--hover-bg);">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-semibold" style="color: var(--text-color);">Book</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold" style="color: var(--text-color);">Sale Date</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold" style="color: var(--text-color);">Price</th>
+                    </tr>
+                </thead>
+                <tbody style="background-color: var(--card-bg);">
+                    {% for sale in sales[:10] %}
+                    <tr class="border-t" style="border-color: var(--border-color);">
+                        <td class="px-4 py-3 text-sm" style="color: var(--text-color);">{{ sale.book.title }}</td>
+                        <td class="px-4 py-3 text-sm" style="color: var(--text-secondary);">{{ sale.sale_date.strftime('%Y-%m-%d') }}</td>
+                        <td class="px-4 py-3 text-sm font-semibold" style="color: var(--text-color);">৳{{ "%.2f"|format(sale.price_at_sale) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Forum Activity -->
+    {% if forum_posts %}
+    <div class="p-6 rounded-lg" style="background-color: var(--card-bg);">
+        <h2 class="text-xl font-semibold mb-4" style="color: var(--text-color);">Forum Activity</h2>
+        <div class="space-y-3">
+            {% for post in forum_posts[:5] %}
+            <a href="{{ url_for('forum.view_post', post_id=post.id) }}" 
+               class="block p-3 rounded-lg border transition-all hover:shadow-md" 
+               style="background-color: var(--bg-color); border-color: var(--border-color); text-decoration: none;">
+                <div class="flex justify-between items-center">
+                    <h4 class="font-semibold text-sm" style="color: var(--text-color);">{{ post.title }}</h4>
+                    <span class="text-xs px-2 py-1 rounded" style="background-color: var(--hover-bg); color: var(--text-secondary);">
+                        {{ post.status if post.status else post.post_type }}
+                    </span>
+                </div>
+                <p class="text-xs mt-1" style="color: var(--text-secondary);">{{ post.created_at.strftime('%Y-%m-%d') }}</p>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,247 @@
+{% extends "admin/admin_base.html" %}
+
+{% block title %}Search Results - {{ query }}{% endblock %}
+
+{% block admin_content %}
+<div class="p-6">
+    <!-- Search Header -->
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold mb-2" style="color: var(--text-color);">
+            Search Results for "{{ query }}"
+        </h1>
+        <p class="text-sm" style="color: var(--text-secondary);">
+            Found results in {{ (books|length > 0)|int + (members|length > 0)|int + (loans|length > 0)|int + (sales|length > 0)|int + (suppliers|length > 0)|int + (supply_orders|length > 0)|int }} categories
+        </p>
+    </div>
+
+    <!-- Books Section -->
+    {% if books %}
+    <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4 flex items-center gap-2" style="color: var(--text-color);">
+            <i class="fas fa-book text-blue-500"></i>
+            Books ({{ books|length }})
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for book in books[:12] %}
+            <div class="p-4 rounded-lg border" style="background-color: var(--card-bg); border-color: var(--border-color);">
+                <div class="flex gap-3">
+                    <img src="{{ book.image_url or 'https://placehold.co/80x120?text=No+Cover' }}" 
+                         alt="{{ book.title }}" 
+                         class="w-16 h-24 object-cover rounded">
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-semibold text-sm mb-1 truncate" style="color: var(--text-color);">
+                            {{ book.title }}
+                        </h3>
+                        <p class="text-xs mb-1" style="color: var(--text-secondary);">
+                            by {{ book.author }}
+                        </p>
+                        <p class="text-xs mb-2" style="color: var(--text-secondary);">
+                            Stock: {{ book.stock_available }}/{{ book.stock_total }}
+                        </p>
+                        <a href="{{ url_for('main.edit_book', book_id=book.id) }}" 
+                           class="text-xs text-blue-500 hover:text-blue-600">
+                            View Details →
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Members Section -->
+    {% if members %}
+    <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4 flex items-center gap-2" style="color: var(--text-color);">
+            <i class="fas fa-users text-green-500"></i>
+            Members ({{ members|length }})
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for member in members[:12] %}
+            <a href="{{ url_for('main.admin_user_profile', username=member.username) }}" 
+               class="block p-4 rounded-lg border transition-all hover:shadow-md" 
+               style="background-color: var(--card-bg); border-color: var(--border-color); text-decoration: none;">
+                <div class="flex items-center gap-3">
+                    <img src="{{ member.profile_photo }}" 
+                         alt="{{ member.username }}" 
+                         class="w-12 h-12 rounded-full object-cover">
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-semibold text-sm mb-1 truncate" style="color: var(--text-color);">
+                            {{ member.username }}
+                        </h3>
+                        <p class="text-xs mb-1 truncate" style="color: var(--text-secondary);">
+                            {{ member.email }}
+                        </p>
+                        <div class="flex items-center gap-2 text-xs">
+                            <span class="px-2 py-0.5 rounded" 
+                                  style="background-color: {% if member.role == 'admin' %}rgba(239, 68, 68, 0.1); color: rgb(239, 68, 68){% elif member.role == 'librarian' %}rgba(59, 130, 246, 0.1); color: rgb(59, 130, 246){% else %}rgba(107, 114, 128, 0.1); color: rgb(107, 114, 128){% endif %}">
+                                {{ member.role }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Loans Section -->
+    {% if loans %}
+    <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4 flex items-center gap-2" style="color: var(--text-color);">
+            <i class="fas fa-book-reader text-purple-500"></i>
+            Loans ({{ loans|length }})
+        </h2>
+        <div class="overflow-x-auto rounded-lg border" style="border-color: var(--border-color);">
+            <table class="w-full">
+                <thead style="background-color: var(--hover-bg);">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-semibold" style="color: var(--text-color);">ID</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold" style="color: var(--text-color);">Member</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold" style="color: var(--text-color);">Book</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold" style="color: var(--text-color);">Checkout</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold" style="color: var(--text-color);">Due Date</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold" style="color: var(--text-color);">Status</th>
+                    </tr>
+                </thead>
+                <tbody style="background-color: var(--card-bg);">
+                    {% for loan in loans[:10] %}
+                    <tr class="border-t" style="border-color: var(--border-color);">
+                        <td class="px-4 py-3 text-sm" style="color: var(--text-color);">#{{ loan.id }}</td>
+                        <td class="px-4 py-3 text-sm" style="color: var(--text-color);">{{ loan.user.username }}</td>
+                        <td class="px-4 py-3 text-sm" style="color: var(--text-color);">{{ loan.book.title }}</td>
+                        <td class="px-4 py-3 text-sm" style="color: var(--text-secondary);">{{ loan.checkout_date.strftime('%Y-%m-%d') }}</td>
+                        <td class="px-4 py-3 text-sm" style="color: var(--text-secondary);">{{ loan.due_date.strftime('%Y-%m-%d') if loan.due_date else 'N/A' }}</td>
+                        <td class="px-4 py-3 text-sm">
+                            <span class="px-2 py-1 rounded text-xs" 
+                                  style="background-color: {% if loan.status == 'active' %}rgba(34, 197, 94, 0.1); color: rgb(34, 197, 94){% elif loan.status == 'overdue' %}rgba(239, 68, 68, 0.1); color: rgb(239, 68, 68){% else %}rgba(107, 114, 128, 0.1); color: rgb(107, 114, 128){% endif %}">
+                                {{ loan.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Sales Section -->
+    {% if sales %}
+    <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4 flex items-center gap-2" style="color: var(--text-color);">
+            <i class="fas fa-shopping-cart text-orange-500"></i>
+            Sales ({{ sales|length }})
+        </h2>
+        <div class="overflow-x-auto rounded-lg border" style="border-color: var(--border-color);">
+            <table class="w-full">
+                <thead style="background-color: var(--hover-bg);">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-semibold" style="color: var(--text-color);">ID</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold" style="color: var(--text-color);">Member</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold" style="color: var(--text-color);">Book</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold" style="color: var(--text-color);">Sale Date</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold" style="color: var(--text-color);">Price</th>
+                    </tr>
+                </thead>
+                <tbody style="background-color: var(--card-bg);">
+                    {% for sale in sales[:10] %}
+                    <tr class="border-t" style="border-color: var(--border-color);">
+                        <td class="px-4 py-3 text-sm" style="color: var(--text-color);">#{{ sale.id }}</td>
+                        <td class="px-4 py-3 text-sm" style="color: var(--text-color);">{{ sale.user.username if sale.user else 'N/A' }}</td>
+                        <td class="px-4 py-3 text-sm" style="color: var(--text-color);">{{ sale.book.title }}</td>
+                        <td class="px-4 py-3 text-sm" style="color: var(--text-secondary);">{{ sale.sale_date.strftime('%Y-%m-%d') }}</td>
+                        <td class="px-4 py-3 text-sm font-semibold" style="color: var(--text-color);">৳{{ "%.2f"|format(sale.price_at_sale) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Suppliers Section -->
+    {% if suppliers %}
+    <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4 flex items-center gap-2" style="color: var(--text-color);">
+            <i class="fas fa-truck text-indigo-500"></i>
+            Suppliers ({{ suppliers|length }})
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for supplier in suppliers %}
+            <div class="p-4 rounded-lg border" style="background-color: var(--card-bg); border-color: var(--border-color);">
+                <h3 class="font-semibold text-sm mb-2" style="color: var(--text-color);">
+                    {{ supplier.name }}
+                </h3>
+                {% if supplier.contact_person %}
+                <p class="text-xs mb-1" style="color: var(--text-secondary);">
+                    <i class="fas fa-user mr-1"></i> {{ supplier.contact_person }}
+                </p>
+                {% endif %}
+                {% if supplier.email %}
+                <p class="text-xs mb-1" style="color: var(--text-secondary);">
+                    <i class="fas fa-envelope mr-1"></i> {{ supplier.email }}
+                </p>
+                {% endif %}
+                {% if supplier.phone %}
+                <p class="text-xs" style="color: var(--text-secondary);">
+                    <i class="fas fa-phone mr-1"></i> {{ supplier.phone }}
+                </p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Supply Orders Section -->
+    {% if supply_orders %}
+    <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4 flex items-center gap-2" style="color: var(--text-color);">
+            <i class="fas fa-boxes text-teal-500"></i>
+            Supply Orders ({{ supply_orders|length }})
+        </h2>
+        <div class="overflow-x-auto rounded-lg border" style="border-color: var(--border-color);">
+            <table class="w-full">
+                <thead style="background-color: var(--hover-bg);">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-semibold" style="color: var(--text-color);">ID</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold" style="color: var(--text-color);">Supplier</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold" style="color: var(--text-color);">Status</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold" style="color: var(--text-color);">Items</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold" style="color: var(--text-color);">Created</th>
+                    </tr>
+                </thead>
+                <tbody style="background-color: var(--card-bg);">
+                    {% for order in supply_orders[:10] %}
+                    <tr class="border-t" style="border-color: var(--border-color);">
+                        <td class="px-4 py-3 text-sm" style="color: var(--text-color);">#{{ order.id }}</td>
+                        <td class="px-4 py-3 text-sm" style="color: var(--text-color);">{{ order.supplier.name if order.supplier else 'N/A' }}</td>
+                        <td class="px-4 py-3 text-sm">
+                            <span class="px-2 py-1 rounded text-xs" 
+                                  style="background-color: rgba(59, 130, 246, 0.1); color: rgb(59, 130, 246)">
+                                {{ order.status }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-sm" style="color: var(--text-color);">{{ order.total_items }}</td>
+                        <td class="px-4 py-3 text-sm" style="color: var(--text-secondary);">{{ order.created_at.strftime('%Y-%m-%d') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- No Results -->
+    {% if not books and not members and not loans and not sales and not suppliers and not supply_orders %}
+    <div class="text-center py-12">
+        <i class="fas fa-search text-6xl mb-4" style="color: var(--text-secondary); opacity: 0.3;"></i>
+        <h3 class="text-xl font-semibold mb-2" style="color: var(--text-color);">No results found</h3>
+        <p style="color: var(--text-secondary);">Try searching with different keywords</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

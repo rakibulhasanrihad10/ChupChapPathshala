@@ -1,5 +1,174 @@
 {% extends "admin/admin_base.html" %}
 
+
+{% block head %}
+{{ super() }}
+<style>
+    @media (max-width: 768px) {
+        .mb-8.flex.justify-between.items-center {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .mb-8.flex.justify-between.items-center h2 {
+            font-size: 1.5rem;
+            text-align: left;
+        }
+
+        .btn.btn-primary {
+            width: 100%;
+            justify-content: center;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+        }
+
+        /* Hide table headers on mobile */
+        .rounded-xl thead {
+            display: none;
+        }
+
+        .rounded-xl table,
+        .rounded-xl tbody,
+        .rounded-xl tr {
+            display: block;
+            width: 100%;
+        }
+
+        .rounded-xl tr {
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            background-color: var(--card-bg);
+        }
+
+        .rounded-xl tr:hover {
+            opacity: 1;
+        }
+
+        .rounded-xl td {
+            display: block;
+            width: 100%;
+            padding: 0.5rem 0 !important;
+            border: none !important;
+            text-align: left !important;
+        }
+
+        /* Add labels before content */
+        .rounded-xl td:nth-child(1)::before {
+            content: 'Campaign';
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .rounded-xl td:nth-child(2)::before {
+            content: 'Image';
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .rounded-xl td:nth-child(3)::before {
+            content: 'Status';
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .rounded-xl td:nth-child(4)::before {
+            content: 'Actions';
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        /* Campaign title and description */
+        .rounded-xl td:nth-child(1) {
+            padding-bottom: 0.75rem !important;
+            border-bottom: 1px solid var(--border-color) !important;
+            margin-bottom: 0.75rem;
+        }
+
+        .rounded-xl td:nth-child(1) .text-sm {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .rounded-xl td:nth-child(1) .text-xs {
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Image styling */
+        .rounded-xl td:nth-child(2) img {
+            height: 120px;
+            width: 100%;
+            max-width: 200px;
+            object-fit: cover;
+            border-radius: 0.5rem;
+        }
+
+        /* Status badge */
+        .rounded-xl td:nth-child(3) span {
+            display: inline-block;
+            margin-top: 0.25rem;
+        }
+
+        /* Action buttons */
+        .rounded-xl td:nth-child(4) .flex {
+            justify-content: flex-start;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .rounded-xl td:nth-child(4) a,
+        .rounded-xl td:nth-child(4) button {
+            padding: 0.5rem 1rem;
+            font-size: 0.95rem;
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Empty state */
+        .rounded-xl td[colspan="4"] {
+            padding: 3rem 1rem !important;
+        }
+    }
+
+
+    @media (max-width: 480px) {
+        .mb-8.flex.justify-between.items-center h2 {
+            font-size: 1.25rem;
+        }
+
+        .rounded-xl tr {
+            padding: 0.75rem;
+        }
+
+        .rounded-xl td:nth-child(2) img {
+            max-width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block admin_content %}
 <div class="mb-8 flex justify-between items-center">
     <h2 class="text-2xl font-bold" style="color: var(--text-color);">Promotional Campaigns</h2>

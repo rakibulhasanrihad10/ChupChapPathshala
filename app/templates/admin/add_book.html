@@ -1,8 +1,121 @@
-{% extends "base.html" %}
+{% extends "admin/admin_base.html" %}
 
 {% block title %}Add New Book{% endblock %}
 
-{% block content %}
+{% block head %}
+{{ super() }}
+<style>
+    @media (max-width: 768px) {
+        /* Page Header */
+        .page-header {
+            padding: 1rem 0;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+        }
+
+        /* Form Container - overflow and padding */
+        .p-8.rounded-2xl.shadow.max-w-xl {
+            padding: 1.5rem 1rem !important;
+            margin: 0 1rem !important;
+            max-width: calc(100vw - 2rem) !important;
+            box-sizing: border-box;
+        }
+
+        /* Search Sections - Stack input and button vertically */
+        .p-4.rounded-lg.mb-6 .flex.gap-2 {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .p-4.rounded-lg.mb-6 .flex.gap-2 input {
+            width: 100%;
+        }
+
+        .p-4.rounded-lg.mb-6 .flex.gap-2 button {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+        }
+
+        /* Book Search Results */
+        #book_search_results {
+            max-height: 300px;
+        }
+
+        #book_search_results > div {
+            padding: 0.75rem;
+        }
+
+        .mb-6 input,
+        .mb-6 select,
+        .mb-8 input {
+            font-size: 1rem;
+            padding: 0.75rem !important;
+        }
+
+        .mb-6 label,
+        .mb-8 label {
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Grid Layout - Collapse to single column */
+        .grid.grid-cols-2 {
+            grid-template-columns: 1fr !important;
+            gap: 0 !important;
+        }
+
+        .grid.grid-cols-2 > div {
+            margin-bottom: 1.5rem;
+        }
+
+        /* Action Buttons - Stack vertically */
+        .flex.items-center.gap-4 {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+        }
+
+        .btn-add {
+            width: 100%;
+            padding: 0.875rem 1rem !important;
+            font-size: 1rem !important;
+            text-align: center;
+        }
+
+        .flex.items-center.gap-4 a {
+            text-align: center;
+            padding: 0.75rem;
+            font-size: 1rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .page-title {
+            font-size: 1.25rem;
+        }
+
+        .p-8.rounded-2xl.shadow.max-w-xl {
+            padding: 1rem 0.75rem !important;
+            margin: 0 0.5rem !important;
+            max-width: calc(100vw - 1rem) !important;
+        }
+
+        .p-4.rounded-lg.mb-6 {
+            padding: 0.75rem !important;
+        }
+
+        .mb-6,
+        .mb-8 {
+            margin-bottom: 1.25rem !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
 <div class="page-header">
     <h1 class="page-title">Add New Book</h1>
 </div>
@@ -280,7 +393,6 @@
             else if (cats.some(s => s.includes('bengali') || s.includes('india'))) categorySelect.value = 'Bengali';
             else if (cats.some(s => s.includes('fiction'))) categorySelect.value = 'Fiction';
             else if (cats.some(s => s.includes('history') || s.includes('science'))) categorySelect.value = 'Non-Fiction';
-            // ... otherwise keep default or user selected
         }
 
         // Hide results after selection 

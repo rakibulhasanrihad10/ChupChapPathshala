@@ -226,6 +226,35 @@ def members():
     users = User.query.all()
     return render_template('admin/members.html', users=users)
 
+@bp.route('/admin/user/<username>')
+@login_required
+@admin_required
+def admin_user_profile(username):
+    """Admin view of user profile - stays within admin dashboard"""
+    user = User.query.filter_by(username=username).first_or_404()
+    
+    # Get user's loans
+    loans = Loan.query.filter_by(user_id=user.id).order_by(Loan.checkout_date.desc()).all()
+    active_loans = [l for l in loans if l.status == 'active']
+    overdue_loans = [l for l in active_loans if l.due_date and l.due_date < datetime.utcnow()]
+    
+    # Get user's purchases
+    sales = Sale.query.filter_by(user_id=user.id).order_by(Sale.sale_date.desc()).all()
+    total_purchases = len(sales)
+    
+    # Get user's forum posts
+    forum_posts = ForumPost.query.filter_by(user_id=user.id).order_by(ForumPost.created_at.desc()).all()
+    
+    return render_template('admin/user_profile.html', 
+                         user=user, 
+                         loans=loans,
+                         active_loans=active_loans,
+                         overdue_loans=overdue_loans,
+                         sales=sales,
+                         total_purchases=total_purchases,
+                         forum_posts=forum_posts)
+
+
 @bp.route('/admin/offers', methods=['GET', 'POST'])
 @login_required
 @admin_required

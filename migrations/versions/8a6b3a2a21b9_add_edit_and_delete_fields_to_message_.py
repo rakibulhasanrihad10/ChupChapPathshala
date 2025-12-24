@@ -1,7 +1,7 @@
 """Add edit and delete fields to Message model
 
 Revision ID: 8a6b3a2a21b9
-Revises: 6a7b0df7c45b
+Revises: 7c8d9e0f1a2b
 Create Date: 2025-12-22 12:08:35.601783
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '8a6b3a2a21b9'
-down_revision = '6a7b0df7c45b'
+down_revision = '7c8d9e0f1a2b'
 branch_labels = None
 depends_on = None
 

@@ -11,6 +11,174 @@
     .btn-red:hover {
         background-color: #FECACA; /* red-200 */
     }
+
+    /* Mobile Responsive Styles */
+    @media (max-width: 768px) {
+        /* Page Header - Stack vertically */
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+        }
+
+        .btn-add {
+            width: 100%;
+            justify-content: center;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+        }
+
+        /* Search Toolbar */
+        .flex.flex-col.sm\:flex-row {
+            gap: 1rem;
+        }
+
+        .flex.flex-col.sm\:flex-row h3 {
+            font-size: 1rem;
+        }
+
+        .flex.flex-col.sm\:flex-row form {
+            width: 100%;
+        }
+
+        .flex.flex-col.sm\:flex-row form input {
+            font-size: 1rem;
+            padding: 0.75rem 1rem;
+        }
+
+        .flex.flex-col.sm\:flex-row form button {
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+        }
+
+        /* Table Container - Better horizontal scroll */
+        .table-container {
+            border-radius: 0.5rem;
+            position: relative;
+        }
+
+        .table-container::after {
+            content: '← Scroll to see more →';
+            position: sticky;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--pill-bg);
+            color: var(--text-muted);
+            text-align: center;
+            padding: 0.5rem;
+            font-size: 0.75rem;
+            border-top: 1px solid var(--border-color);
+            z-index: 10;
+        }
+
+        /* Table optimizations */
+        .table {
+            font-size: 0.8rem;
+        }
+
+        .table th,
+        .table td {
+            padding: 0.75rem 0.5rem;
+        }
+
+        .table th {
+            font-size: 0.7rem;
+        }
+
+        /* Make book cover smaller on mobile */
+        .table td .w-10.h-16 {
+            width: 2rem;
+            height: 3rem;
+        }
+
+        /* Action column - ensure it's always visible */
+        .table th.sticky,
+        .table td.sticky {
+            right: 0;
+            background-color: var(--card-bg);
+        }
+
+        /* Action button - larger touch target */
+        .action-btn {
+            font-size: 2rem;
+            padding: 0.5rem;
+            cursor: pointer;
+        }
+
+        /* Dropdown menu positioning for mobile */
+        #dropdown-root {
+            position: fixed !important;
+            z-index: 1000;
+        }
+
+        #dropdown-root .block {
+            min-width: 150px;
+        }
+
+        #dropdown-root a,
+        #dropdown-root button {
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Pagination - larger touch targets */
+        .flex.justify-center.items-center.gap-2 {
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .flex.justify-center.items-center.gap-2 a,
+        .flex.justify-center.items-center.gap-2 span {
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem;
+            font-size: 1rem;
+        }
+
+        /* Hide some page numbers on very small screens */
+        @media (max-width: 480px) {
+            .flex.justify-center.items-center.gap-2 a:not(:first-child):not(:last-child):not(.bg-indigo-600) {
+                display: none;
+            }
+            
+            .flex.justify-center.items-center.gap-2 span:not(:first-child):not(:last-child):not(.bg-indigo-600) {
+                display: none;
+            }
+        }
+
+        /* Back link */
+        .transition-colors.hover\:opacity-80 {
+            font-size: 1rem;
+            padding: 0.75rem 0;
+        }
+    }
+
+    /* Very small mobile devices */
+    @media (max-width: 480px) {
+        .page-title {
+            font-size: 1.25rem;
+        }
+
+        .table {
+            font-size: 0.75rem;
+        }
+
+        .table th,
+        .table td {
+            padding: 0.5rem 0.25rem;
+        }
+    }
 </style>
 
 <!-- Page Header -->
@@ -211,11 +379,12 @@
 </div>
 {% endif %}
 <!-- Back Link -->
-<div class="mt-8">
-    <a href="{{ url_for('main.index') }}"
-        class="text-gray-500 inline-flex items-center gap-2 text-sm hover:text-gray-700">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor"
-            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<div style="margin-top: 2rem;">
+    <a href="{{ url_for('main.admin_dashboard') }}"
+        class="transition-colors hover:opacity-80"
+        style="color: var(--text-muted); text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="19" y1="12" x2="5" y2="12"></line>
             <polyline points="12 19 5 12 12 5"></polyline>
         </svg>
