@@ -1,0 +1,67 @@
+<div class="card">
+    <div style="position: absolute; top: 1rem; left: 1rem; z-index: 10;">
+        <div style="background-color: #10B981; color: white; padding: 0.5rem; border-radius: 9999px; font-weight: bold; font-size: 0.9rem; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+            {{book.stock_sold}} <span style="font-size: 0.8em; font-weight: normal;">sold</span>
+        </div>
+    </div>
+
+    <div class="book-image-container">
+        {% if book.image_url %}
+        <img src="{{ book.image_url }}" alt="{{ book.title }}" id="img-{{ book.id }}">
+        {% else %}
+        <div class="no-cover-placeholder" id="img-{{ book.id }}">
+            <span>No Cover</span>
+        </div>
+        {% endif %}
+
+        {% if book.discount_percentage and book.discount_percentage > 0 %}
+        <div class="discount-badge">
+            <span class="discount-value">{{ "%.0f"|format(book.discount_percentage) }}%</span>
+            <span class="discount-label">OFF</span>
+        </div>
+        {% endif %}
+
+        {% if current_user.is_staff() %}
+        <div class="upload-overlay" onclick="document.getElementById('file-{{ book.id }}').click()">
+            <div class="upload-btn">+</div>
+        </div>
+
+        <div id="spinner-{{ book.id }}" class="upload-spinner">↻</div>
+
+        <input type="file" id="file-{{ book.id }}" accept="image/*" style="display: none;" onchange="uploadCover(this, {{ book.id }})">
+        {% endif %}
+    </div>
+
+    <h3>{{ book.title }}</h3>
+    <p class="text-sm"><strong>Author:</strong> {{ book.author }}</p>
+    <p class="text-sm"><strong>Availability:</strong> <span class="status-badge">{{ book.item_type|capitalize }}</span></p>
+    <p class="text-sm"><strong>Category:</strong> <span style="color: #6B7280;">{{ book.category }}</span></p>
+    <p class="text-sm">
+        <strong>Price:</strong>
+        {% if book.discount_percentage and book.discount_percentage > 0 %}
+        <span class="text-red-500 line-through mr-1">TK {{ "%.2f"|format(book.price) }}</span>
+        <span class="text-green-600 font-bold">TK {{ "%.2f"|format(book.price * (1 - book.discount_percentage/100)) }}</span>
+        {% else %}
+        TK {{ "%.2f"|format(book.price) }}
+        {% endif %}
+    </p>
+
+    <div style="margin-top: auto; padding-top: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+        {% set show_buy = (book.item_type in ['sale', 'hybrid'] and book.stock_available > 0) %}
+        {% set show_borrow = (book.item_type in ['circulation', 'hybrid'] and book.stock_available > 0) %}
+
+        <form action="{{ url_for('main.add_to_cart', book_id=book.id) }}" method="POST" style="display: contents;">
+            {% if show_buy %}
+            <button type="submit" name="action" value="buy" class="btn-action btn-buy" style="{{ 'grid-column: span 2;' if not show_borrow else '' }}">Buy</button>
+            {% endif %}
+
+            {% if show_borrow %}
+            <button type="submit" name="action" value="borrow" class="btn-action btn-borrow" style="{{ 'grid-column: span 2;' if not show_buy else '' }}">Borrow</button>
+            {% endif %}
+
+            {% if book.stock_available == 0 %}
+            <button disabled class="btn-action btn-disabled" style="grid-column: span 2;">Out of Stock</button>
+            {% endif %}
+        </form>
+    </div>
+</div>

@@ -125,7 +125,7 @@
     <!-- Main Content -->
     <main class="dashboard-main" id="mainContent">
         <!-- Dashboard Header -->
-        <div class="dashboard-header" style="padding: 1rem 1.5rem;">
+        <div class="dashboard-header" style="padding: 0 1.5rem; padding-top: 1rem; padding-bottom: 1rem;">
             <div class="flex items-center justify-between gap-4">
                 <!-- Search Bar -->
                 <div class="flex-1 max-w-xl relative">
@@ -138,7 +138,7 @@
                         <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 opacity-50"></i>
                         <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 opacity-50 hover:opacity-100 transition-opacity"
                             style="background: none; border: none; cursor: pointer; color: var(--text-color); padding: 0;">
-                            <i class="fas fa-arrow-right"></i>
+                            
                         </button>
                         <!-- Autocomplete Dropdown -->
                         <div id="adminSuggestions" class="absolute top-full left-0 w-full rounded-lg shadow-lg hidden z-50 overflow-hidden mt-2"
@@ -150,8 +150,8 @@
                 <div class="flex items-center gap-4">
 
                     <!-- Notifications -->
-                    <div class="relative">
-                        <button class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative"
+                    <div class="relative" id="notificationDropdown">
+                        <button onclick="toggleNotifications()" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative"
                             aria-label="Notifications">
                             <i class="fas fa-bell text-xl" style="color: var(--text-color);"></i>
                             {% if stats and stats.overdue_count and stats.stock_alerts_count %}
@@ -163,6 +163,49 @@
                                 {% endif %}
                             {% endif %}
                         </button>
+                        
+                        <!-- Notification Dropdown -->
+                        <div id="notificationMenu" class="hidden absolute right-0 mt-2 rounded-lg shadow-lg overflow-hidden z-50"
+                            style="background-color: var(--bg-color); border: 1px solid var(--border-color); width: 28rem; max-width: 90vw;">
+                            <div class="p-5 border-b" style="border-color: var(--border-color);">
+                                <h3 class="font-semibold text-lg" style="color: var(--text-color);">Notifications</h3>
+                            </div>
+                            <div class="max-h-96 overflow-y-auto">
+                                {% if stats and (stats.overdue_count > 0 or stats.stock_alerts_count > 0) %}
+                                    {% if stats.overdue_count > 0 %}
+                                    <a href="{{ url_for('main.borrowed_books') }}" class="block p-5 hover:bg-gray-50 dark:hover:bg-gray-800 border-b transition-colors" style="border-color: var(--border-color);">
+                                        <div class="flex items-start gap-4">
+                                            <div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center flex-shrink-0">
+                                                <i class="fas fa-exclamation-circle text-red-500 text-lg"></i>
+                                            </div>
+                                            <div class="flex-1">
+                                                <p class="font-semibold text-base mb-1" style="color: var(--text-color);">Overdue Books</p>
+                                                <p class="text-sm" style="color: var(--text-secondary);">{{ stats.overdue_count }} book(s) are overdue and need attention</p>
+                                            </div>
+                                        </div>
+                                    </a>
+                                    {% endif %}
+                                    {% if stats.stock_alerts_count > 0 %}
+                                    <a href="{{ url_for('main.inventory') }}" class="block p-5 hover:bg-gray-50 dark:hover:bg-gray-800 border-b transition-colors" style="border-color: var(--border-color);">
+                                        <div class="flex items-start gap-4">
+                                            <div class="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center flex-shrink-0">
+                                                <i class="fas fa-box text-orange-500 text-lg"></i>
+                                            </div>
+                                            <div class="flex-1">
+                                                <p class="font-semibold text-base mb-1" style="color: var(--text-color);">Low Stock Alert</p>
+                                                <p class="text-sm" style="color: var(--text-secondary);">{{ stats.stock_alerts_count }} book(s) running low on stock</p>
+                                            </div>
+                                        </div>
+                                    </a>
+                                    {% endif %}
+                                {% else %}
+                                <div class="p-12 text-center">
+                                    <i class="fas fa-bell-slash text-5xl mb-3" style="color: var(--text-secondary); opacity: 0.5;"></i>
+                                    <p class="text-base" style="color: var(--text-secondary);">No new notifications</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
 
                     <!-- User Profile -->
@@ -225,6 +268,22 @@
             sidebar.classList.toggle('collapsed');
             mainContent.classList.toggle('sidebar-collapsed');
         }
+
+        // Toggle Notifications Dropdown
+        function toggleNotifications() {
+            const menu = document.getElementById('notificationMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Close notification dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('notificationDropdown');
+            const menu = document.getElementById('notificationMenu');
+            
+            if (dropdown && menu && !dropdown.contains(event.target)) {
+                menu.classList.add('hidden');
+            }
+        });
 
         // Add visual feedback for active links
         document.body.addEventListener('htmx:beforeRequest', function(evt) {

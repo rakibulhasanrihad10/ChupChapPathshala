@@ -142,6 +142,10 @@
                 <div
                     class="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 w-48 hidden group-hover:block dropdown-menu z-50">
                     <div>
+                        <a href="{{ url_for('user.profile') }}"
+                            class="dropdown-item hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <i class="fas fa-user mr-2"></i>My Profile
+                        </a>
                         <a href="{{ url_for('auth.logout') }}"
                             class="dropdown-item text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
                             <i class="fas fa-sign-out-alt mr-2"></i>Logout

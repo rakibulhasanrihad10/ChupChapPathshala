@@ -453,6 +453,13 @@ def delete_campaign(id):
 @bp.route('/')
 def index():
     books = featured_books_routes.fetch_most_sold(6)
+    
+    # Academic books
+    academic_books = Book.query.filter_by(category='Academic').filter(Book.stock_available > 0).order_by(Book.stock_sold.desc()).limit(6).all()
+    
+    # Islamic books  
+    islamic_books = Book.query.filter_by(category='Islamic').filter(Book.stock_available > 0).order_by(Book.stock_sold.desc()).limit(6).all()
+    
     try:
         now = datetime.utcnow()
         from sqlalchemy import or_
@@ -470,7 +477,7 @@ def index():
     except:
         management_members = []
         
-    return render_template('index.html', books=books, campaigns=campaigns, categories=categories, management_members=management_members)
+    return render_template('index.html', books=books, academic_books=academic_books, islamic_books=islamic_books, campaigns=campaigns, categories=categories, management_members=management_members)
 
 @bp.route('/catalog')
 def catalog():

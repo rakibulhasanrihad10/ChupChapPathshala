@@ -143,6 +143,102 @@
 <!-- Featured Books Section -->
 {% include "featured.html" %}
 
+<!-- Academic Books Section -->
+{% if academic_books %}
+<div class="mb-12">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold" style="color: var(--text-color);">Academic Books</h2>
+        <a href="{{ url_for('main.catalog', category='Academic') }}" class="text-indigo-600 font-semibold hover:underline">
+            View All Academic →
+        </a>
+    </div>
+
+    <div class="swiper academicSwiper" style="padding: 10px 5px 40px 5px;">
+        <div class="swiper-wrapper">
+            {% for book in academic_books %}
+            <div class="swiper-slide">
+                {% include "book_card_slide.html" %}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="swiper-pagination"></div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        if (document.querySelector('.academicSwiper')) {
+            new Swiper(".academicSwiper", {
+                slidesPerView: 2,
+                spaceBetween: 15,
+                loop: {{ 'true' if academic_books|length >= 4 else 'false' }},
+                autoplay: {
+                    delay: 3000,
+                    disableOnInteraction: false,
+                },
+                pagination: {
+                    el: ".academicSwiper .swiper-pagination",
+                    clickable: true,
+                },
+                breakpoints: {
+                    640: { slidesPerView: 2, spaceBetween: 20 },
+                    768: { slidesPerView: 3, spaceBetween: 30 },
+                    1024: { slidesPerView: 4, spaceBetween: 30 },
+                },
+            });
+        }
+    });
+</script>
+{% endif %}
+
+<!-- Islamic Books Section -->
+{% if islamic_books %}
+<div class="mb-12">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold" style="color: var(--text-color);">Islamic Books</h2>
+        <a href="{{ url_for('main.catalog', category='Islamic') }}" class="text-indigo-600 font-semibold hover:underline">
+            View All Islamic →
+        </a>
+    </div>
+
+    <div class="swiper islamicSwiper" style="padding: 10px 5px 40px 5px;">
+        <div class="swiper-wrapper">
+            {% for book in islamic_books %}
+            <div class="swiper-slide">
+                {% include "book_card_slide.html" %}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="swiper-pagination"></div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        if (document.querySelector('.islamicSwiper')) {
+            new Swiper(".islamicSwiper", {
+                slidesPerView: 2,
+                spaceBetween: 15,
+                loop: {{ 'true' if islamic_books|length >= 4 else 'false' }},
+                autoplay: {
+                    delay: 3500,
+                    disableOnInteraction: false,
+                },
+                pagination: {
+                    el: ".islamicSwiper .swiper-pagination",
+                    clickable: true,
+                },
+                breakpoints: {
+                    640: { slidesPerView: 2, spaceBetween: 20 },
+                    768: { slidesPerView: 3, spaceBetween: 30 },
+                    1024: { slidesPerView: 4, spaceBetween: 30 },
+                },
+            });
+        }
+    });
+</script>
+{% endif %}
+
 <!-- Promotional / Premium Perks Section -->
 <div class="premium-perks">
     <div>
