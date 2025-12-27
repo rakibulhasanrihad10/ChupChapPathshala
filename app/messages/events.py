@@ -1,3 +1,4 @@
+from flask import request
 from flask_socketio import emit, join_room, leave_room
 from flask_login import current_user
 from app.extensions import socketio, db
@@ -5,7 +6,7 @@ from app.models import Message, User
 from datetime import datetime
 
 @socketio.on('connect')
-def handle_connect():
+def handle_connect(auth=None):
     """Handle user connection to Socket.IO"""
     if current_user.is_authenticated:
         # Join user's personal room for receiving messages
@@ -200,6 +201,3 @@ def handle_delete_message(data):
     }, room=recipient_room)
     
     return {'success': True}
-
-# Import request for socket ID
-from flask import request
