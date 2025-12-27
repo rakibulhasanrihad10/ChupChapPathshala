@@ -38,6 +38,7 @@ class User(UserMixin, db.Model):
     
     # Online/Offline Status Tracking
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
+    socket_id = db.Column(db.String(100), nullable=True)  # Track active Socket.IO session
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -52,7 +53,11 @@ class User(UserMixin, db.Model):
         return self.role in ['admin', 'librarian']
     
     def is_online(self):
-        """Check if user is online (active in last 5 minutes)"""
+        """Check if user is online (has active socket or active in last 5 minutes)"""
+        # User is online if they have an active socket connection
+        if self.socket_id:
+            return True
+        # Or if they were active in the last 5 minutes
         if not self.last_seen:
             return False
         return (datetime.utcnow() - self.last_seen).total_seconds() < 300
@@ -285,9 +290,15 @@ class ChatMessage(db.Model):
 
 class Message(db.Model):
     __tablename__ = 'messages'
+    __table_args__ = (
+        db.Index('idx_sender_timestamp', 'sender_id', 'timestamp'),
+        db.Index('idx_recipient_timestamp', 'recipient_id', 'timestamp'),
+        db.Index('idx_recipient_read', 'recipient_id', 'is_read'),
+    )
+    
     id = db.Column(db.Integer, primary_key=True)
-    sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    recipient_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    recipient_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
     body = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     is_read = db.Column(db.Boolean, default=False)

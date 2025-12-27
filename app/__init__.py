@@ -1,6 +1,6 @@
 from flask import Flask
 from config import Config
-from app.extensions import db, migrate, login_manager, oauth, mail, back
+from app.extensions import db, migrate, login_manager, oauth, mail, back, socketio
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -62,6 +62,17 @@ def create_app(config_class=Config):
         if current_user.is_authenticated:
             current_user.last_seen = datetime.utcnow()
             db.session.commit()
+
+    # Initialize Socket.IO with Redis message queue
+    socketio.init_app(
+        app,
+        message_queue=app.config['SOCKETIO_MESSAGE_QUEUE'],
+        async_mode=app.config['SOCKETIO_ASYNC_MODE'],
+        cors_allowed_origins=app.config['SOCKETIO_CORS_ALLOWED_ORIGINS']
+    )
+    
+    # Register Socket.IO events
+    from app.messages import events
 
     return app
 

@@ -27,6 +27,9 @@
             }
         })();
     </script>
+
+    <!-- Socket.IO Client Library -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 </head>
 
 <body>
@@ -82,17 +85,18 @@
             {% if current_user.is_authenticated %}
             <!-- Message Notifications -->
             <div class="relative group dropdown-container" id="notification-container">
-                <button class="nav-pill notification-bell" id="notification-bell" 
+                <button class="nav-pill notification-bell" id="notification-bell"
                     style="padding: 0.5rem; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: none; cursor: pointer; color: inherit; position: relative;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" 
-                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                     </svg>
                     <span class="notification-badge" id="notification-badge" style="display: none;"></span>
                 </button>
-                
+
                 <!-- Notification Dropdown -->
-                <div class="absolute left-1/2 transform -translate-x-1/2 top-full hidden group-hover:block dropdown-menu z-50" id="notification-dropdown" style="width: 300px; max-height: 400px; overflow-y: auto;">
+                <div class="absolute left-1/2 transform -translate-x-1/2 top-full hidden group-hover:block dropdown-menu z-50"
+                    id="notification-dropdown" style="width: 300px; max-height: 400px; overflow-y: auto;">
                     <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                         <h3 class="font-semibold text-sm">Recent Chats</h3>
                     </div>
@@ -104,7 +108,7 @@
                 </div>
             </div>
             {% endif %}
-            
+
             <!-- Dark Mode Toggle -->
             <button class="nav-pill theme-toggle-btn"
                 style="padding: 0.5rem; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: none; cursor: pointer; color: inherit;">
@@ -466,7 +470,7 @@
             if (toggle) {
                 const currentTheme = document.documentElement.getAttribute('data-theme');
                 const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                
+
                 document.documentElement.setAttribute('data-theme', newTheme);
                 localStorage.setItem('theme', newTheme);
                 updateIcons(newTheme);
@@ -482,12 +486,12 @@
             }
         });
     </script>
-    
+
     {% if current_user.is_authenticated %}
     <!-- Message Notification System -->
     <script>
         let lastNotificationCount = 0;
-        
+
         // Function to update notification badge and list
         async function updateNotifications() {
             try {
@@ -495,14 +499,14 @@
                 const countRes = await fetch('/messages/unread-count');
                 const countData = await countRes.json();
                 const count = countData.count || 0;
-                
+
                 const badge = document.getElementById('notification-badge');
                 const bell = document.getElementById('notification-bell');
-                
+
                 if (count > 0) {
                     badge.textContent = count > 99 ? '99+' : count;
                     badge.style.display = 'flex';
-                    
+
                     // Pulse animation for new messages
                     if (count > lastNotificationCount) {
                         bell.classList.add('notification-pulse');
@@ -511,16 +515,16 @@
                 } else {
                     badge.style.display = 'none';
                 }
-                
+
                 lastNotificationCount = count;
-                
+
                 // Get unread message list
                 const listRes = await fetch('/messages/unread-list');
                 const listData = await listRes.json();
                 const messages = listData.messages || [];
-                
+
                 const notificationList = document.getElementById('notification-list');
-                
+
                 if (messages.length === 0) {
                     notificationList.innerHTML = `
                         <div class="px-4 py-8 text-center text-gray-500 dark:text-gray-400 text-sm">
@@ -532,7 +536,7 @@
                         const hasUnread = msg.unread_count > 0;
                         const unreadClass = hasUnread ? 'font-semibold' : '';
                         const unreadBg = hasUnread ? 'bg-blue-50 dark:bg-blue-900/20' : '';
-                        
+
                         return `
                         <div class="notification-item px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0 ${unreadBg}"
                              onclick="openChatFromNotification(${msg.sender_id}, '${msg.sender_name.replace(/'/g, "\\'")}', '${msg.sender_photo}')">
@@ -566,28 +570,28 @@
                 console.error('Error updating notifications:', error);
             }
         }
-        
+
         // Open chat from notification
         function openChatFromNotification(userId, username, photoUrl) {
             // Close the dropdown
             const dropdown = document.getElementById('notification-dropdown');
             dropdown.classList.add('hidden');
-            
+
             // Open the chat window 
             if (typeof openChat === 'function') {
                 openChat(userId, username, photoUrl);
             }
-            
+
             // Update notifications after a short delay to allow message to be marked as read
             setTimeout(updateNotifications, 1000);
         }
-        
+
         // Initial load
         updateNotifications();
-        
+
         // Poll for new messages every 10 seconds
         setInterval(updateNotifications, 10000);
-        
+
         // Also update when page becomes visible again
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden) {
@@ -596,7 +600,7 @@
         });
     </script>
     {% endif %}
-    
+
     <!-- Chatbot Widget -->
     {% include 'chatbot_widget.html' %}
     <script src="{{ url_for('static', filename='src/chatbot.js') }}"></script>

@@ -63,6 +63,10 @@
     filter: invert(1) hue-rotate(180deg);
 }
 
+[data-theme="dark"] .brand-icon {
+    filter: brightness(0) invert(1);
+}
+
 body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     background-color: var(--bg-color);

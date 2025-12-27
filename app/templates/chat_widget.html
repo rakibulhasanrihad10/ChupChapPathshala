@@ -2,7 +2,8 @@
 
 <!-- Chat Window -->
 <template id="chat-window-template">
-    <div class="chatbot-window active" data-uid="" style="position: fixed; bottom: 0; right: 7rem; width: 328px; height: 455px; z-index: 999;">
+    <div class="chatbot-window active" data-uid=""
+        style="position: fixed; bottom: 0; right: 7rem; width: 328px; height: 455px; z-index: 999;">
         <!-- Header -->
         <div class="chatbot-header">
             <div class="chatbot-header-info">
@@ -16,21 +17,23 @@
                 <span>×</span>
             </button>
         </div>
-        
+
         <!-- Messages Area -->
         <div class="chatbot-messages chat-messages">
             <!-- Messages will be inserted here -->
         </div>
-        
+
+        <!-- Typing Indicator -->
+        <div class="typing-indicator"
+            style="display: none; padding: 0.5rem 1rem; font-size: 0.875rem; font-style: italic; opacity: 0.7;">
+            <span class="typing-text">User is typing...</span>
+        </div>
+
         <!-- Input Area -->
         <div class="chatbot-input">
-            <input 
-                type="text" 
-                name="body"
-                placeholder="Type your message..."
-                autocomplete="off"
-            />
-            <button type="button" onclick="sendMessageFromInput(this)" class="chatbot-send-btn" aria-label="Send message">
+            <input type="text" name="body" placeholder="Type your message..." autocomplete="off" />
+            <button type="button" onclick="sendMessageFromInput(this)" class="chatbot-send-btn"
+                aria-label="Send message">
                 <span>➤</span>
             </button>
         </div>
@@ -38,9 +41,181 @@
 </template>
 
 <script>
+    // Socket.IO connection
+    let socket = null;
     const activeChats = new Set();
     const chatWindows = new Map();
-    
+    let typingTimeouts = new Map();
+
+    // Initialize Socket.IO connection
+    function initializeSocket() {
+        if (socket && socket.connected) return;
+
+        socket = io({
+            transports: ['websocket', 'polling'],
+            reconnection: true,
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000
+        });
+
+        // Connection events
+        socket.on('connect', () => {
+            console.log('Socket.IO connected:', socket.id);
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Socket.IO disconnected');
+        });
+
+        socket.on('connect_error', (error) => {
+            console.error('Socket.IO connection error:', error);
+        });
+
+        // Message events
+        socket.on('receive_message', (data) => {
+            handleIncomingMessage(data);
+        });
+
+        socket.on('message_sent', (data) => {
+            // Confirmation that our message was sent
+            console.log('Message sent confirmation:', data);
+        });
+
+        socket.on('typing_indicator', (data) => {
+            handleTypingIndicator(data);
+        });
+
+        socket.on('user_status', (data) => {
+            handleUserStatusChange(data);
+        });
+
+        socket.on('message_edited', (data) => {
+            handleMessageEdited(data);
+        });
+
+        socket.on('message_deleted', (data) => {
+            handleMessageDeleted(data);
+        });
+
+        socket.on('message_read', (data) => {
+            handleMessageRead(data);
+        });
+    }
+
+    // Initialize socket on page load
+    initializeSocket();
+
+    function handleIncomingMessage(data) {
+        const userId = data.sender_id;
+
+        // If chat window is open, append message
+        if (chatWindows.has(userId)) {
+            const win = chatWindows.get(userId);
+            const container = win.querySelector('.chat-messages');
+            appendMessage(container, data, false);
+            container.scrollTop = container.scrollHeight;
+
+            // Mark as read
+            socket.emit('mark_read', { message_ids: [data.id] });
+        }
+
+        // Update notification badge (handled by base.html polling for now)
+        // In future, we can emit real-time notification updates
+    }
+
+    function handleTypingIndicator(data) {
+        const userId = data.user_id;
+        if (!chatWindows.has(userId)) return;
+
+        const win = chatWindows.get(userId);
+        const typingDiv = win.querySelector('.typing-indicator');
+        const typingText = win.querySelector('.typing-text');
+
+        if (data.is_typing) {
+            typingText.textContent = `${data.username} is typing...`;
+            typingDiv.style.display = 'block';
+        } else {
+            typingDiv.style.display = 'none';
+        }
+    }
+
+    function handleUserStatusChange(data) {
+        const userId = data.user_id;
+        if (!chatWindows.has(userId)) return;
+
+        const win = chatWindows.get(userId);
+        const statusElement = win.querySelector('.chatbot-title p');
+
+        if (data.status === 'online') {
+            statusElement.textContent = 'Online';
+            statusElement.style.color = '#10b981';
+        } else {
+            if (data.last_seen) {
+                const lastSeen = new Date(data.last_seen);
+                const now = new Date();
+                const diffMinutes = Math.floor((now - lastSeen) / 60000);
+
+                if (diffMinutes < 60) {
+                    statusElement.textContent = `Active ${diffMinutes}m ago`;
+                } else if (diffMinutes < 1440) {
+                    const hours = Math.floor(diffMinutes / 60);
+                    statusElement.textContent = `Active ${hours}h ago`;
+                } else {
+                    const days = Math.floor(diffMinutes / 1440);
+                    statusElement.textContent = `Active ${days}d ago`;
+                }
+            } else {
+                statusElement.textContent = 'Offline';
+            }
+            statusElement.style.color = 'var(--text-muted)';
+        }
+    }
+
+    function handleMessageEdited(data) {
+        const messageDiv = document.querySelector(`[data-message-id="${data.message_id}"]`);
+        if (!messageDiv) return;
+
+        const contentDiv = messageDiv.querySelector('.message-content');
+
+        // Remove existing edited indicator
+        const existingIndicator = contentDiv.querySelector('.edited-indicator');
+        if (existingIndicator) existingIndicator.remove();
+
+        // Update text
+        const textNode = Array.from(contentDiv.childNodes).find(node => node.nodeType === Node.TEXT_NODE);
+        if (textNode) {
+            textNode.textContent = data.new_body;
+        } else {
+            contentDiv.textContent = data.new_body;
+        }
+
+        // Add edited indicator
+        const editedSpan = document.createElement('span');
+        editedSpan.className = 'edited-indicator';
+        editedSpan.textContent = ' (edited)';
+        editedSpan.style.cssText = 'font-size: 0.75rem; opacity: 0.7; font-style: italic;';
+        contentDiv.appendChild(editedSpan);
+    }
+
+    function handleMessageDeleted(data) {
+        const messageDiv = document.querySelector(`[data-message-id="${data.message_id}"]`);
+        if (!messageDiv) return;
+
+        const contentDiv = messageDiv.querySelector('.message-content');
+        contentDiv.textContent = 'This message was deleted';
+        contentDiv.style.fontStyle = 'italic';
+        contentDiv.style.opacity = '0.6';
+
+        // Remove action buttons
+        const actionsDiv = messageDiv.querySelector('.message-actions');
+        if (actionsDiv) actionsDiv.remove();
+    }
+
+    function handleMessageRead(data) {
+        // Optional: Update UI to show message was read (e.g., checkmarks)
+        console.log('Message read:', data);
+    }
+
     function openChat(userId, username, photoUrl) {
         if (activeChats.has(userId)) {
             const existingWindow = chatWindows.get(userId);
@@ -49,44 +224,41 @@
             }
             return;
         }
-        
+
         if (activeChats.size >= 3) {
             alert("Please close a chat window first (maximum 3 windows).");
             return;
         }
-        
+
         activeChats.add(userId);
-        
+
         const template = document.getElementById('chat-window-template');
         const clone = template.content.cloneNode(true);
         const win = clone.querySelector('.chatbot-window');
-        
+
         win.setAttribute('data-uid', userId);
         win.querySelector('.user-name').textContent = username;
-        
+
         const img = win.querySelector('.user-avatar');
         img.src = photoUrl || 'https://placehold.co/150x150';
-        
+
         const windowIndex = activeChats.size - 1;
-        const baseRight = 7; 
-        const windowWidth = 328; 
-        const gap = 8; 
-        
+        const baseRight = 7;
+        const windowWidth = 328;
+        const gap = 8;
+
         if (windowIndex === 0) {
             win.style.right = `${baseRight}rem`;
         } else {
             win.style.right = `calc(${baseRight}rem + ${windowIndex * (windowWidth + gap)}px)`;
         }
-        
+
         document.body.appendChild(win);
         chatWindows.set(userId, win);
-        
+
         loadMessages(userId, win.querySelector('.chat-messages'));
-        
-        // Start polling
-        win.pollInterval = setInterval(() => loadMessages(userId, win.querySelector('.chat-messages'), true), 5000);
-        
-        // Setup enter key
+
+        // Setup enter key and typing indicator
         const input = win.querySelector('input[name="body"]');
         input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -94,34 +266,55 @@
                 sendMessageFromInput(win.querySelector('.chatbot-send-btn'));
             }
         });
+
+        // Typing indicator
+        input.addEventListener('input', () => {
+            handleTypingInput(userId);
+        });
     }
-    
+
+    function handleTypingInput(recipientId) {
+        // Emit typing event
+        socket.emit('typing', {
+            recipient_id: recipientId,
+            is_typing: true
+        });
+
+        // Clear previous timeout
+        if (typingTimeouts.has(recipientId)) {
+            clearTimeout(typingTimeouts.get(recipientId));
+        }
+
+        // Set timeout to stop typing indicator
+        const timeout = setTimeout(() => {
+            socket.emit('typing', {
+                recipient_id: recipientId,
+                is_typing: false
+            });
+        }, 1000);
+
+        typingTimeouts.set(recipientId, timeout);
+    }
+
     function closeChat(e, btn) {
         e.stopPropagation();
         const win = btn.closest('[data-uid]');
         const uid = parseInt(win.getAttribute('data-uid'));
-        clearInterval(win.pollInterval);
         activeChats.delete(uid);
         chatWindows.delete(uid);
         win.remove();
     }
-    
-    async function loadMessages(userId, container, isPoll=false) {
+
+    async function loadMessages(userId, container) {
         try {
             const res = await fetch(`/messages/history/${userId}`);
             const data = await res.json();
-            
+
             const messages = data.messages || [];
             const otherUser = data.other_user || {};
-            
-            if (isPoll && container.childElementCount === messages.length) {
-                // Still update status even if no new messages
-                updateChatStatus(userId, otherUser);
-                return;
-            }
-            
+
             container.innerHTML = '';
-            
+
             if (messages.length === 0) {
                 container.innerHTML = `
                     <div class="welcome-message">
@@ -132,116 +325,118 @@
                 `;
             } else {
                 messages.forEach(msg => {
-                    const messageDiv = document.createElement('div');
-                    messageDiv.className = `message ${msg.is_mine ? 'user' : ''}`;
-                    messageDiv.setAttribute('data-message-id', msg.id);
-                    
-                    const avatar = document.createElement('div');
-                    avatar.className = 'message-avatar';
-                    
-                    // Use actual profile photo instead of emoji
-                    const avatarImg = document.createElement('img');
-                    avatarImg.src = msg.sender_photo || 'https://placehold.co/150x150';
-                    avatarImg.style.cssText = 'width: 100%; height: 100%; border-radius: 50%; object-fit: cover;';
-                    avatarImg.alt = msg.sender_name;
-                    avatar.appendChild(avatarImg);
-                    
-                    const content = document.createElement('div');
-                    content.className = 'message-content';
-                    content.setAttribute('data-original-text', msg.body);
-                    
-                    // Add deleted styling
-                    if (msg.is_deleted) {
-                        content.style.fontStyle = 'italic';
-                        content.style.opacity = '0.6';
-                    }
-                    
-                    content.textContent = msg.body;
-                    content.title = msg.timestamp;
-                    
-                    // Add edited indicator
-                    if (msg.edited_at && !msg.is_deleted) {
-                        const editedSpan = document.createElement('span');
-                        editedSpan.className = 'edited-indicator';
-                        editedSpan.textContent = ' (edited)';
-                        editedSpan.style.cssText = 'font-size: 0.75rem; opacity: 0.7; font-style: italic;';
-                        content.appendChild(editedSpan);
-                    }
-                    
-                    messageDiv.appendChild(avatar);
-                    messageDiv.appendChild(content);
-                    
-                    // Add edit/delete buttons for user's own messages (not deleted)
-                    if (msg.is_mine && !msg.is_deleted) {
-                        // Make message div relative for absolute positioning
-                        messageDiv.style.position = 'relative';
-                        
-                        const actionsDiv = document.createElement('div');
-                        actionsDiv.className = 'message-actions';
-                        actionsDiv.style.cssText = 'position: absolute; top: 0.25rem; left: 0.25rem; display: none; gap: 0.25rem; background: rgba(0, 0, 0, 0.5); border-radius: 0.375rem; padding: 0.25rem;';
-                        
-                        const editBtn = document.createElement('button');
-                        editBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                        </svg>`;
-                        editBtn.title = 'Edit message';
-                        editBtn.style.cssText = 'background: none; border: none; cursor: pointer; opacity: 0.9; padding: 0.125rem; display: flex; align-items: center;';
-                        editBtn.onclick = () => startEditMessage(msg.id, msg.body);
-                        
-                        const deleteBtn = document.createElement('button');
-                        deleteBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="3 6 5 6 21 6"></polyline>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                            <line x1="10" y1="11" x2="10" y2="17"></line>
-                            <line x1="14" y1="11" x2="14" y2="17"></line>
-                        </svg>`;
-                        deleteBtn.title = 'Delete message';
-                        deleteBtn.style.cssText = 'background: none; border: none; cursor: pointer; opacity: 0.9; padding: 0.125rem; display: flex; align-items: center;';
-                        deleteBtn.onclick = () => deleteMessageConfirm(msg.id);
-                        
-                        actionsDiv.appendChild(editBtn);
-                        actionsDiv.appendChild(deleteBtn);
-                        messageDiv.appendChild(actionsDiv);
-                        
-                        // Show actions on hover
-                        messageDiv.addEventListener('mouseenter', () => {
-                            actionsDiv.style.display = 'flex';
-                        });
-                        messageDiv.addEventListener('mouseleave', () => {
-                            actionsDiv.style.display = 'none';
-                        });
-                    }
-                    
-                    container.appendChild(messageDiv);
-                });
-            }
+                    appendMessage(container, msg, msg.sender_id === {{ current_user.id }});
+            });
+        }
             
             container.scrollTop = container.scrollHeight;
-            
-            // Update status in header
-            updateChatStatus(userId, otherUser);
-            
-        } catch (e) {
-            console.error(e);
-        }
+
+        // Update status in header
+        updateChatStatus(userId, otherUser);
+
+    } catch (e) {
+        console.error(e);
     }
-    
+    }
+
+    function appendMessage(container, msg, isMine) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${isMine ? 'user' : ''}`;
+        messageDiv.setAttribute('data-message-id', msg.id);
+
+        const avatar = document.createElement('div');
+        avatar.className = 'message-avatar';
+
+        const avatarImg = document.createElement('img');
+        avatarImg.src = msg.sender_photo || 'https://placehold.co/150x150';
+        avatarImg.style.cssText = 'width: 100%; height: 100%; border-radius: 50%; object-fit: cover;';
+        avatarImg.alt = msg.sender_name || 'User';
+        avatar.appendChild(avatarImg);
+
+        const content = document.createElement('div');
+        content.className = 'message-content';
+
+        if (msg.is_deleted) {
+            content.style.fontStyle = 'italic';
+            content.style.opacity = '0.6';
+            content.textContent = 'This message was deleted';
+        } else {
+            content.textContent = msg.body;
+
+            if (msg.edited_at) {
+                const editedSpan = document.createElement('span');
+                editedSpan.className = 'edited-indicator';
+                editedSpan.textContent = ' (edited)';
+                editedSpan.style.cssText = 'font-size: 0.75rem; opacity: 0.7; font-style: italic;';
+                content.appendChild(editedSpan);
+            }
+        }
+
+        if (msg.timestamp) {
+            content.title = msg.timestamp;
+        }
+
+        messageDiv.appendChild(avatar);
+        messageDiv.appendChild(content);
+
+        // Add edit/delete buttons for user's own messages (not deleted)
+        if (isMine && !msg.is_deleted) {
+            messageDiv.style.position = 'relative';
+
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'message-actions';
+            actionsDiv.style.cssText = 'position: absolute; top: 0.25rem; left: 0.25rem; display: none; gap: 0.25rem; background: rgba(0, 0, 0, 0.5); border-radius: 0.375rem; padding: 0.25rem;';
+
+            const editBtn = document.createElement('button');
+            editBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>`;
+            editBtn.title = 'Edit message';
+            editBtn.style.cssText = 'background: none; border: none; cursor: pointer; opacity: 0.9; padding: 0.125rem; display: flex; align-items: center;';
+            editBtn.onclick = () => startEditMessage(msg.id, msg.body);
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+            </svg>`;
+            deleteBtn.title = 'Delete message';
+            deleteBtn.style.cssText = 'background: none; border: none; cursor: pointer; opacity: 0.9; padding: 0.125rem; display: flex; align-items: center;';
+            deleteBtn.onclick = () => deleteMessageConfirm(msg.id);
+
+            actionsDiv.appendChild(editBtn);
+            actionsDiv.appendChild(deleteBtn);
+            messageDiv.appendChild(actionsDiv);
+
+            messageDiv.addEventListener('mouseenter', () => {
+                actionsDiv.style.display = 'flex';
+            });
+            messageDiv.addEventListener('mouseleave', () => {
+                actionsDiv.style.display = 'none';
+            });
+        }
+
+        container.appendChild(messageDiv);
+    }
+
     function updateChatStatus(userId, otherUser) {
         const win = chatWindows.get(userId);
         if (!win) return;
-        
+
         const statusElement = win.querySelector('.chatbot-title p');
         if (!statusElement) return;
-        
+
         if (otherUser.is_online) {
             statusElement.textContent = 'Online';
-            statusElement.style.color = '#10b981'; 
+            statusElement.style.color = '#10b981';
         } else if (otherUser.last_seen) {
             const lastSeen = new Date(otherUser.last_seen);
             const now = new Date();
             const diffMinutes = Math.floor((now - lastSeen) / 60000);
-            
+
             if (diffMinutes < 60) {
                 statusElement.textContent = `Active ${diffMinutes}m ago`;
             } else if (diffMinutes < 1440) {
@@ -257,62 +452,58 @@
             statusElement.style.color = 'var(--text-muted)';
         }
     }
-    
-    async function sendMessageFromInput(btn) {
+
+    function sendMessageFromInput(btn) {
         const win = btn.closest('[data-uid]');
-        const uid = win.getAttribute('data-uid');
+        const uid = parseInt(win.getAttribute('data-uid'));
         const input = win.querySelector('input[name="body"]');
         const body = input.value.trim();
-        
+
         if (!body) return;
-        
-        try {
-            const res = await fetch(`/messages/send/${uid}`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({body: body})
-            });
-            
-            if (res.ok) {
-                input.value = '';
-                loadMessages(uid, win.querySelector('.chat-messages'));
-            }
-        } catch (e) {
-            console.error(e);
-        }
+
+        // Send via Socket.IO
+        socket.emit('send_message', {
+            recipient_id: uid,
+            message: body
+        });
+
+        // Clear input immediately
+        input.value = '';
+
+        // Stop typing indicator
+        socket.emit('typing', {
+            recipient_id: uid,
+            is_typing: false
+        });
+
+        // Reload messages to show sent message
+        setTimeout(() => {
+            loadMessages(uid, win.querySelector('.chat-messages'));
+        }, 100);
     }
-    
-    function sendMessage(e, form) {
-        e.preventDefault();
-        const btn = form.querySelector('.chatbot-send-btn');
-        sendMessageFromInput(btn);
-    }
-    
+
     function startEditMessage(messageId, currentText) {
         const messageDiv = document.querySelector(`[data-message-id="${messageId}"]`);
         if (!messageDiv) return;
-        
+
         const contentDiv = messageDiv.querySelector('.message-content');
         const actionsDiv = messageDiv.querySelector('.message-actions');
-        
-        // Hide action buttons
+
         if (actionsDiv) actionsDiv.style.display = 'none';
-        
-        // Create edit input
+
         const input = document.createElement('input');
         input.type = 'text';
         input.value = currentText;
         input.style.cssText = 'width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 0.375rem; background: var(--bg-primary); color: var(--text-primary);';
-        
-        // Create save/cancel buttons
+
         const btnContainer = document.createElement('div');
         btnContainer.style.cssText = 'display: flex; gap: 0.5rem; margin-top: 0.5rem;';
-        
+
         const saveBtn = document.createElement('button');
         saveBtn.textContent = 'Save';
         saveBtn.style.cssText = 'padding: 0.25rem 0.75rem; background: #3b82f6; color: white; border: none; border-radius: 0.375rem; cursor: pointer; font-size: 0.875rem;';
         saveBtn.onclick = () => saveEditMessage(messageId, input.value);
-        
+
         const cancelBtn = document.createElement('button');
         cancelBtn.textContent = 'Cancel';
         cancelBtn.style.cssText = 'padding: 0.25rem 0.75rem; background: #6b7280; color: white; border: none; border-radius: 0.375rem; cursor: pointer; font-size: 0.875rem;';
@@ -321,41 +512,38 @@
             const uid = parseInt(win.getAttribute('data-uid'));
             loadMessages(uid, win.querySelector('.chat-messages'));
         };
-        
+
         btnContainer.appendChild(saveBtn);
         btnContainer.appendChild(cancelBtn);
-        
-        // Replace content with edit UI
+
         contentDiv.innerHTML = '';
         contentDiv.appendChild(input);
         contentDiv.appendChild(btnContainer);
         input.focus();
-        
-        // Save on Enter
+
         input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 saveEditMessage(messageId, input.value);
             }
         });
     }
-    
+
     async function saveEditMessage(messageId, newText) {
         if (!newText.trim()) {
             alert('Message cannot be empty');
             return;
         }
-        
+
         try {
             const res = await fetch(`/messages/edit/${messageId}`, {
                 method: 'PUT',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({body: newText})
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ body: newText })
             });
-            
+
             const data = await res.json();
-            
+
             if (res.ok) {
-                // Reload messages
                 const messageDiv = document.querySelector(`[data-message-id="${messageId}"]`);
                 const win = messageDiv.closest('[data-uid]');
                 const uid = parseInt(win.getAttribute('data-uid'));
@@ -368,24 +556,23 @@
             alert('Error editing message');
         }
     }
-    
+
     function deleteMessageConfirm(messageId) {
         if (!confirm('Are you sure you want to delete this message?')) {
             return;
         }
         deleteMessageAction(messageId);
     }
-    
+
     async function deleteMessageAction(messageId) {
         try {
             const res = await fetch(`/messages/delete/${messageId}`, {
                 method: 'DELETE'
             });
-            
+
             const data = await res.json();
-            
+
             if (res.ok) {
-                // Reload messages
                 const messageDiv = document.querySelector(`[data-message-id="${messageId}"]`);
                 const win = messageDiv.closest('[data-uid]');
                 const uid = parseInt(win.getAttribute('data-uid'));

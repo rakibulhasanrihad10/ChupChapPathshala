@@ -32,3 +32,10 @@ class Config:
     # Gemini AI Chatbot Config
     GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
     GEMINI_MODEL = os.environ.get('GEMINI_MODEL') or 'gemini-flash-latest'
+    
+    # Redis and Socket.IO Config
+    REDIS_URL = os.environ.get('REDIS_URL') or 'redis://localhost:6379/0'
+    SOCKETIO_MESSAGE_QUEUE = os.environ.get('REDIS_URL') or 'redis://localhost:6379/0'
+    SOCKETIO_ASYNC_MODE = 'threading'  # Changed from 'eventlet' for Python 3.13 compatibility
+    SOCKETIO_CORS_ALLOWED_ORIGINS = '*'  # Configure appropriately for production
+

@@ -5,6 +5,8 @@ from app.messages import bp
 from app.models import User, Message
 from datetime import datetime
 from sqlalchemy import or_, and_, func
+from app.extensions import socketio
+from flask_socketio import emit
 
 @bp.route('/send/<int:recipient_id>', methods=['POST'])
 @login_required
@@ -198,6 +200,14 @@ def edit_message(message_id):
     msg.edited_at = datetime.utcnow()
     db.session.commit()
     
+    # Emit Socket.IO event to recipient
+    recipient_room = f'user_{msg.recipient_id}'
+    socketio.emit('message_edited', {
+        'message_id': msg.id,
+        'new_body': msg.body,
+        'edited_at': msg.edited_at.isoformat()
+    }, room=recipient_room)
+    
     return jsonify({
         'status': 'success',
         'message': {
@@ -225,6 +235,13 @@ def delete_message(message_id):
     msg.is_deleted = True
     msg.deleted_at = datetime.utcnow()
     db.session.commit()
+    
+    # Emit Socket.IO event to recipient
+    recipient_room = f'user_{msg.recipient_id}'
+    socketio.emit('message_deleted', {
+        'message_id': msg.id,
+        'deleted_at': msg.deleted_at.isoformat()
+    }, room=recipient_room)
     
     return jsonify({
         'status': 'success',
