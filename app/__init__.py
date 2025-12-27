@@ -66,9 +66,11 @@ def create_app(config_class=Config):
     # Initialize Socket.IO with Redis message queue
     socketio.init_app(
         app,
-        message_queue=app.config['SOCKETIO_MESSAGE_QUEUE'],
-        async_mode=app.config['SOCKETIO_ASYNC_MODE'],
-        cors_allowed_origins=app.config['SOCKETIO_CORS_ALLOWED_ORIGINS']
+        message_queue=app.config.get('SOCKETIO_MESSAGE_QUEUE'),
+        async_mode=app.config.get('SOCKETIO_ASYNC_MODE'),
+        cors_allowed_origins=app.config.get('SOCKETIO_CORS_ALLOWED_ORIGINS'),
+        logger=app.config.get('SOCKETIO_LOGGER', False),
+        engineio_logger=app.config.get('SOCKETIO_ENGINEIO_LOGGER', False)
     )
     
     # Register Socket.IO events

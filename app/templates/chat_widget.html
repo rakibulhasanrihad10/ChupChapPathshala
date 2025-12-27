@@ -51,24 +51,32 @@
     function initializeSocket() {
         if (socket && socket.connected) return;
 
-        socket = io({
+        // Use the current page's origin for Socket.IO connection
+        const socketUrl = window.location.origin;
+        
+        socket = io(socketUrl, {
             transports: ['websocket', 'polling'],
             reconnection: true,
-            reconnectionAttempts: 5,
-            reconnectionDelay: 1000
+            reconnectionAttempts: 10,
+            reconnectionDelay: 1000,
+            timeout: 10000,
+            path: '/socket.io/'
         });
 
         // Connection events
         socket.on('connect', () => {
             console.log('Socket.IO connected:', socket.id);
+            console.log('Connected to:', socketUrl);
         });
 
-        socket.on('disconnect', () => {
-            console.log('Socket.IO disconnected');
+        socket.on('disconnect', (reason) => {
+            console.log('Socket.IO disconnected. Reason:', reason);
         });
 
         socket.on('connect_error', (error) => {
             console.error('Socket.IO connection error:', error);
+            console.error('Failed to connect to:', socketUrl);
+            console.error('Error details:', error.message);
         });
 
         // Message events
@@ -461,10 +469,28 @@
 
         if (!body) return;
 
+        // Check if socket is connected
+        if (!socket || !socket.connected) {
+            console.error('Socket.IO not connected. Attempting to reconnect...');
+            alert('Connection lost. Please refresh the page and try again.');
+            initializeSocket();
+            return;
+        }
+
+        console.log('Sending message to user', uid, ':', body);
+
         // Send via Socket.IO
         socket.emit('send_message', {
             recipient_id: uid,
             message: body
+        }, (response) => {
+            // Callback to confirm message was sent
+            if (response && response.error) {
+                console.error('Error sending message:', response.error);
+                alert('Failed to send message: ' + response.error);
+            } else {
+                console.log('Message sent successfully');
+            }
         });
 
         // Clear input immediately

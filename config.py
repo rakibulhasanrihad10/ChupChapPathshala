@@ -38,4 +38,6 @@ class Config:
     SOCKETIO_MESSAGE_QUEUE = os.environ.get('REDIS_URL') or 'redis://localhost:6379/0'
     SOCKETIO_ASYNC_MODE = 'threading'  # Changed from 'eventlet' for Python 3.13 compatibility
     SOCKETIO_CORS_ALLOWED_ORIGINS = '*'  # Configure appropriately for production
+    SOCKETIO_LOGGER = True  # Enable logging for debugging
+    SOCKETIO_ENGINEIO_LOGGER = True  # Enable engine.io logging
 
