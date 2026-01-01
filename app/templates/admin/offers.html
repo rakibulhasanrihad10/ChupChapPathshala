@@ -6,6 +6,7 @@
 <style>
     /* Mobile Responsive Styles for Manage Book Offers Page */
     @media (max-width: 768px) {
+
         /* Page Header */
         .page-header {
             margin-bottom: 1.5rem;
@@ -236,45 +237,52 @@
 
 {% block admin_content %}
 
-    <div class="page-header">
-        <h1 class="page-title">Manage Book Offers</h1>
-    </div>
+<div class="page-header">
+    <h1 class="page-title">Manage Book Offers</h1>
+</div>
 
 
-    <!-- Search Box Toolbar -->
-    <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
-        <h3 class="text-lg font-bold" style="color: var(--text-color);">
-            Select Books 
-            <span class="text-sm font-normal ml-2" style="color: var(--text-muted);">({{ books.total }} found)</span>
-        </h3>
-        
-        <form action="{{ url_for('main.admin_offers') }}" method="GET" class="flex w-full sm:w-auto gap-2 relative">
-            <input type="text" name="q" id="adminSearchInput" placeholder="Search by title..." value="{{ search_query or '' }}" autocomplete="off"
-                class="w-full sm:w-80 px-4 py-2 rounded-lg border focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm"
-                style="background-color: var(--bg-color); color: var(--text-color); border-color: var(--border-color);">
-            <div id="adminSuggestions" class="search-dropdown absolute top-full left-0 w-full sm:w-80 rounded-lg shadow-md hidden z-50 overflow-hidden mt-1"></div>
-            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <circle cx="11" cy="11" r="8" stroke-width="2"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65" stroke-width="2"></line>
-                </svg>
-                Search
-            </button>
-        </form>
-    </div>
+<!-- Search Box Toolbar -->
+<div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
+    <h3 class="text-lg font-bold" style="color: var(--text-color);">
+        Select Books
+        <span class="text-sm font-normal ml-2" style="color: var(--text-muted);">({{ books.total }} found)</span>
+    </h3>
+
+    <form action="{{ url_for('main.admin_offers') }}" method="GET" class="flex w-full sm:w-auto gap-2 relative">
+        <input type="text" name="q" id="adminSearchInput" placeholder="Search by title..."
+            value="{{ search_query or '' }}" autocomplete="off"
+            class="w-full sm:w-80 px-4 py-2 rounded-lg border focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm"
+            style="background-color: var(--bg-color); color: var(--text-color); border-color: var(--border-color);">
+        <div id="adminSuggestions"
+            class="search-dropdown absolute top-full left-0 w-full sm:w-80 rounded-lg shadow-md hidden z-50 overflow-hidden mt-1">
+        </div>
+        <button type="submit"
+            class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <circle cx="11" cy="11" r="8" stroke-width="2"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65" stroke-width="2"></line>
+            </svg>
+            Search
+        </button>
+    </form>
+</div>
 
 <form method="POST" action="{{ url_for('main.admin_offers') }}">
-    
+
     <!-- Controls -->
-    <div class="rounded-xl shadow p-6 mb-6 border" style="background-color: var(--card-bg); border-color: var(--border-color);">
+    <div class="rounded-xl shadow p-6 mb-6 border"
+        style="background-color: var(--card-bg); border-color: var(--border-color);">
         <h2 class="text-xl font-bold mb-4" style="color: var(--text-color);">Apply Discount</h2>
-        
+
         <div class="flex flex-wrap items-center gap-4">
-            
+
             <div class="flex items-center gap-3">
                 {% for p in [5, 10, 15, 20, 25, 50] %}
                 <label class="flex items-center gap-1 cursor-pointer hover:opacity-80">
-                    <input type="radio" name="discount_preset" value="{{ p }}" class="w-4 h-4 cursor-pointer" onclick="document.getElementById('custom_discount').value=''">
+                    <input type="radio" name="discount_preset" value="{{ p }}" class="w-4 h-4 cursor-pointer"
+                        onclick="document.getElementById('custom_discount').value=''">
                     <span style="color: var(--text-color);">{{ p }}%</span>
                 </label>
                 {% endfor %}
@@ -282,21 +290,32 @@
 
             <div class="flex items-center gap-2 border-l pl-4" style="border-color: var(--border-color);">
                 <label style="color: var(--text-muted);">Custom:</label>
-                <input type="number" name="custom_discount" id="custom_discount" step="0.1" min="0" max="100" class="w-20 p-2 border rounded" style="background-color: var(--bg-color); color: var(--text-color); border-color: var(--border-color);" onclick="document.querySelectorAll('input[name=discount_preset]').forEach(el => el.checked = false)">
+                <input type="number" name="custom_discount" id="custom_discount" step="0.1" min="0" max="100"
+                    class="w-20 p-2 border rounded"
+                    style="background-color: var(--bg-color); color: var(--text-color); border-color: var(--border-color);"
+                    onclick="document.querySelectorAll('input[name=discount_preset]').forEach(el => el.checked = false)">
                 <span style="color: var(--text-color);">%</span>
             </div>
 
             <div class="flex items-center gap-2 ml-auto">
-                <button type="submit" name="action" value="apply" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-bold shadow transition-transform active:scale-95">
+                <button type="submit" name="action" value="apply"
+                    class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-bold shadow transition-transform active:scale-95">
                     Apply Offer
                 </button>
-                <button type="submit" name="action" value="remove" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-bold shadow transition-transform active:scale-95">
+                <button type="submit" name="action" value="remove"
+                    class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-bold shadow transition-transform active:scale-95">
                     Remove Offer
                 </button>
+                <button type="submit" name="action" value="remove_all"
+                    class="px-6 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 font-bold shadow transition-transform active:scale-95"
+                    onclick="return confirm('WARNING: This will remove ALL active offers from ALL books in the catalog. Are you sure you want to proceed?')">
+                    Remove All Offers
+                </button>
             </div>
-            
+
         </div>
-        <p class="text-sm mt-3" style="color: var(--text-muted);">Select books below and choose a percentage to apply offers. Use "Remove Offer" to reset prices.</p>
+        <p class="text-sm mt-3" style="color: var(--text-muted);">Select books below and choose a percentage to apply
+            offers. Use "Remove Offer" to reset prices.</p>
     </div>
 
     <!-- Section Removed: Search moved to top -->
@@ -307,12 +326,17 @@
             <thead style="background-color: var(--bg-color);">
                 <tr>
                     <th class="p-4 w-10">
-                        <input type="checkbox" onclick="toggleAll(this)" class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                        <input type="checkbox" onclick="toggleAll(this)"
+                            class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                     </th>
-                    <th class="p-4 text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">Book Details</th>
-                    <th class="p-4 text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">Original Price</th>
-                    <th class="p-4 text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">Current Offer</th>
-                    <th class="p-4 text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">Final Price</th>
+                    <th class="p-4 text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">Book
+                        Details</th>
+                    <th class="p-4 text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                        Original Price</th>
+                    <th class="p-4 text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">
+                        Current Offer</th>
+                    <th class="p-4 text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted);">Final
+                        Price</th>
                 </tr>
             </thead>
             <tbody style="background-color: var(--card-bg);">
@@ -320,12 +344,15 @@
                 {% for book in books.items %}
                 <tr class="border-b transition-colors hover:bg-opacity-50" style="border-color: var(--border-color);">
                     <td class="p-4">
-                        <input type="checkbox" name="book_ids" value="{{ book.id }}" class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer book-checkbox">
+                        <input type="checkbox" name="book_ids" value="{{ book.id }}"
+                            class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer book-checkbox">
                     </td>
                     <td class="p-4">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-14 rounded border overflow-hidden flex-shrink-0" style="border-color: var(--border-color);">
-                                <img src="{{ book.image_url or 'https://placehold.co/40x60?text=No+Cover' }}" class="w-full h-full object-cover book-thumb-img">
+                            <div class="w-10 h-14 rounded border overflow-hidden flex-shrink-0"
+                                style="border-color: var(--border-color);">
+                                <img src="{{ book.image_url or 'https://placehold.co/40x60?text=No+Cover' }}"
+                                    class="w-full h-full object-cover book-thumb-img">
                             </div>
                             <div>
                                 <div class="font-medium" style="color: var(--text-color);">{{ book.title }}</div>
@@ -349,7 +376,8 @@
                         {% if book.discount_percentage and book.discount_percentage > 0 %}
                         <div class="flex flex-col">
                             <span class="text-red-500 line-through text-xs">TK {{ "%.2f"|format(book.price) }}</span>
-                            <span class="text-green-600 text-lg">TK {{ "%.2f"|format(book.price * (1 - book.discount_percentage/100)) }}</span>
+                            <span class="text-green-600 text-lg">TK {{ "%.2f"|format(book.price * (1 -
+                                book.discount_percentage/100)) }}</span>
                         </div>
                         {% else %}
                         <span style="color: var(--text-color);">TK {{ "%.2f"|format(book.price) }}</span>
@@ -359,7 +387,8 @@
                 {% endfor %}
                 {% else %}
                 <tr>
-                    <td colspan="5" class="p-8 text-center" style="color: var(--text-muted);">No books found in inventory.</td>
+                    <td colspan="5" class="p-8 text-center" style="color: var(--text-muted);">No books found in
+                        inventory.</td>
                 </tr>
                 {% endif %}
             </tbody>
@@ -372,53 +401,77 @@
         <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
             <!-- Previous Page -->
             {% if books.has_prev %}
-            <a href="{{ url_for('main.admin_offers', page=books.prev_num, q=search_query) }}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border text-sm font-medium hover:bg-opacity-80" style="background-color: var(--card-bg); border-color: var(--border-color); color: var(--text-color);">
+            <a href="{{ url_for('main.admin_offers', page=books.prev_num, q=search_query) }}"
+                class="relative inline-flex items-center px-2 py-2 rounded-l-md border text-sm font-medium hover:bg-opacity-80"
+                style="background-color: var(--card-bg); border-color: var(--border-color); color: var(--text-color);">
                 <span class="sr-only">Previous</span>
-                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                    aria-hidden="true">
+                    <path fill-rule="evenodd"
+                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                        clip-rule="evenodd" />
                 </svg>
             </a>
             {% else %}
-            <span class="relative inline-flex items-center px-2 py-2 rounded-l-md border text-sm font-medium cursor-not-allowed opacity-50" style="background-color: var(--card-bg); border-color: var(--border-color); color: var(--text-color);">
+            <span
+                class="relative inline-flex items-center px-2 py-2 rounded-l-md border text-sm font-medium cursor-not-allowed opacity-50"
+                style="background-color: var(--card-bg); border-color: var(--border-color); color: var(--text-color);">
                 <span class="sr-only">Previous</span>
-                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                    aria-hidden="true">
+                    <path fill-rule="evenodd"
+                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                        clip-rule="evenodd" />
                 </svg>
             </span>
             {% endif %}
 
             <!-- Page Numbers -->
             {% for page_num in books.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=1) %}
-                {% if page_num %}
-                    {% if books.page == page_num %}
-                    <span aria-current="page" class="z-10 bg-indigo-50 border-indigo-500 text-indigo-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
-                        {{ page_num }}
-                    </span>
-                    {% else %}
-                    <a href="{{ url_for('main.admin_offers', page=page_num, q=search_query) }}" class="relative inline-flex items-center px-4 py-2 border text-sm font-medium hover:bg-opacity-80" style="background-color: var(--card-bg); border-color: var(--border-color); color: var(--text-color);">
-                        {{ page_num }}
-                    </a>
-                    {% endif %}
-                {% else %}
-                <span class="relative inline-flex items-center px-4 py-2 border text-sm font-medium" style="background-color: var(--card-bg); border-color: var(--border-color); color: var(--text-color);">
-                    ...
-                </span>
-                {% endif %}
+            {% if page_num %}
+            {% if books.page == page_num %}
+            <span aria-current="page"
+                class="z-10 bg-indigo-50 border-indigo-500 text-indigo-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                {{ page_num }}
+            </span>
+            {% else %}
+            <a href="{{ url_for('main.admin_offers', page=page_num, q=search_query) }}"
+                class="relative inline-flex items-center px-4 py-2 border text-sm font-medium hover:bg-opacity-80"
+                style="background-color: var(--card-bg); border-color: var(--border-color); color: var(--text-color);">
+                {{ page_num }}
+            </a>
+            {% endif %}
+            {% else %}
+            <span class="relative inline-flex items-center px-4 py-2 border text-sm font-medium"
+                style="background-color: var(--card-bg); border-color: var(--border-color); color: var(--text-color);">
+                ...
+            </span>
+            {% endif %}
             {% endfor %}
 
             <!-- Next Page -->
             {% if books.has_next %}
-            <a href="{{ url_for('main.admin_offers', page=books.next_num, q=search_query) }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border text-sm font-medium hover:bg-opacity-80" style="background-color: var(--card-bg); border-color: var(--border-color); color: var(--text-color);">
+            <a href="{{ url_for('main.admin_offers', page=books.next_num, q=search_query) }}"
+                class="relative inline-flex items-center px-2 py-2 rounded-r-md border text-sm font-medium hover:bg-opacity-80"
+                style="background-color: var(--card-bg); border-color: var(--border-color); color: var(--text-color);">
                 <span class="sr-only">Next</span>
-                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                    aria-hidden="true">
+                    <path fill-rule="evenodd"
+                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                        clip-rule="evenodd" />
                 </svg>
             </a>
             {% else %}
-            <span class="relative inline-flex items-center px-2 py-2 rounded-r-md border text-sm font-medium cursor-not-allowed opacity-50" style="background-color: var(--card-bg); border-color: var(--border-color); color: var(--text-color);">
+            <span
+                class="relative inline-flex items-center px-2 py-2 rounded-r-md border text-sm font-medium cursor-not-allowed opacity-50"
+                style="background-color: var(--card-bg); border-color: var(--border-color); color: var(--text-color);">
                 <span class="sr-only">Next</span>
-                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                    aria-hidden="true">
+                    <path fill-rule="evenodd"
+                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                        clip-rule="evenodd" />
                 </svg>
             </span>
             {% endif %}
@@ -433,7 +486,7 @@
 <script>
     function toggleAll(source) {
         checkboxes = document.getElementsByClassName('book-checkbox');
-        for(var i=0, n=checkboxes.length;i<n;i++) {
+        for (var i = 0, n = checkboxes.length; i < n; i++) {
             checkboxes[i].checked = source.checked;
         }
     }
@@ -443,11 +496,11 @@
     const adminSuggestionsBox = document.getElementById('adminSuggestions');
     let adminCurrentFocus = -1;
 
-    if(adminSearchInput) {
-        adminSearchInput.addEventListener('input', function() {
+    if (adminSearchInput) {
+        adminSearchInput.addEventListener('input', function () {
             const query = this.value;
             adminCurrentFocus = -1;
-            
+
             if (query.length < 2) {
                 closeAdminSuggestions();
                 return;
@@ -473,14 +526,14 @@
                                 </div>
                             `;
                             div.className = 'suggestion-row search-suggestion-item px-4 py-3 cursor-pointer text-sm font-medium transition-colors duration-150 last:border-0';
-                            
-                            div.addEventListener('click', function() {
+
+                            div.addEventListener('click', function () {
                                 adminSearchInput.value = title;
                                 closeAdminSuggestions();
                                 adminSearchInput.closest('form').submit();
                             });
 
-                            div.addEventListener('mouseenter', function() {
+                            div.addEventListener('mouseenter', function () {
                                 adminCurrentFocus = index;
                                 updateAdminActive(adminSuggestionsBox.children);
                             });
@@ -493,16 +546,16 @@
                     }
                 })
                 .catch(err => {
-                   console.error("Search fetch failed", err);
-                   closeAdminSuggestions();
+                    console.error("Search fetch failed", err);
+                    closeAdminSuggestions();
                 });
         });
 
         // Keyboard navigation
-        adminSearchInput.addEventListener('keydown', function(e) {
+        adminSearchInput.addEventListener('keydown', function (e) {
             const items = adminSuggestionsBox.children;
-            if(items.length === 0) return;
-            
+            if (items.length === 0) return;
+
             if (e.key === 'ArrowDown') {
                 adminCurrentFocus++;
                 if (adminCurrentFocus >= items.length) adminCurrentFocus = 0;
@@ -521,7 +574,7 @@
             }
         });
 
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             if (!adminSearchInput.contains(e.target) && !adminSuggestionsBox.contains(e.target)) {
                 closeAdminSuggestions();
             }
@@ -538,7 +591,7 @@
     }
 
     function closeAdminSuggestions() {
-        if(adminSuggestionsBox) {
+        if (adminSuggestionsBox) {
             adminSuggestionsBox.innerHTML = '';
             adminSuggestionsBox.classList.add('hidden');
             adminCurrentFocus = -1;

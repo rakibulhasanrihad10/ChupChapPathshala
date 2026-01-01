@@ -147,6 +147,8 @@ class Sale(db.Model):
     book_id = db.Column(db.Integer, db.ForeignKey('books.id'))
     sale_date = db.Column(db.DateTime, default=datetime.utcnow)
     price_at_sale = db.Column(db.Float)
+    delivery_status = db.Column(db.String(20), default='pending') # pending, shipped, delivered, cancelled
+    shipping_address = db.Column(db.Text, nullable=True)
     
     book = db.relationship('Book', backref='sales')
     

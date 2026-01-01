@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}LMS{% endblock %} - ChupChap Pathshala</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=5">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=6">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/chatbot.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -183,6 +183,7 @@
     {% endblock %}
 
     <div class="{% block container_class %}container{% endblock %}">
+        {% block flash_messages %}
         <div class="flash-messages">
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -195,6 +196,7 @@
             {% endif %}
             {% endwith %}
         </div>
+        {% endblock %}
 
         <!-- Auto-dismiss alerts -->
         <script>
@@ -503,17 +505,19 @@
                 const badge = document.getElementById('notification-badge');
                 const bell = document.getElementById('notification-bell');
 
-                if (count > 0) {
-                    badge.textContent = count > 99 ? '99+' : count;
-                    badge.style.display = 'flex';
+                if (badge && bell) {
+                    if (count > 0) {
+                        badge.textContent = count > 99 ? '99+' : count;
+                        badge.style.display = 'flex';
 
-                    // Pulse animation for new messages
-                    if (count > lastNotificationCount) {
-                        bell.classList.add('notification-pulse');
-                        setTimeout(() => bell.classList.remove('notification-pulse'), 1000);
+                        // Pulse animation for new messages
+                        if (count > lastNotificationCount) {
+                            bell.classList.add('notification-pulse');
+                            setTimeout(() => bell.classList.remove('notification-pulse'), 1000);
+                        }
+                    } else {
+                        badge.style.display = 'none';
                     }
-                } else {
-                    badge.style.display = 'none';
                 }
 
                 lastNotificationCount = count;

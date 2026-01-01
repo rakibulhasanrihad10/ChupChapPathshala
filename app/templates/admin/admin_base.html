@@ -5,7 +5,7 @@
 {% block navbar %}{% endblock %}
 {% block footer %}{% endblock %}
 {% block container_class %}{% endblock %}
-
+{% block flash_messages %}{% endblock %}
 {% block head %}
 {{ super() }}
 <!-- Chart.js -->
@@ -15,408 +15,433 @@
 {% endblock %}
 
 {% block content %}
-    {% if not request.headers.get('HX-Request') %}
-    <!-- Mobile Hamburger -->
-    <button class="mobile-hamburger" onclick="toggleSidebar()">
-        <i class="fas fa-bars"></i>
-    </button>
+{% if not request.headers.get('HX-Request') %}
+<!-- Mobile Hamburger -->
+<button class="mobile-hamburger" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+</button>
 
-    <!-- Sidebar -->
-    <aside class="dashboard-sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-logo">
-                <i class="fas fa-book-open"></i>
-                <span class="sidebar-text ml-2">ChupChap</span>
-            </div>
-            <button class="sidebar-toggle" onclick="toggleSidebarCollapse()">
-                <i class="fas fa-bars"></i>
-            </button>
+<!-- Sidebar -->
+<aside class="dashboard-sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <i class="fas fa-book-open"></i>
+            <span class="sidebar-text ml-2">ChupChap</span>
         </div>
+        <button class="sidebar-toggle" onclick="toggleSidebarCollapse()">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
 
-        <nav class="sidebar-nav" hx-target="#adminContentTarget" hx-push-url="true">
-            <!-- Dashboard -->
-            <div class="sidebar-section">
-                <a href="{{ url_for('main.admin_dashboard') }}" class="sidebar-link active tooltip" data-tooltip="Dashboard"
-                    aria-label="Dashboard" aria-current="page" hx-get="{{ url_for('main.admin_dashboard') }}">
-                    <span class="sidebar-icon"><i class="fas fa-th-large"></i></span>
-                    <span class="sidebar-text">Dashboard</span>
-                </a>
-            </div>
-
-            <!-- Administration -->
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">Administration</div>
-                {% if current_user.is_admin() %}
-                <a href="{{ url_for('main.members') }}" class="sidebar-link tooltip" data-tooltip="Members"
-                    aria-label="Manage library members" hx-get="{{ url_for('main.members') }}">
-                    <span class="sidebar-icon"><i class="fas fa-users"></i></span>
-                    <span class="sidebar-text">Members</span>
-                </a>
-
-                <a href="{{ url_for('main.admin_dashboard') }}#management-team-section" class="sidebar-link tooltip" data-tooltip="Manage Team"
-                    aria-label="Manage Team" onclick="if(document.getElementById('management-team-section')) { document.getElementById('management-team-section').scrollIntoView({behavior: 'smooth'}); return false; }">
-                    <span class="sidebar-icon"><i class="fas fa-user-tie"></i></span>
-                    <span class="sidebar-text">Manage Team</span>
-                </a>
-                {% endif %}
-                <a href="{{ url_for('main.admin_loans') }}" class="sidebar-link tooltip" data-tooltip="Borrowed Books"
-                    aria-label="Manage borrowed books and loans" hx-get="{{ url_for('main.admin_loans') }}">
-                    <span class="sidebar-icon"><i class="fas fa-book-reader"></i></span>
-                    <span class="sidebar-text">Borrowed Books</span>
-                </a>
-                <a href="{{ url_for('main.inventory') }}" class="sidebar-link tooltip" data-tooltip="Inventory"
-                    aria-label="Manage book inventory and stock" hx-get="{{ url_for('main.inventory') }}">
-                    <span class="sidebar-icon"><i class="fas fa-boxes"></i></span>
-                    <span class="sidebar-text">Inventory</span>
-                </a>
-            </div>
-
-            <!-- Marketing -->
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">Marketing</div>
-                <a href="{{ url_for('main.admin_offers') }}" class="sidebar-link tooltip" data-tooltip="Manage Offers"
-                    aria-label="Manage discounts and offers" hx-get="{{ url_for('main.admin_offers') }}">
-                    <span class="sidebar-icon"><i class="fas fa-tags"></i></span>
-                    <span class="sidebar-text">Manage Offers</span>
-                </a>
-                <a href="{{ url_for('main.admin_campaigns') }}" class="sidebar-link tooltip" data-tooltip="Campaigns"
-                    aria-label="Manage marketing campaigns" hx-get="{{ url_for('main.admin_campaigns') }}">
-                    <span class="sidebar-icon"><i class="fas fa-bullhorn"></i></span>
-                    <span class="sidebar-text">Campaigns</span>
-                </a>
-            </div>
-
-            <!-- Supply Chain -->
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">Supply Chain</div>
-                {% if current_user.is_admin() %}
-                <a href="{{ url_for('main.supplier_review') }}" class="sidebar-link tooltip" data-tooltip="Review Orders"
-                    aria-label="Review and approve supply orders" hx-get="{{ url_for('main.supplier_review') }}">
-                    <span class="sidebar-icon"><i class="fas fa-clipboard-check"></i></span>
-                    <span class="sidebar-text">Review Orders</span>
-                </a>
-                {% endif %}
-                <a href="{{ url_for('main.supplier_orders') }}" class="sidebar-link tooltip" data-tooltip="Track Orders"
-                    aria-label="Track supply orders" hx-get="{{ url_for('main.supplier_orders') }}">
-                    <span class="sidebar-icon"><i class="fas fa-search-location"></i></span>
-                    <span class="sidebar-text">Track Orders</span>
-                </a>
-                <a href="{{ url_for('main.supplier_shortlist') }}" class="sidebar-link tooltip" data-tooltip="Shortlist"
-                    aria-label="Manage supply order shortlist" hx-get="{{ url_for('main.supplier_shortlist') }}">
-                    <span class="sidebar-icon"><i class="fas fa-list-ol"></i></span>
-                    <span class="sidebar-text">Shortlist</span>
-                </a>
-                <a href="{{ url_for('main.supplier_receive_list') }}" class="sidebar-link tooltip" data-tooltip="Received"
-                    aria-label="View received supply orders" hx-get="{{ url_for('main.supplier_receive_list') }}">
-                    <span class="sidebar-icon"><i class="fas fa-file-invoice-dollar"></i></span>
-                    <span class="sidebar-text">Received</span>
-                </a>
-            </div>
-        </nav>
-
-        <div class="sidebar-footer">
-            <a href="{{ url_for('main.index') }}" class="sidebar-link">
-                <span class="sidebar-icon"><i class="fas fa-home"></i></span>
-                <span class="sidebar-text">Back to Site</span>
+    <nav class="sidebar-nav" hx-target="#adminContentTarget" hx-push-url="true">
+        <!-- Dashboard -->
+        <div class="sidebar-section">
+            <a href="{{ url_for('main.admin_dashboard') }}" class="sidebar-link active tooltip" data-tooltip="Dashboard"
+                aria-label="Dashboard" aria-current="page" hx-get="{{ url_for('main.admin_dashboard') }}">
+                <span class="sidebar-icon"><i class="fas fa-th-large"></i></span>
+                <span class="sidebar-text">Dashboard</span>
             </a>
         </div>
-    </aside>
 
-    <!-- Main Content -->
-    <main class="dashboard-main" id="mainContent">
-        <!-- Dashboard Header -->
-        <div class="dashboard-header" style="padding: 0 1.5rem; padding-top: 1rem; padding-bottom: 1rem;">
-            <div class="flex items-center justify-between gap-4">
-                <!-- Search Bar -->
-                <div class="flex-1 max-w-xl relative">
-                    <form action="{{ url_for('main.admin_search') }}" method="GET" class="relative">
-                        <input type="text" name="q" id="globalSearch" placeholder="Search books, members, orders... (Ctrl+K)"
-                            class="w-full px-4 py-2 pl-10 pr-10 rounded-lg border transition-all focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            style="background-color: var(--bg-color); border-color: var(--border-color); color: var(--text-color);"
-                            aria-label="Global search"
-                            autocomplete="off">
-                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 opacity-50"></i>
-                        <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 opacity-50 hover:opacity-100 transition-opacity"
-                            style="background: none; border: none; cursor: pointer; color: var(--text-color); padding: 0;">
-                            
-                        </button>
-                        <!-- Autocomplete Dropdown -->
-                        <div id="adminSuggestions" class="absolute top-full left-0 w-full rounded-lg shadow-lg hidden z-50 overflow-hidden mt-2"
-                            style="background-color: var(--bg-color); border: 1px solid var(--border-color);">
-                        </div>
-                    </form>
-                </div>
-                <!-- Right Side Actions -->
-                <div class="flex items-center gap-4">
+        <!-- Administration -->
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">Administration</div>
+            <a href="{{ url_for('main.admin_sales') }}" class="sidebar-link tooltip" data-tooltip="Customer Orders"
+                aria-label="Manage customer orders" hx-get="{{ url_for('main.admin_sales') }}">
+                <span class="sidebar-icon"><i class="fas fa-shopping-bag"></i></span>
+                <span class="sidebar-text">Customer Orders</span>
+            </a>
+            {% if current_user.is_admin() %}
+            <a href="{{ url_for('main.members') }}" class="sidebar-link tooltip" data-tooltip="Members"
+                aria-label="Manage library members" hx-get="{{ url_for('main.members') }}">
+                <span class="sidebar-icon"><i class="fas fa-users"></i></span>
+                <span class="sidebar-text">Members</span>
+            </a>
 
-                    <!-- Notifications -->
-                    <div class="relative" id="notificationDropdown">
-                        <button onclick="toggleNotifications()" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative"
-                            aria-label="Notifications">
-                            <i class="fas fa-bell text-xl" style="color: var(--text-color);"></i>
-                            {% if stats and stats.overdue_count and stats.stock_alerts_count %}
-                                {% if stats.overdue_count > 0 or stats.stock_alerts_count > 0 %}
-                                <span
-                                    class="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                                    {{ stats.overdue_count + stats.stock_alerts_count }}
-                                </span>
-                                {% endif %}
-                            {% endif %}
-                        </button>
-                        
-                        <!-- Notification Dropdown -->
-                        <div id="notificationMenu" class="hidden absolute right-0 mt-2 rounded-lg shadow-lg overflow-hidden z-50"
-                            style="background-color: var(--bg-color); border: 1px solid var(--border-color); width: 28rem; max-width: 90vw;">
-                            <div class="p-5 border-b" style="border-color: var(--border-color);">
-                                <h3 class="font-semibold text-lg" style="color: var(--text-color);">Notifications</h3>
-                            </div>
-                            <div class="max-h-96 overflow-y-auto">
-                                {% if stats and (stats.overdue_count > 0 or stats.stock_alerts_count > 0) %}
-                                    {% if stats.overdue_count > 0 %}
-                                    <a href="{{ url_for('main.borrowed_books') }}" class="block p-5 hover:bg-gray-50 dark:hover:bg-gray-800 border-b transition-colors" style="border-color: var(--border-color);">
-                                        <div class="flex items-start gap-4">
-                                            <div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center flex-shrink-0">
-                                                <i class="fas fa-exclamation-circle text-red-500 text-lg"></i>
-                                            </div>
-                                            <div class="flex-1">
-                                                <p class="font-semibold text-base mb-1" style="color: var(--text-color);">Overdue Books</p>
-                                                <p class="text-sm" style="color: var(--text-secondary);">{{ stats.overdue_count }} book(s) are overdue and need attention</p>
-                                            </div>
-                                        </div>
-                                    </a>
-                                    {% endif %}
-                                    {% if stats.stock_alerts_count > 0 %}
-                                    <a href="{{ url_for('main.inventory') }}" class="block p-5 hover:bg-gray-50 dark:hover:bg-gray-800 border-b transition-colors" style="border-color: var(--border-color);">
-                                        <div class="flex items-start gap-4">
-                                            <div class="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center flex-shrink-0">
-                                                <i class="fas fa-box text-orange-500 text-lg"></i>
-                                            </div>
-                                            <div class="flex-1">
-                                                <p class="font-semibold text-base mb-1" style="color: var(--text-color);">Low Stock Alert</p>
-                                                <p class="text-sm" style="color: var(--text-secondary);">{{ stats.stock_alerts_count }} book(s) running low on stock</p>
-                                            </div>
-                                        </div>
-                                    </a>
-                                    {% endif %}
-                                {% else %}
-                                <div class="p-12 text-center">
-                                    <i class="fas fa-bell-slash text-5xl mb-3" style="color: var(--text-secondary); opacity: 0.5;"></i>
-                                    <p class="text-base" style="color: var(--text-secondary);">No new notifications</p>
-                                </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- User Profile -->
-                    <div class="flex items-center gap-2">
-                        <div
-                            class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold">
-                            {{ current_user.username[0].upper() }}
-                        </div>
-                        <span class="text-sm font-semibold hidden md:block" style="color: var(--text-color);">{{
-                            current_user.username }}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="adminContentTarget" class="p-6">
-    {% endif %}
-
-            <!-- Flash Messages for Admin Dashboard -->
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-            <div class="flash-messages" style="margin-bottom: 1.5rem;">
-                {% for category, message in messages %}
-                <div class="alert alert-{{ category if category != 'message' else 'info' }}" style="padding: 1rem; border-radius: 0.5rem; margin-bottom: 0.75rem; display: flex; align-items: center; justify-content: space-between;">
-                    <span>{{ message }}</span>
-                    <button onclick="this.parentElement.remove()" style="background: none; border: none; color: inherit; opacity: 0.7; cursor: pointer; font-size: 1.25rem; padding: 0 0.5rem;">&times;</button>
-                </div>
-                {% endfor %}
-            </div>
-            <script>
-                // Auto-dismiss flash messages after 4 seconds
-                document.querySelectorAll('.alert').forEach(alert => {
-                    setTimeout(() => {
-                        alert.style.transition = 'opacity 0.5s ease';
-                        alert.style.opacity = '0';
-                        setTimeout(() => alert.remove(), 500);
-                    }, 4000);
-                });
-            </script>
+            <a href="{{ url_for('main.admin_dashboard') }}#management-team-section" class="sidebar-link tooltip"
+                data-tooltip="Manage Team" aria-label="Manage Team"
+                onclick="if(document.getElementById('management-team-section')) { document.getElementById('management-team-section').scrollIntoView({behavior: 'smooth'}); return false; }">
+                <span class="sidebar-icon"><i class="fas fa-user-tie"></i></span>
+                <span class="sidebar-text">Manage Team</span>
+            </a>
             {% endif %}
-            {% endwith %}
-
-            {% block admin_content %}{% endblock %}
-
-    {% if not request.headers.get('HX-Request') %}
+            <a href="{{ url_for('main.admin_loans') }}" class="sidebar-link tooltip" data-tooltip="Borrowed Books"
+                aria-label="Manage borrowed books and loans" hx-get="{{ url_for('main.admin_loans') }}">
+                <span class="sidebar-icon"><i class="fas fa-book-reader"></i></span>
+                <span class="sidebar-text">Borrowed Books</span>
+            </a>
+            <a href="{{ url_for('main.inventory') }}" class="sidebar-link tooltip" data-tooltip="Inventory"
+                aria-label="Manage book inventory and stock" hx-get="{{ url_for('main.inventory') }}">
+                <span class="sidebar-icon"><i class="fas fa-boxes"></i></span>
+                <span class="sidebar-text">Inventory</span>
+            </a>
         </div>
-    </main>
 
-    <script>
-        // Sidebar Toggle Functions
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('mobile-open');
+        <!-- Marketing -->
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">Marketing</div>
+            <a href="{{ url_for('main.admin_offers') }}" class="sidebar-link tooltip" data-tooltip="Manage Offers"
+                aria-label="Manage discounts and offers" hx-get="{{ url_for('main.admin_offers') }}">
+                <span class="sidebar-icon"><i class="fas fa-tags"></i></span>
+                <span class="sidebar-text">Manage Offers</span>
+            </a>
+            <a href="{{ url_for('main.admin_campaigns') }}" class="sidebar-link tooltip" data-tooltip="Campaigns"
+                aria-label="Manage marketing campaigns" hx-get="{{ url_for('main.admin_campaigns') }}">
+                <span class="sidebar-icon"><i class="fas fa-bullhorn"></i></span>
+                <span class="sidebar-text">Campaigns</span>
+            </a>
+        </div>
+
+        <!-- Supply Chain -->
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">Supply Chain</div>
+            {% if current_user.is_admin() %}
+            <a href="{{ url_for('main.supplier_shortlist') }}" class="sidebar-link tooltip" data-tooltip="Shortlist"
+                aria-label="Manage supply order shortlist" hx-get="{{ url_for('main.supplier_shortlist') }}">
+                <span class="sidebar-icon"><i class="fas fa-list-ol"></i></span>
+                <span class="sidebar-text">Shortlist</span>
+            </a>
+            <a href="{{ url_for('main.supplier_review') }}" class="sidebar-link tooltip" data-tooltip="Review Orders"
+                aria-label="Review and approve supply orders" hx-get="{{ url_for('main.supplier_review') }}">
+                <span class="sidebar-icon"><i class="fas fa-clipboard-check"></i></span>
+                <span class="sidebar-text">Review Orders</span>
+            </a>
+            {% endif %}
+            <a href="{{ url_for('main.supplier_receive_list') }}" class="sidebar-link tooltip" data-tooltip="Received"
+                aria-label="View received supply orders" hx-get="{{ url_for('main.supplier_receive_list') }}">
+                <span class="sidebar-icon"><i class="fas fa-file-invoice-dollar"></i></span>
+                <span class="sidebar-text">Confirm Payloads</span>
+            </a>
+            <a href="{{ url_for('main.supplier_orders') }}" class="sidebar-link tooltip" data-tooltip="Track Orders"
+                aria-label="Track supply orders" hx-get="{{ url_for('main.supplier_orders') }}">
+                <span class="sidebar-icon"><i class="fas fa-search-location"></i></span>
+                <span class="sidebar-text">Track Orders</span>
+            </a>
+
+
+        </div>
+    </nav>
+
+    <div class="sidebar-footer">
+        <a href="{{ url_for('main.index') }}" class="sidebar-link">
+            <span class="sidebar-icon"><i class="fas fa-home"></i></span>
+            <span class="sidebar-text">Back to Site</span>
+        </a>
+    </div>
+</aside>
+
+<!-- Main Content -->
+<main class="dashboard-main" id="mainContent">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header" style="padding: 0 1.5rem; padding-top: 1rem; padding-bottom: 1rem;">
+        <div class="flex items-center justify-between gap-4">
+            <!-- Search Bar -->
+            <div class="flex-1 max-w-xl relative">
+                <form action="{{ url_for('main.admin_search') }}" method="GET" class="relative">
+                    <input type="text" name="q" id="globalSearch"
+                        placeholder="Search books, members, orders... (Ctrl+K)"
+                        class="w-full px-4 py-2 pl-10 pr-10 rounded-lg border transition-all focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        style="background-color: var(--bg-color); border-color: var(--border-color); color: var(--text-color);"
+                        aria-label="Global search" autocomplete="off">
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 opacity-50"></i>
+                    <button type="submit"
+                        class="absolute right-3 top-1/2 transform -translate-y-1/2 opacity-50 hover:opacity-100 transition-opacity"
+                        style="background: none; border: none; cursor: pointer; color: var(--text-color); padding: 0;">
+
+                    </button>
+                    <!-- Autocomplete Dropdown -->
+                    <div id="adminSuggestions"
+                        class="absolute top-full left-0 w-full rounded-lg shadow-lg hidden z-50 overflow-hidden mt-2"
+                        style="background-color: var(--bg-color); border: 1px solid var(--border-color);">
+                    </div>
+                </form>
+            </div>
+            <!-- Right Side Actions -->
+            <div class="flex items-center gap-4">
+
+                <!-- Notifications -->
+                <div class="relative" id="notificationDropdown">
+                    <button onclick="toggleNotifications()"
+                        class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative"
+                        aria-label="Notifications">
+                        <i class="fas fa-bell text-xl" style="color: var(--text-color);"></i>
+                        {% if stats and stats.overdue_count and stats.stock_alerts_count %}
+                        {% if stats.overdue_count > 0 or stats.stock_alerts_count > 0 %}
+                        <span
+                            class="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                            {{ stats.overdue_count + stats.stock_alerts_count }}
+                        </span>
+                        {% endif %}
+                        {% endif %}
+                    </button>
+
+                    <!-- Notification Dropdown -->
+                    <div id="notificationMenu"
+                        class="hidden absolute right-0 mt-2 rounded-lg shadow-lg overflow-hidden z-50"
+                        style="background-color: var(--bg-color); border: 1px solid var(--border-color); width: 28rem; max-width: 90vw;">
+                        <div class="p-6 border-b" style="border-color: var(--border-color);">
+                            <h3 class="font-semibold text-lg" style="color: var(--text-color);">Notifications</h3>
+                        </div>
+                        <div class="max-h-96 overflow-y-auto">
+                            {% if stats and (stats.overdue_count > 0 or stats.stock_alerts_count > 0) %}
+                            {% if stats.overdue_count > 0 %}
+                            <a href="{{ url_for('main.admin_loans') }}"
+                                class="block p-6 hover:bg-gray-50 dark:hover:bg-gray-800 border-b transition-colors"
+                                style="border-color: var(--border-color);">
+                                <div class="flex items-start gap-5">
+                                    <div
+                                        class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-exclamation-circle text-red-500 text-xl"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="font-semibold text-base mb-1.5" style="color: var(--text-color);">
+                                            Overdue Books</p>
+                                        <p class="text-sm" style="color: var(--text-secondary);">{{ stats.overdue_count
+                                            }} book(s) are overdue and need attention</p>
+                                    </div>
+                                </div>
+                            </a>
+                            {% endif %}
+                            {% if stats.stock_alerts_count > 0 %}
+                            <a href="{{ url_for('main.inventory') }}"
+                                class="block p-6 hover:bg-gray-50 dark:hover:bg-gray-800 border-b transition-colors"
+                                style="border-color: var(--border-color);">
+                                <div class="flex items-start gap-5">
+                                    <div
+                                        class="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-box text-orange-500 text-xl"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="font-semibold text-base mb-1.5" style="color: var(--text-color);">Low
+                                            Stock Alert</p>
+                                        <p class="text-sm" style="color: var(--text-secondary);">{{
+                                            stats.stock_alerts_count }} book(s) running low on stock</p>
+                                    </div>
+                                </div>
+                            </a>
+                            {% endif %}
+                            {% else %}
+                            <div class="p-12 text-center">
+                                <i class="fas fa-bell-slash text-5xl mb-3"
+                                    style="color: var(--text-secondary); opacity: 0.5;"></i>
+                                <p class="text-base" style="color: var(--text-secondary);">No new notifications</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Profile -->
+                <div class="flex items-center gap-2">
+                    <div
+                        class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold">
+                        {{ current_user.username[0].upper() }}
+                    </div>
+                    <span class="text-sm font-semibold hidden md:block" style="color: var(--text-color);">{{
+                        current_user.username }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="adminContentTarget" class="p-6">
+        {% endif %}
+
+        <!-- Flash Messages for Admin Dashboard -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-messages" style="margin-bottom: 1.5rem;">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category if category != 'message' else 'info' }}"
+                style="padding: 1rem; border-radius: 0.5rem; margin-bottom: 0.75rem; display: flex; align-items: center; justify-content: space-between;">
+                <span>{{ message }}</span>
+                <button onclick="this.parentElement.remove()"
+                    style="background: none; border: none; color: inherit; opacity: 0.7; cursor: pointer; font-size: 1.25rem; padding: 0 0.5rem;">&times;</button>
+            </div>
+            {% endfor %}
+        </div>
+        <script>
+            // Auto-dismiss flash messages after 4 seconds
+            document.querySelectorAll('.alert').forEach(alert => {
+                setTimeout(() => {
+                    alert.style.transition = 'opacity 0.5s ease';
+                    alert.style.opacity = '0';
+                    setTimeout(() => alert.remove(), 500);
+                }, 4000);
+            });
+        </script>
+        {% endif %}
+        {% endwith %}
+
+        {% block admin_content %}{% endblock %}
+
+        {% if not request.headers.get('HX-Request') %}
+    </div>
+</main>
+
+<script>
+    // Sidebar Toggle Functions
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('mobile-open');
+    }
+
+    function toggleSidebarCollapse() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('sidebar-collapsed');
+    }
+
+    // Toggle Notifications Dropdown
+    function toggleNotifications() {
+        const menu = document.getElementById('notificationMenu');
+        menu.classList.toggle('hidden');
+    }
+
+    // Close notification dropdown when clicking outside
+    document.addEventListener('click', function (event) {
+        const dropdown = document.getElementById('notificationDropdown');
+        const menu = document.getElementById('notificationMenu');
+
+        if (dropdown && menu && !dropdown.contains(event.target)) {
+            menu.classList.add('hidden');
         }
+    });
 
-        function toggleSidebarCollapse() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
+    // Add visual feedback for active links
+    document.body.addEventListener('htmx:beforeRequest', function (evt) {
+        const sidebarLinks = document.querySelectorAll('.sidebar-link');
+        sidebarLinks.forEach(link => link.classList.remove('active'));
+        evt.detail.elt.classList.add('active');
+    });
 
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('sidebar-collapsed');
-        }
+    // Admin Dashboard Search Autocomplete
+    const adminSearchInput = document.getElementById('globalSearch');
+    const adminSuggestionsBox = document.getElementById('adminSuggestions');
+    let adminCurrentFocus = -1;
 
-        // Toggle Notifications Dropdown
-        function toggleNotifications() {
-            const menu = document.getElementById('notificationMenu');
-            menu.classList.toggle('hidden');
-        }
+    if (adminSearchInput && adminSuggestionsBox) {
+        adminSearchInput.addEventListener('input', function () {
+            const query = this.value;
+            adminCurrentFocus = -1;
 
-        // Close notification dropdown when clicking outside
-        document.addEventListener('click', function(event) {
-            const dropdown = document.getElementById('notificationDropdown');
-            const menu = document.getElementById('notificationMenu');
-            
-            if (dropdown && menu && !dropdown.contains(event.target)) {
-                menu.classList.add('hidden');
+            if (query.length < 2) {
+                closeAdminSuggestions();
+                return;
             }
-        });
 
-        // Add visual feedback for active links
-        document.body.addEventListener('htmx:beforeRequest', function(evt) {
-            const sidebarLinks = document.querySelectorAll('.sidebar-link');
-            sidebarLinks.forEach(link => link.classList.remove('active'));
-            evt.detail.elt.classList.add('active');
-        });
+            fetch(`/api/admin/suggestions?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        adminSuggestionsBox.innerHTML = '';
+                        data.forEach((item, index) => {
+                            const div = document.createElement('div');
 
-        // Admin Dashboard Search Autocomplete
-        const adminSearchInput = document.getElementById('globalSearch');
-        const adminSuggestionsBox = document.getElementById('adminSuggestions');
-        let adminCurrentFocus = -1;
+                            // Color mapping for different types
+                            const typeColors = {
+                                'book': '#3b82f6',
+                                'member': '#10b981',
+                                'supplier': '#8b5cf6',
+                                'loan': '#f59e0b',
+                                'sale': '#ef4444'
+                            };
 
-        if (adminSearchInput && adminSuggestionsBox) {
-            adminSearchInput.addEventListener('input', function () {
-                const query = this.value;
-                adminCurrentFocus = -1;
+                            const color = typeColors[item.type] || '#6b7280';
 
-                if (query.length < 2) {
-                    closeAdminSuggestions();
-                    return;
-                }
-
-                fetch(`/api/admin/suggestions?q=${encodeURIComponent(query)}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.length > 0) {
-                            adminSuggestionsBox.innerHTML = '';
-                            data.forEach((item, index) => {
-                                const div = document.createElement('div');
-                                
-                                // Color mapping for different types
-                                const typeColors = {
-                                    'book': '#3b82f6',      
-                                    'member': '#10b981',    
-                                    'supplier': '#8b5cf6',  
-                                    'loan': '#f59e0b',      
-                                    'sale': '#ef4444'       
-                                };
-                                
-                                const color = typeColors[item.type] || '#6b7280';
-                                
-                                div.innerHTML = `
+                            div.innerHTML = `
                                     <div style="display: flex; align-items: center; gap: 0.75rem;">
                                         <i class="fas ${item.icon}" style="color: ${color}; font-size: 0.875rem; width: 16px;"></i>
                                         <span style="flex: 1;">${item.text}</span>
                                         <span style="font-size: 0.75rem; opacity: 0.6; text-transform: capitalize;">${item.type}</span>
                                     </div>
                                 `;
-                                div.className = 'px-4 py-3 cursor-pointer transition-colors duration-150';
-                                div.style.cssText = 'border-bottom: 1px solid var(--border-color);';
-                                div.addEventListener('mouseenter', function() {
-                                    div.style.backgroundColor = 'var(--hover-bg, rgba(0,0,0,0.05))';
-                                });
-                                div.addEventListener('mouseleave', function() {
-                                    div.style.backgroundColor = 'transparent';
-                                });
-                                div.addEventListener('click', function () {
-                                    // For member suggestions, navigate directly to their profile
-                                    if (item.type === 'member' && item.username) {
-                                        closeAdminSuggestions();
-                                        window.location.href = `/admin/user/${encodeURIComponent(item.username)}`;
-                                    } else {
-                                        selectAdminSuggestion(item.text);
-                                    }
-                                });
-
-                                adminSuggestionsBox.appendChild(div);
+                            div.className = 'px-4 py-3 cursor-pointer transition-colors duration-150';
+                            div.style.cssText = 'border-bottom: 1px solid var(--border-color);';
+                            div.addEventListener('mouseenter', function () {
+                                div.style.backgroundColor = 'var(--hover-bg, rgba(0,0,0,0.05))';
                             });
-                            adminSuggestionsBox.classList.remove('hidden');
-                        } else {
-                            closeAdminSuggestions();
-                        }
-                    })
-                    .catch(error => console.error('Error fetching suggestions:', error));
-            });
+                            div.addEventListener('mouseleave', function () {
+                                div.style.backgroundColor = 'transparent';
+                            });
+                            div.addEventListener('click', function () {
+                                // For member suggestions, navigate directly to their profile
+                                if (item.type === 'member' && item.username) {
+                                    closeAdminSuggestions();
+                                    window.location.href = `/admin/user/${encodeURIComponent(item.username)}`;
+                                } else {
+                                    selectAdminSuggestion(item.text);
+                                }
+                            });
 
-            // Keyboard Navigation
-            adminSearchInput.addEventListener('keydown', function (e) {
-                const items = adminSuggestionsBox.children;
-                if (items.length === 0) return;
-
-                if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    adminCurrentFocus++;
-                    if (adminCurrentFocus >= items.length) adminCurrentFocus = 0;
-                    updateAdminActiveSuggestion(items);
-                } else if (e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    adminCurrentFocus--;
-                    if (adminCurrentFocus < 0) adminCurrentFocus = items.length - 1;
-                    updateAdminActiveSuggestion(items);
-                } else if (e.key === 'Enter') {
-                    if (adminCurrentFocus > -1 && items[adminCurrentFocus]) {
-                        e.preventDefault();
-                        items[adminCurrentFocus].click();
-                    }
-                } else if (e.key === 'Escape') {
-                    closeAdminSuggestions();
-                }
-            });
-
-            function updateAdminActiveSuggestion(items) {
-                for (let i = 0; i < items.length; i++) {
-                    if (i === adminCurrentFocus) {
-                        items[i].style.backgroundColor = 'var(--hover-bg, rgba(0,0,0,0.05))';
+                            adminSuggestionsBox.appendChild(div);
+                        });
+                        adminSuggestionsBox.classList.remove('hidden');
                     } else {
-                        items[i].style.backgroundColor = 'transparent';
+                        closeAdminSuggestions();
                     }
-                }
-            }
+                })
+                .catch(error => console.error('Error fetching suggestions:', error));
+        });
 
-            function selectAdminSuggestion(value) {
-                adminSearchInput.value = value;
+        // Keyboard Navigation
+        adminSearchInput.addEventListener('keydown', function (e) {
+            const items = adminSuggestionsBox.children;
+            if (items.length === 0) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                adminCurrentFocus++;
+                if (adminCurrentFocus >= items.length) adminCurrentFocus = 0;
+                updateAdminActiveSuggestion(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                adminCurrentFocus--;
+                if (adminCurrentFocus < 0) adminCurrentFocus = items.length - 1;
+                updateAdminActiveSuggestion(items);
+            } else if (e.key === 'Enter') {
+                if (adminCurrentFocus > -1 && items[adminCurrentFocus]) {
+                    e.preventDefault();
+                    items[adminCurrentFocus].click();
+                }
+            } else if (e.key === 'Escape') {
                 closeAdminSuggestions();
-                adminSearchInput.closest('form').submit();
             }
+        });
 
-            function closeAdminSuggestions() {
-                adminSuggestionsBox.innerHTML = '';
-                adminSuggestionsBox.classList.add('hidden');
-                adminCurrentFocus = -1;
-            }
-
-            // Close suggestions when clicking outside
-            document.addEventListener('click', function (e) {
-                if (!adminSearchInput.contains(e.target) && !adminSuggestionsBox.contains(e.target)) {
-                    closeAdminSuggestions();
+        function updateAdminActiveSuggestion(items) {
+            for (let i = 0; i < items.length; i++) {
+                if (i === adminCurrentFocus) {
+                    items[i].style.backgroundColor = 'var(--hover-bg, rgba(0,0,0,0.05))';
+                } else {
+                    items[i].style.backgroundColor = 'transparent';
                 }
-            });
+            }
         }
 
+        function selectAdminSuggestion(value) {
+            adminSearchInput.value = value;
+            closeAdminSuggestions();
+            adminSearchInput.closest('form').submit();
+        }
 
-    </script>
-    {% endif %}
+        function closeAdminSuggestions() {
+            adminSuggestionsBox.innerHTML = '';
+            adminSuggestionsBox.classList.add('hidden');
+            adminCurrentFocus = -1;
+        }
+
+        // Close suggestions when clicking outside
+        document.addEventListener('click', function (e) {
+            if (!adminSearchInput.contains(e.target) && !adminSuggestionsBox.contains(e.target)) {
+                closeAdminSuggestions();
+            }
+        });
+    }
+
+
+</script>
+{% endif %}
 {% endblock %}

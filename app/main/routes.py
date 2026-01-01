@@ -21,7 +21,7 @@ def admin_dashboard():
     from sqlalchemy import func, desc
     
     # Basic Stats
-    total_users = User.query.count()
+    pending_customer_orders = Sale.query.filter_by(delivery_status='pending').count()
     total_books = Book.query.count()
     active_loans = Loan.query.filter_by(status='active').count()
     pending_orders = SupplyOrder.query.filter(SupplyOrder.status.in_(['shortlist', 'pending_review', 'placed'])).count()
@@ -174,12 +174,12 @@ def admin_dashboard():
     management_members = ManagementMember.query.order_by(ManagementMember.display_order).all()
     
     # Additional data for modals
-    all_users = User.query.order_by(User.username).all()
+    all_pending_customer_orders = Sale.query.filter_by(delivery_status='pending').order_by(Sale.sale_date.desc()).all()
     all_active_loans = Loan.query.filter_by(status='active').order_by(Loan.due_date).all()
     all_pending_orders = SupplyOrder.query.filter(SupplyOrder.status.in_(['shortlist', 'pending_review', 'placed'])).order_by(SupplyOrder.created_at.desc()).all()
     
     stats = {
-        'total_users': total_users,
+        'pending_customer_orders': pending_customer_orders,
         'total_books': total_books,
         'active_loans': active_loans,
         'pending_supply_orders': pending_orders,
@@ -195,7 +195,7 @@ def admin_dashboard():
         'top_selling_books': top_selling_books,
         'category_data': category_data,
         # Modal data
-        'all_users': all_users,
+        'all_pending_customer_orders': all_pending_customer_orders,
         'all_active_loans': all_active_loans,
         'all_pending_orders': all_pending_orders,
         'current_datetime': now  # For template datetime comparisons
@@ -255,6 +255,38 @@ def admin_user_profile(username):
                          forum_posts=forum_posts)
 
 
+@bp.route('/admin/sales')
+@login_required
+@admin_required
+def admin_sales():
+    status_filter = request.args.get('status', 'pending')
+    page = request.args.get('page', 1, type=int)
+    
+    query = Sale.query
+    if status_filter != 'all':
+        query = query.filter_by(delivery_status=status_filter)
+        
+    pagination = query.order_by(Sale.sale_date.desc()).paginate(page=page, per_page=15, error_out=False)
+    sales = pagination.items
+    
+    return render_template('admin/sales.html', sales=sales, pagination=pagination, current_status=status_filter)
+
+@bp.route('/admin/sales/update/<int:sale_id>', methods=['POST'])
+@login_required
+@admin_required
+def update_order_status(sale_id):
+    sale = Sale.query.get_or_404(sale_id)
+    new_status = request.form.get('status')
+    
+    if new_status in ['pending', 'shipped', 'delivered', 'cancelled']:
+        sale.delivery_status = new_status
+        db.session.commit()
+        flash(f'Order for "{sale.book.title}" updated to {new_status}.', 'success')
+    else:
+        flash('Invalid status.', 'danger')
+        
+    return redirect(request.referrer or url_for('main.admin_sales'))
+
 @bp.route('/admin/offers', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -273,6 +305,12 @@ def admin_offers():
             except ValueError:
                 discount = 0.0
                 
+        if action == 'remove_all':
+            count = Book.query.filter(Book.discount_percentage > 0).update({Book.discount_percentage: 0.0})
+            db.session.commit()
+            flash(f'All offers removed from {count} books.', 'success')
+            return redirect(url_for('main.admin_offers'))
+
         book_ids = request.form.getlist('book_ids')
         
         if not book_ids:

@@ -10,48 +10,48 @@
             flex-direction: column;
             align-items: stretch !important;
         }
-        
+
         .forum-header h1 {
             font-size: 1.5rem !important;
             margin-bottom: 0.75rem;
         }
-        
+
         .forum-header .btn {
             width: 100%;
             justify-content: center;
         }
-        
+
         .forum-post-card {
             padding: 1rem !important;
         }
-        
+
         .forum-post-card h2 {
             font-size: 1.25rem !important;
         }
-        
+
         .forum-user-pill {
             flex-wrap: wrap;
             gap: 0.5rem;
         }
-        
+
         .forum-user-pill span {
             font-size: 0.75rem !important;
         }
-        
+
         .forum-post-body {
             font-size: 0.875rem !important;
         }
     }
-    
+
     @media (max-width: 640px) {
         .forum-header h1 {
             font-size: 1.25rem !important;
         }
-        
+
         .forum-post-card {
             padding: 0.875rem !important;
         }
-        
+
         .forum-post-card h2 {
             font-size: 1.125rem !important;
         }
@@ -66,6 +66,39 @@
         </a>
     </div>
 
+    <!-- User Search Bar -->
+    <div class="mb-6" id="user-search-container">
+        <div class="relative flex gap-2">
+            <div class="relative flex-grow">
+                <input type="text" id="user-search-input" placeholder="Search forum by username or content..."
+                    value="{{ search_username if search_username else '' }}"
+                    class="w-full px-4 py-3 rounded-lg border transition-colors"
+                    style="background-color: var(--card-bg); border-color: var(--border-color); color: var(--text-color);">
+                <!-- Search Results Dropdown -->
+                <div id="search-results" class="absolute w-full mt-2 rounded-lg border shadow-lg hidden z-50"
+                    style="background-color: var(--card-bg); border-color: var(--border-color); max-height: 400px; overflow-y: auto;">
+                    <!-- Results will be inserted here -->
+                </div>
+            </div>
+            {% if search_username %}
+            <div class="flex gap-2">
+                <a href="{{ url_for('forum.index') }}" class="btn btn-secondary flex items-center gap-2">
+                    <i class="fas fa-times"></i> Clear
+                </a>
+                {% if searched_user and current_user.is_authenticated and current_user.id != searched_user.id %}
+                <button
+                    onclick="openChat({{ searched_user.id }}, '{{ searched_user.username }}', '{{ searched_user.profile_photo or 'https://placehold.co/150x150' }}')"
+                    class="btn btn-primary flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white">
+                    <i class="fas fa-comment"></i> Message
+                </button>
+                {% endif %}
+            </div>
+            {% endif %}
+            <button onclick="performSearch()" class="btn btn-primary">Search</button>
+        </div>
+
+    </div>
+
     {% for post in posts %}
     <!-- Adaptive Card -->
     <div class="rounded-xl p-6 mb-6 shadow-xl border transition-colors feature-card forum-post-card"
@@ -76,10 +109,10 @@
             <div class="inline-flex items-center px-3 py-1 rounded-full border forum-user-pill"
                 style="background-color: var(--pill-bg); border-color: var(--border-color);">
                 <a href="{{ url_for('main.user_profile', username=post.user.username) }}">
-                    <img src="{{ post.user.profile_photo or 'https://placehold.co/150x150?text=User' }}" 
-                         alt="{{ post.user.username }}" 
-                         class="w-6 h-6 rounded-full mr-2 object-cover border cursor-pointer hover:opacity-80 transition-opacity"
-                         style="border-color: var(--border-color);">
+                    <img src="{{ post.user.profile_photo or 'https://placehold.co/150x150?text=User' }}"
+                        alt="{{ post.user.username }}"
+                        class="w-6 h-6 rounded-full mr-2 object-cover border cursor-pointer hover:opacity-80 transition-opacity"
+                        style="border-color: var(--border-color);">
                 </a>
                 <span class="text-xs font-medium" style="color: var(--text-muted);">
                     {{ post.post_type|title }} by
@@ -88,12 +121,13 @@
                         {{ post.user.username }}
                     </a>
                     {% if current_user.is_authenticated and current_user.id != post.user.id %}
-                    <button onclick="openChat({{ post.user.id }}, '{{ post.user.username }}', '{{ post.user.profile_photo or 'https://placehold.co/150x150' }}')" 
-                            title="Send message to {{ post.user.username }}"
-                            style="background: none; border: none; cursor: pointer; padding: 0 0.25rem; opacity: 0.7; transition: opacity 0.2s; vertical-align: middle;"
-                            onmouseover="this.style.opacity='1'" 
-                            onmouseout="this.style.opacity='0.7'">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <button
+                        onclick="openChat({{ post.user.id }}, '{{ post.user.username }}', '{{ post.user.profile_photo or 'https://placehold.co/150x150' }}')"
+                        title="Send message to {{ post.user.username }}"
+                        style="background: none; border: none; cursor: pointer; padding: 0 0.25rem; opacity: 0.7; transition: opacity 0.2s; vertical-align: middle;"
+                        onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                         </svg>
                     </button>
@@ -114,7 +148,8 @@
         </h2>
 
         <!-- Body -->
-        <p class="text-base leading-relaxed mb-6 line-clamp-3 font-normal forum-post-body" style="color: var(--text-muted);">
+        <p class="text-base leading-relaxed mb-6 line-clamp-3 font-normal forum-post-body"
+            style="color: var(--text-muted);">
             {{ post.content }}
         </p>
 
@@ -139,4 +174,199 @@
     </div>
     {% endfor %}
 </div>
+
+<script>
+    const searchInput = document.getElementById('user-search-input');
+    const searchResults = document.getElementById('search-results');
+    let searchTimeout;
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
+            clearTimeout(searchTimeout);
+            const query = this.value.trim();
+
+            if (query.length < 2) {
+                searchResults.classList.add('hidden');
+                return;
+            }
+
+            searchTimeout = setTimeout(() => {
+                fetch(`/forum/search/forum?q=${encodeURIComponent(query)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        displaySearchResults(data);
+                    })
+                    .catch(err => console.error('Search error:', err));
+            }, 300); // Debounce 300ms
+        });
+    }
+
+    let currentUserFocus = -1;
+    function displaySearchResults(data) {
+        currentUserFocus = -1;
+        const { users, posts } = data;
+
+        if (users.length === 0 && posts.length === 0) {
+            searchResults.innerHTML = `
+            <div class="p-4 text-center" style="color: var(--text-muted);">
+                No results found
+            </div>
+        `;
+            searchResults.classList.remove('hidden');
+            return;
+        }
+
+        let html = '';
+
+        // Users Section
+        if (users.length > 0) {
+            html += `<div class="px-3 py-2 text-xs font-bold uppercase tracking-wider bg-opacity-50" style="color: var(--text-muted); background: var(--pill-bg);">People</div>`;
+            users.forEach((user, index) => {
+                html += `
+                <div class="p-3 border-b user-result-item result-item transition-colors cursor-pointer"
+                     data-id="${user.id}"
+                     data-type="user"
+                     style="border-color: var(--border-color);"
+                     onclick="filterByUser('${user.username}')"
+                     onmouseenter="setFocusByElement(this)">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <img src="${user.profile_photo}" 
+                                 alt="${user.username}"
+                                 class="w-10 h-10 rounded-full object-cover border"
+                                 style="border-color: var(--border-color);">
+                            <div>
+                                <div class="font-semibold" style="color: var(--text-color);">
+                                    ${user.username}
+                                </div>
+                                <div class="text-xs" style="color: var(--text-muted);">
+                                    ${user.post_count} forum post${user.post_count !== 1 ? 's' : ''}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            {% if current_user.is_authenticated %}
+                            <button onclick="event.stopPropagation(); openChat(${user.id}, '${user.username}', '${user.profile_photo}')"
+                                    class="px-3 py-1.5 rounded text-sm font-medium transition-opacity hover:opacity-90"
+                                    style="background-color: var(--primary-color); color: white;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 4px;">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                Message
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>`;
+            });
+        }
+
+        // Posts Section
+        if (posts.length > 0) {
+            html += `<div class="px-3 py-2 text-xs font-bold uppercase tracking-wider bg-opacity-50" style="color: var(--text-muted); background: var(--pill-bg);">Posts</div>`;
+            posts.forEach((post, index) => {
+                html += `
+                <div class="p-3 border-b post-result-item result-item transition-colors cursor-pointer"
+                     data-url="${post.url}"
+                     data-type="post"
+                     style="border-color: var(--border-color);"
+                     onclick="window.location.href='${post.url}'"
+                     onmouseenter="setFocusByElement(this)">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-grow">
+                            <div class="font-semibold truncate" style="color: var(--text-color);">
+                                ${post.title}
+                            </div>
+                            <div class="text-xs" style="color: var(--text-muted);">
+                                by ${post.author} • ${post.created_at}
+                            </div>
+                        </div>
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: var(--text-muted);">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </div>`;
+            });
+        }
+
+        searchResults.innerHTML = html;
+        searchResults.classList.remove('hidden');
+    }
+
+    function setFocusByElement(el) {
+        const items = searchResults.querySelectorAll('.result-item');
+        currentUserFocus = Array.from(items).indexOf(el);
+        updateActiveUserSuggestion();
+    }
+
+    function updateActiveUserSuggestion() {
+        const items = searchResults.querySelectorAll('.result-item');
+        items.forEach((item, index) => {
+            if (index === currentUserFocus) {
+                item.classList.add('active');
+                item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            } else {
+                item.classList.remove('active');
+            }
+        });
+    }
+
+    function performSearch() {
+        const query = searchInput.value.trim();
+        if (query) {
+            window.location.href = `/forum/?q=${encodeURIComponent(query)}`;
+        } else {
+            window.location.href = '/forum/';
+        }
+    }
+
+    function filterByUser(username) {
+        window.location.href = `/forum/?username=${encodeURIComponent(username)}`;
+    }
+
+    // Handle keyboard navigation in search input
+    if (searchInput) {
+        searchInput.addEventListener('keydown', function (e) {
+            const items = searchResults.querySelectorAll('.result-item');
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                currentUserFocus++;
+                if (currentUserFocus >= items.length) currentUserFocus = 0;
+                updateActiveUserSuggestion();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                currentUserFocus--;
+                if (currentUserFocus < 0) currentUserFocus = items.length - 1;
+                updateActiveUserSuggestion();
+            } else if (e.key === 'Enter') {
+                if (currentUserFocus > -1 && items[currentUserFocus]) {
+                    e.preventDefault();
+                    items[currentUserFocus].click();
+                } else if (searchInput.value.trim()) {
+                    performSearch();
+                }
+            } else if (e.key === 'Escape') {
+                searchResults.classList.add('hidden');
+                currentUserFocus = -1;
+            }
+        });
+    }
+
+    // Close search results when clicking outside
+    document.addEventListener('click', function (e) {
+        const container = document.getElementById('user-search-container');
+        if (container && !container.contains(e.target)) {
+            searchResults.classList.add('hidden');
+        }
+    });
+</script>
+
+<style>
+    .result-item:hover,
+    .result-item.active {
+        background-color: var(--pill-bg);
+    }
+</style>
+
 {% endblock %}

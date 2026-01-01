@@ -220,8 +220,24 @@
     }
 
     function handleMessageRead(data) {
-        // Optional: Update UI to show message was read (e.g., checkmarks)
+        // Update UI to show message was read (double blue checkmark)
         console.log('Message read:', data);
+        
+        const messageDiv = document.querySelector(`[data-message-id="${data.message_id}"]`);
+        if (!messageDiv) return;
+        
+        const receipt = messageDiv.querySelector('.read-receipt');
+        if (receipt) {
+            receipt.setAttribute('data-read', 'true');
+            receipt.style.color = '#3b82f6'; // Blue for read
+            // Change to double checkmark
+            receipt.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
+                    <path d="M11.354 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-1-1a.5.5 0 0 1 .708-.708l.646.647 6.646-6.647a.5.5 0 0 1 .708 0z"/>
+                </svg>
+            `;
+        }
     }
 
     function openChat(userId, username, photoUrl) {
@@ -377,6 +393,39 @@
                 editedSpan.textContent = ' (edited)';
                 editedSpan.style.cssText = 'font-size: 0.75rem; opacity: 0.7; font-style: italic;';
                 content.appendChild(editedSpan);
+            }
+            
+            // Add read receipt for sender's messages
+            if (isMine) {
+                const receiptSpan = document.createElement('span');
+                receiptSpan.className = 'read-receipt';
+                receiptSpan.setAttribute('data-read', msg.is_read ? 'true' : 'false');
+                receiptSpan.style.cssText = `
+                    display: inline-flex;
+                    align-items: center;
+                    margin-left: 4px;
+                    vertical-align: middle;
+                    color: ${msg.is_read ? '#3b82f6' : '#9ca3af'};
+                `;
+                
+                if (msg.is_read) {
+                    // Double checkmark for read
+                    receiptSpan.innerHTML = `
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
+                            <path d="M11.354 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-1-1a.5.5 0 0 1 .708-.708l.646.647 6.646-6.647a.5.5 0 0 1 .708 0z"/>
+                        </svg>
+                    `;
+                } else {
+                    // Single checkmark for sent
+                    receiptSpan.innerHTML = `
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
+                        </svg>
+                    `;
+                }
+                
+                content.appendChild(receiptSpan);
             }
         }
 

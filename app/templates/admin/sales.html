@@ -1,0 +1,189 @@
+{% extends "admin/admin_base.html" %}
+
+{% block admin_content %}
+<div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+        <h1 class="text-3xl font-bold" style="color: var(--text-color);">Customer Orders Management</h1>
+        <p style="color: var(--text-muted);">Track and update delivery status for customer purchases</p>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl border border-gray-200 dark:border-gray-700">
+        <a href="{{ url_for('main.admin_sales', status='pending') }}"
+            class="px-4 py-2 rounded-lg text-sm font-semibold transition-all {{ 'bg-white dark:bg-gray-700 shadow text-blue-600' if current_status == 'pending' else 'text-gray-500 hover:text-gray-700' }}">
+            Pending
+        </a>
+        <a href="{{ url_for('main.admin_sales', status='shipped') }}"
+            class="px-4 py-2 rounded-lg text-sm font-semibold transition-all {{ 'bg-white dark:bg-gray-700 shadow text-blue-600' if current_status == 'shipped' else 'text-gray-500 hover:text-gray-700' }}">
+            Shipped
+        </a>
+        <a href="{{ url_for('main.admin_sales', status='delivered') }}"
+            class="px-4 py-2 rounded-lg text-sm font-semibold transition-all {{ 'bg-white dark:bg-gray-700 shadow text-blue-600' if current_status == 'delivered' else 'text-gray-500 hover:text-gray-700' }}">
+            Delivered
+        </a>
+        <a href="{{ url_for('main.admin_sales', status='all') }}"
+            class="px-4 py-2 rounded-lg text-sm font-semibold transition-all {{ 'bg-white dark:bg-gray-700 shadow text-blue-600' if current_status == 'all' else 'text-gray-500 hover:text-gray-700' }}">
+            All
+        </a>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 gap-6">
+    <div class="card p-0 overflow-hidden"
+        style="background-color: var(--card-bg); border: 1px solid var(--border-color);">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="bg-gray-50 dark:bg-gray-800/50 border-b" style="border-color: var(--border-color);">
+                        <th class="text-left p-4 text-sm font-bold uppercase tracking-wider"
+                            style="color: var(--text-muted);">Order Info</th>
+                        <th class="text-left p-4 text-sm font-bold uppercase tracking-wider"
+                            style="color: var(--text-muted);">Customer</th>
+                        <th class="text-left p-4 text-sm font-bold uppercase tracking-wider"
+                            style="color: var(--text-muted);">Shipping Address</th>
+                        <th class="text-left p-4 text-sm font-bold uppercase tracking-wider"
+                            style="color: var(--text-muted);">Status</th>
+                        <th class="text-right p-4 text-sm font-bold uppercase tracking-wider"
+                            style="color: var(--text-muted);">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y" style="border-color: var(--border-color);">
+                    {% for sale in sales %}
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
+                        <td class="p-4">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-14 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden flex-shrink-0">
+                                    {% if sale.book.image_url %}
+                                    <img src="{{ sale.book.image_url }}" alt="{{ sale.book.title }}"
+                                        class="w-full h-full object-cover">
+                                    {% else %}
+                                    <div class="w-full h-full flex items-center justify-center text-gray-400">
+                                        <i class="fas fa-book"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <p class="font-bold text-lg" style="color: var(--text-color);">{{ sale.book.title }}
+                                    </p>
+                                    <p class="text-sm" style="color: var(--text-muted);">Ordered on {{
+                                        sale.sale_date.strftime('%b %d, %Y') }}</p>
+                                    <p class="text-sm font-semibold text-blue-600">৳{{ sale.price_at_sale }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-4">
+                            <div class="flex items-center gap-2">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 font-bold text-xs">
+                                    {{ sale.user.username[0].upper() }}
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-sm" style="color: var(--text-color);">{{
+                                        sale.user.username }}</p>
+                                    <p class="text-xs" style="color: var(--text-muted);">{{ sale.user.email }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-4">
+                            <p class="text-sm max-w-xs truncate" style="color: var(--text-color);">{{
+                                sale.shipping_address or 'No address provided' }}</p>
+                        </td>
+                        <td class="p-4">
+                            {% if sale.delivery_status == 'pending' %}
+                            <span
+                                class="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                                Pending
+                            </span>
+                            {% elif sale.delivery_status == 'shipped' %}
+                            <span
+                                class="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                                Shipped
+                            </span>
+                            {% elif sale.delivery_status == 'delivered' %}
+                            <span
+                                class="px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800">
+                                Delivered
+                            </span>
+                            {% else %}
+                            <span
+                                class="px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400 border border-gray-200 dark:border-gray-800">
+                                {{ sale.delivery_status.capitalize() }}
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="p-4 text-right">
+                            <div class="flex justify-end gap-2">
+                                {% if sale.delivery_status == 'pending' %}
+                                <form action="{{ url_for('main.update_order_status', sale_id=sale.id) }}" method="POST">
+                                    <input type="hidden" name="status" value="shipped">
+                                    <button title="Mark as Shipped"
+                                        class="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 transition-colors">
+                                        <i class="fas fa-shipping-fast"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+
+                                {% if sale.delivery_status in ['pending', 'shipped'] %}
+                                <form action="{{ url_for('main.update_order_status', sale_id=sale.id) }}" method="POST">
+                                    <input type="hidden" name="status" value="delivered">
+                                    <button title="Mark as Delivered"
+                                        class="p-2 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 dark:bg-green-900/20 dark:hover:bg-green-900/40 transition-colors">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+
+                                {% if sale.delivery_status == 'pending' %}
+                                <form action="{{ url_for('main.update_order_status', sale_id=sale.id) }}" method="POST"
+                                    onsubmit="return confirm('Cancel this order?');">
+                                    <input type="hidden" name="status" value="cancelled">
+                                    <button title="Cancel Order"
+                                        class="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 transition-colors">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="p-12 text-center" style="color: var(--text-muted);">
+                            <div class="flex flex-col items-center">
+                                <i class="fas fa-box-open text-4xl mb-4 opacity-20"></i>
+                                <p class="text-lg">No customer orders found in this category.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if pagination and pagination.pages > 1 %}
+    <div class="flex justify-center gap-2 mt-4">
+        {% if pagination.has_prev %}
+        <a href="{{ url_for('main.admin_sales', page=pagination.prev_num, status=current_status) }}"
+            class="px-4 py-2 rounded-lg border font-semibold transition-all hover:bg-opacity-10"
+            style="background-color: var(--card-bg); border-color: var(--border-color); color: var(--text-color);">
+            Previous
+        </a>
+        {% endif %}
+
+        <span class="px-4 py-2" style="color: var(--text-color);">Page {{ pagination.page }} of {{ pagination.pages
+            }}</span>
+
+        {% if pagination.has_next %}
+        <a href="{{ url_for('main.admin_sales', page=pagination.next_num, status=current_status) }}"
+            class="px-4 py-2 rounded-lg border font-semibold transition-all hover:bg-opacity-10"
+            style="background-color: var(--card-bg); border-color: var(--border-color); color: var(--text-color);">
+            Next
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

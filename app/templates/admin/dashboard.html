@@ -9,29 +9,28 @@
 
 <!-- Stats Grid -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <!-- Total Members -->
+    <!-- Customer Orders -->
     <div class="stat-card rounded-2xl p-6 shadow-lg border transition-all hover:scale-105 hover:shadow-2xl cursor-pointer"
         style="background-color: var(--card-bg); border-color: var(--border-color); border-left: 4px solid #3b82f6;"
-        onclick="openStatModal('membersModal')" title="Click to view all members">
+        onclick="openStatModal('customerOrdersModal')" title="Click to view pending customer orders">
         <div class="flex items-center justify-between mb-3">
             <div class="p-3 rounded-xl bg-gradient-to-br from-blue-100 to-blue-200 text-blue-600">
-                <i class="fas fa-users text-2xl"></i>
+                <i class="fas fa-shopping-bag text-2xl"></i>
             </div>
-            {% if stats.user_trend.direction != 'neutral' %}
-            <span class="trend-indicator {{ stats.user_trend.direction }}">
-                <i class="fas fa-arrow-{{ 'up' if stats.user_trend.direction == 'up' else 'down' }}"></i>
-                {{ stats.user_trend.percentage }}%
+            {% if stats.pending_customer_orders > 0 %}
+            <span class="trend-indicator up">
+                <i class="fas fa-clock"></i>
+                NEW
             </span>
             {% endif %}
         </div>
-        <p class="text-xs font-bold uppercase tracking-wider mb-1" style="color: var(--text-muted);">Total
-            Members</p>
-        <h3 class="text-3xl font-bold" style="color: var(--text-color);">{{ stats.total_users }}</h3>
+        <p class="text-xs font-bold uppercase tracking-wider mb-1" style="color: var(--text-muted);">Customer Orders</p>
+        <h3 class="text-3xl font-bold" style="color: var(--text-color);">{{ stats.pending_customer_orders }}</h3>
         <p class="text-xs mt-2" style="color: var(--text-muted);">
-            {% if stats.total_users == 0 %}
-            <span class="text-amber-500">No members yet!</span>
+            {% if stats.pending_customer_orders == 0 %}
+            <span class="text-green-500">All orders delivered! ✓</span>
             {% else %}
-            Active members
+            Awaiting delivery
             {% endif %}
         </p>
     </div>
@@ -85,23 +84,23 @@
         {% endif %}
     </div>
 
-    <!-- Pending Orders -->
+    <!-- Supply Orders -->
     <div class="stat-card rounded-2xl p-6 shadow-lg border transition-all hover:scale-105 hover:shadow-2xl cursor-pointer"
         style="background-color: var(--card-bg); border-color: var(--border-color); border-left: 4px solid #22c55e;"
-        onclick="openStatModal('ordersModal')" title="Click to view pending orders">
+        onclick="openStatModal('ordersModal')" title="Click to view supply orders">
         <div class="flex items-center justify-between mb-3">
             <div class="p-3 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-200 text-emerald-600">
                 <i class="fas fa-truck-loading text-2xl"></i>
             </div>
         </div>
-        <p class="text-xs font-bold uppercase tracking-wider mb-1" style="color: var(--text-muted);">Pending
+        <p class="text-xs font-bold uppercase tracking-wider mb-1" style="color: var(--text-muted);">Supply
             Orders</p>
         <h3 class="text-3xl font-bold" style="color: var(--text-color);">{{ stats.pending_supply_orders }}</h3>
         <p class="text-xs mt-2" style="color: var(--text-muted);">
             {% if stats.pending_supply_orders == 0 %}
             <span class="text-green-500">No pending orders ✓</span>
             {% else %}
-            Awaiting processing
+            Pending restocks
             {% endif %}
         </p>
     </div>
@@ -195,7 +194,8 @@
             <h3 class="font-bold text-lg mb-4" style="color: var(--text-color);">
                 <i class="fas fa-check-circle text-green-500 mr-2"></i>Alerts
             </h3>
-            <p class="text-sm" style="color: var(--text-muted);">No alerts at this time. Everything is running smoothly!</p>
+            <p class="text-sm" style="color: var(--text-muted);">No alerts at this time. Everything is running smoothly!
+            </p>
         </div>
         {% endif %}
     </div>
@@ -210,12 +210,19 @@
 <!-- Sales Trend Chart (Full Width) -->
 <div class="chart-card mb-8">
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">
-        <h3 class="font-bold text-lg" style="color: var(--text-color);" id="salesTrendTitle">Sales Trend (Last 30 Days)</h3>
-        <div class="flex p-1 rounded-xl border transition-colors w-full sm:w-auto" 
-             style="background-color: var(--pill-bg); border-color: var(--border-color);">
-            <button onclick="updateSalesChart('daily')" class="sales-toggle-btn flex-1 sm:flex-none px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all active-toggle" id="daily-toggle" style="background-color: var(--primary-color); color: white;">Daily</button>
-            <button onclick="updateSalesChart('monthly')" class="sales-toggle-btn flex-1 sm:flex-none px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all" id="monthly-toggle" style="color: var(--text-muted); background-color: transparent;">Monthly</button>
-            <button onclick="updateSalesChart('yearly')" class="sales-toggle-btn flex-1 sm:flex-none px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all" id="yearly-toggle" style="color: var(--text-muted); background-color: transparent;">Yearly</button>
+        <h3 class="font-bold text-lg" style="color: var(--text-color);" id="salesTrendTitle">Sales Trend (Last 30 Days)
+        </h3>
+        <div class="flex p-1 rounded-xl border transition-colors w-full sm:w-auto"
+            style="background-color: var(--pill-bg); border-color: var(--border-color);">
+            <button onclick="updateSalesChart('daily')"
+                class="sales-toggle-btn flex-1 sm:flex-none px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all active-toggle"
+                id="daily-toggle" style="background-color: var(--primary-color); color: white;">Daily</button>
+            <button onclick="updateSalesChart('monthly')"
+                class="sales-toggle-btn flex-1 sm:flex-none px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all"
+                id="monthly-toggle" style="color: var(--text-muted); background-color: transparent;">Monthly</button>
+            <button onclick="updateSalesChart('yearly')"
+                class="sales-toggle-btn flex-1 sm:flex-none px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all"
+                id="yearly-toggle" style="color: var(--text-muted); background-color: transparent;">Yearly</button>
         </div>
     </div>
     <div class="chart-container relative" style="position: relative; height: 300px; width: 100%;">
@@ -262,15 +269,17 @@
                         {% if member.image_file.startswith('http') %}
                         <img src="{{ member.image_file }}" class="w-10 h-10 rounded-full object-cover">
                         {% else %}
-                        <img src="{{ url_for('static', filename=member.image_file) }}" class="w-10 h-10 rounded-full object-cover">
+                        <img src="{{ url_for('static', filename=member.image_file) }}"
+                            class="w-10 h-10 rounded-full object-cover">
                         {% endif %}
                     </td>
                     <td class="p-3 border-b" style="border-color: var(--border-color);">{{ member.name }}</td>
                     <td class="p-3 border-b" style="border-color: var(--border-color);">{{ member.designation }}</td>
                     <td class="p-3 border-b" style="border-color: var(--border-color);">
                         {% if current_user.is_admin() %}
-                        <button onclick="openEditManagementModal('{{ member.id }}', '{{ member.name }}', '{{ member.designation }}')" 
-                                class="text-blue-500 hover:text-blue-700">
+                        <button
+                            onclick="openEditManagementModal('{{ member.id }}', '{{ member.name }}', '{{ member.designation }}')"
+                            class="text-blue-500 hover:text-blue-700">
                             <i class="fas fa-edit"></i> Edit
                         </button>
                         {% endif %}
@@ -283,21 +292,23 @@
 </div>
 
 <!-- Edit Management Modal -->
-<div id="editManagementModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background-color: rgba(0, 0, 0, 0.5);">
-    <div class="rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" 
-         style="background-color: var(--card-bg); border: 1px solid var(--border-color);">
+<div id="editManagementModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4"
+    style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+        style="background-color: var(--card-bg); border: 1px solid var(--border-color);">
         <!-- Modal Header -->
-        <div class="sticky top-0 px-6 py-4 border-b" style="background-color: var(--card-bg); border-color: var(--border-color);">
+        <div class="sticky top-0 px-6 py-4 border-b"
+            style="background-color: var(--card-bg); border-color: var(--border-color);">
             <div class="flex items-center justify-between">
                 <h3 class="text-2xl font-bold" style="color: var(--text-color);">
                     <i class="fas fa-user-edit mr-2" style="color: var(--primary-color);"></i>
                     Edit Team Member
                 </h3>
-                <button type="button" onclick="closeEditManagementModal()" 
-                        class="p-2 rounded-lg transition-colors hover:bg-opacity-10"
-                        style="color: var(--text-muted); background-color: transparent;"
-                        onmouseover="this.style.backgroundColor='rgba(128,128,128,0.1)'"
-                        onmouseout="this.style.backgroundColor='transparent'">
+                <button type="button" onclick="closeEditManagementModal()"
+                    class="p-2 rounded-lg transition-colors hover:bg-opacity-10"
+                    style="color: var(--text-muted); background-color: transparent;"
+                    onmouseover="this.style.backgroundColor='rgba(128,128,128,0.1)'"
+                    onmouseout="this.style.backgroundColor='transparent'">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
@@ -307,51 +318,41 @@
         <form action="{{ url_for('main.update_management_member') }}" method="POST" enctype="multipart/form-data">
             <div class="p-6 space-y-6">
                 <input type="hidden" name="id" id="editMemberId">
-                
+
                 <!-- Name Field -->
                 <div>
                     <label class="block text-sm font-semibold mb-2" style="color: var(--text-color);">
                         <i class="fas fa-user mr-2" style="color: var(--primary-color);"></i>
                         Full Name
                     </label>
-                    <input type="text" 
-                           name="name" 
-                           id="editMemberName" 
-                           required
-                           class="w-full px-4 py-3 border rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                           style="background-color: var(--input-bg); border-color: var(--border-color); color: var(--text-color);"
-                           placeholder="Enter full name">
+                    <input type="text" name="name" id="editMemberName" required
+                        class="w-full px-4 py-3 border rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        style="background-color: var(--input-bg); border-color: var(--border-color); color: var(--text-color);"
+                        placeholder="Enter full name">
                 </div>
-                
+
                 <!-- Designation Field -->
                 <div>
                     <label class="block text-sm font-semibold mb-2" style="color: var(--text-color);">
                         <i class="fas fa-briefcase mr-2" style="color: var(--primary-color);"></i>
                         Designation
                     </label>
-                    <input type="text" 
-                           name="designation" 
-                           id="editMemberDesignation" 
-                           required
-                           class="w-full px-4 py-3 border rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                           style="background-color: var(--input-bg); border-color: var(--border-color); color: var(--text-color);"
-                           placeholder="e.g., Chief Librarian">
+                    <input type="text" name="designation" id="editMemberDesignation" required
+                        class="w-full px-4 py-3 border rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        style="background-color: var(--input-bg); border-color: var(--border-color); color: var(--text-color);"
+                        placeholder="e.g., Chief Librarian">
                 </div>
-                
+
                 <!-- Profile Image Field -->
                 <div>
                     <label class="block text-sm font-semibold mb-2" style="color: var(--text-color);">
                         <i class="fas fa-image mr-2" style="color: var(--primary-color);"></i>
                         Profile Image
                     </label>
-                    <div class="border-2 border-dashed rounded-lg p-4 transition-colors" 
-                         style="border-color: var(--border-color);">
-                        <input type="file" 
-                               name="image" 
-                               id="editMemberImage"
-                               accept="image/*" 
-                               class="w-full text-sm"
-                               style="color: var(--text-color);">
+                    <div class="border-2 border-dashed rounded-lg p-4 transition-colors"
+                        style="border-color: var(--border-color);">
+                        <input type="file" name="image" id="editMemberImage" accept="image/*" class="w-full text-sm"
+                            style="color: var(--text-color);">
                         <p class="text-xs mt-2 flex items-center gap-1" style="color: var(--text-muted);">
                             <i class="fas fa-info-circle"></i>
                             Leave empty to keep the current image. Recommended: Square image, at least 200x200px
@@ -361,18 +362,17 @@
             </div>
 
             <!-- Modal Footer -->
-            <div class="sticky bottom-0 px-6 py-4 border-t flex justify-end gap-3" 
-                 style="background-color: var(--card-bg); border-color: var(--border-color);">
-                <button type="button" 
-                        onclick="closeEditManagementModal()" 
-                        class="px-6 py-2.5 border rounded-lg font-semibold transition-all"
-                        style="color: var(--text-color); border-color: var(--border-color); background-color: transparent;"
-                        onmouseover="this.style.backgroundColor='rgba(128,128,128,0.1)'"
-                        onmouseout="this.style.backgroundColor='transparent'">
+            <div class="sticky bottom-0 px-6 py-4 border-t flex justify-end gap-3"
+                style="background-color: var(--card-bg); border-color: var(--border-color);">
+                <button type="button" onclick="closeEditManagementModal()"
+                    class="px-6 py-2.5 border rounded-lg font-semibold transition-all"
+                    style="color: var(--text-color); border-color: var(--border-color); background-color: transparent;"
+                    onmouseover="this.style.backgroundColor='rgba(128,128,128,0.1)'"
+                    onmouseout="this.style.backgroundColor='transparent'">
                     <i class="fas fa-times mr-2"></i>Cancel
                 </button>
-                <button type="submit" 
-                        class="px-6 py-2.5 bg-blue-600 text-white rounded-lg font-semibold transition-all hover:bg-blue-700 hover:shadow-lg">
+                <button type="submit"
+                    class="px-6 py-2.5 bg-blue-600 text-white rounded-lg font-semibold transition-all hover:bg-blue-700 hover:shadow-lg">
                     <i class="fas fa-save mr-2"></i>Save Changes
                 </button>
             </div>
@@ -381,61 +381,60 @@
 </div>
 
 <script>
-function openEditManagementModal(id, name, designation) {
-    document.getElementById('editMemberId').value = id;
-    document.getElementById('editMemberName').value = name;
-    document.getElementById('editMemberDesignation').value = designation;
-    document.getElementById('editMemberImage').value = ''; // Clear file input
-    
-    const modal = document.getElementById('editManagementModal');
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-    document.body.style.overflow = 'hidden'; // Prevent background scrolling
-}
+    function openEditManagementModal(id, name, designation) {
+        document.getElementById('editMemberId').value = id;
+        document.getElementById('editMemberName').value = name;
+        document.getElementById('editMemberDesignation').value = designation;
+        document.getElementById('editMemberImage').value = ''; // Clear file input
 
-function closeEditManagementModal() {
-    const modal = document.getElementById('editManagementModal');
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-    document.body.style.overflow = ''; // Restore scrolling
-}
-
-// Close modal when clicking outside
-document.getElementById('editManagementModal')?.addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeEditManagementModal();
-    }
-});
-
-// Close modal with Escape key
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
         const modal = document.getElementById('editManagementModal');
-        if (modal && !modal.classList.contains('hidden')) {
-            closeEditManagementModal();
-        }
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
     }
-});
+
+    function closeEditManagementModal() {
+        const modal = document.getElementById('editManagementModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        document.body.style.overflow = ''; // Restore scrolling
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('editManagementModal')?.addEventListener('click', function (e) {
+        if (e.target === this) {
+            closeEditManagementModal();
+        }});
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('editManagementModal');
+            if (modal && !modal.classList.contains('hidden')) {
+                closeEditManagementModal();
+            }}
+    });
 </script>
 
 <!-- Stat Modals -->
 
-<!-- Total Members Modal -->
-<div id="membersModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background-color: rgba(0, 0, 0, 0.5);">
-    <div class="rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto" 
-         style="background-color: var(--card-bg); border: 1px solid var(--border-color);">
+<!-- Customer Orders Modal -->
+<div id="customerOrdersModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4"
+    style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
+        style="background-color: var(--card-bg); border: 1px solid var(--border-color);">
         <!-- Modal Header -->
-        <div class="sticky top-0 px-6 py-4 border-b" style="background-color: var(--card-bg); border-color: var(--border-color);">
+        <div class="sticky top-0 px-6 py-4 border-b"
+            style="background-color: var(--card-bg); border-color: var(--border-color);">
             <div class="flex items-center justify-between">
                 <h3 class="text-2xl font-bold" style="color: var(--text-color);">
-                    <i class="fas fa-users mr-2 text-blue-600"></i>
-                    Total Members ({{ stats.total_users }})
+                    <i class="fas fa-shopping-bag mr-2 text-blue-600"></i>
+                    Pending Customer Orders ({{ stats.pending_customer_orders }})
                 </h3>
-                <button type="button" onclick="closeStatModal('membersModal')" 
-                        class="p-2 rounded-lg transition-colors"
-                        style="color: var(--text-muted);"
-                        onmouseover="this.style.backgroundColor='rgba(128,128,128,0.1)'"
-                        onmouseout="this.style.backgroundColor='transparent'">
+                <button type="button" onclick="closeStatModal('customerOrdersModal')"
+                    class="p-2 rounded-lg transition-colors" style="color: var(--text-muted);"
+                    onmouseover="this.style.backgroundColor='rgba(128,128,128,0.1)'"
+                    onmouseout="this.style.backgroundColor='transparent'">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
@@ -443,87 +442,57 @@ document.addEventListener('keydown', function(e) {
 
         <!-- Modal Body -->
         <div class="p-6">
-            {% if stats.all_users %}
-            <!-- Desktop: 3 columns (12 max), Mobile: 1 column (5 max) -->
-            <!-- Mobile view: show only 5 -->
-            <div class="grid grid-cols-1 md:hidden gap-4">
-                {% for user in stats.all_users[:5] %}
-                <div class="p-4 rounded-lg border transition-all hover:shadow-md" 
-                     style="background-color: var(--card-bg); border-color: var(--border-color);">
-                    <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-lg">
-                            {{ user.username[0].upper() }}
-                        </div>
-                        <div class="flex-1">
-                            <p class="font-semibold" style="color: var(--text-color);">{{ user.username }}</p>
-                            <p class="text-xs" style="color: var(--text-muted);">
-                                {% if user.is_admin() %}
-                                    <span class="px-2 py-0.5 rounded bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200">Admin</span>
-                                {% elif user.is_staff() %}
-                                    <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">Staff</span>
-                                {% else %}
-                                    <span class="px-2 py-0.5 rounded bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100">Member</span>
-                                {% endif %}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
+            {% if stats.all_pending_customer_orders %}
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b" style="border-color: var(--border-color);">
+                            <th class="text-left p-3" style="color: var(--text-color);">Book</th>
+                            <th class="text-left p-3" style="color: var(--text-color);">Customer</th>
+                            <th class="text-left p-3" style="color: var(--text-color);">Order Date</th>
+                            <th class="text-left p-3" style="color: var(--text-color);">Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sale in stats.all_pending_customer_orders[:10] %}
+                        <tr class="border-b hover:bg-opacity-5 hover:bg-gray-500 transition-colors"
+                            style="border-color: var(--border-color);">
+                            <td class="p-3">
+                                <p class="font-semibold" style="color: var(--text-color);">{{ sale.book.title if
+                                    sale.book else 'Unknown' }}</p>
+                            </td>
+                            <td class="p-3" style="color: var(--text-color);">{{ sale.user.username if sale.user else
+                                'Unknown' }}</td>
+                            <td class="p-3 text-sm" style="color: var(--text-muted);">{{
+                                sale.sale_date.strftime('%Y-%m-%d') }}</td>
+                            <td class="p-3 font-bold" style="color: var(--text-color);">{{ sale.price_at_sale }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-            {% if stats.all_users|length > 5 %}
-            <p class="text-center mt-4 text-sm md:hidden" style="color: var(--text-muted);">
-                Showing 5 of {{ stats.all_users|length }} members. <a href="{{ url_for('main.members') }}" class="text-blue-600 hover:underline">View all →</a>
-            </p>
-            {% endif %}
-            
-            <!-- Desktop view: show 12 -->
-            <div class="hidden md:block">
-                <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                {% for user in stats.all_users[:12] %}
-                <div class="p-4 rounded-lg border transition-all hover:shadow-md" 
-                     style="background-color: var(--card-bg); border-color: var(--border-color);">
-                    <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-lg">
-                            {{ user.username[0].upper() }}
-                        </div>
-                        <div class="flex-1">
-                            <p class="font-semibold" style="color: var(--text-color);">{{ user.username }}</p>
-                            <p class="text-xs" style="color: var(--text-muted);">
-                                {% if user.is_admin() %}
-                                    <span class="px-2 py-0.5 rounded bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200">Admin</span>
-                                {% elif user.is_staff() %}
-                                    <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">Staff</span>
-                                {% else %}
-                                    <span class="px-2 py-0.5 rounded bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100">Member</span>
-                                {% endif %}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            </div>
-            {% if stats.all_users|length > 12 %}
-            <p class="text-center mt-4 text-sm hidden md:block" style="color: var(--text-muted);">
-                Showing 12 of {{ stats.all_users|length }} members. <a href="{{ url_for('main.members') }}" class="text-blue-600 hover:underline">View all →</a>
+            {% if stats.all_pending_customer_orders|length > 10 %}
+            <p class="text-center mt-4 text-sm" style="color: var(--text-muted);">
+                Showing 10 of {{ stats.all_pending_customer_orders|length }} pending orders. <a
+                    href="{{ url_for('main.admin_sales') }}" class="text-blue-600 hover:underline">View all →</a>
             </p>
             {% endif %}
             {% else %}
-            <p class="text-center py-8" style="color: var(--text-muted);">No members found.</p>
+            <p class="text-center py-8" style="color: var(--text-muted);">No pending customer orders found.</p>
             {% endif %}
         </div>
 
         <!-- Modal Footer -->
-        <div class="sticky bottom-0 px-6 py-4 border-t flex justify-between items-center" 
-             style="background-color: var(--card-bg); border-color: var(--border-color);">
-            <a href="{{ url_for('main.members') }}" class="text-blue-600 hover:text-blue-700 font-semibold">
-                <i class="fas fa-external-link-alt mr-2"></i>View Full Members Page
+        <div class="sticky bottom-0 px-6 py-4 border-t flex justify-between items-center"
+            style="background-color: var(--card-bg); border-color: var(--border-color);">
+            <a href="{{ url_for('main.admin_sales') }}" class="text-blue-600 hover:text-blue-700 font-semibold">
+                <i class="fas fa-external-link-alt mr-2"></i>View Full Orders Management
             </a>
-            <button type="button" onclick="closeStatModal('membersModal')" 
-                    class="px-6 py-2.5 border rounded-lg font-semibold transition-all"
-                    style="color: var(--text-color); border-color: var(--border-color);"
-                    onmouseover="this.style.backgroundColor='rgba(128,128,128,0.1)'"
-                    onmouseout="this.style.backgroundColor='transparent'">
+            <button type="button" onclick="closeStatModal('customerOrdersModal')"
+                class="px-6 py-2.5 border rounded-lg font-semibold transition-all"
+                style="color: var(--text-color); border-color: var(--border-color);"
+                onmouseover="this.style.backgroundColor='rgba(128,128,128,0.1)'"
+                onmouseout="this.style.backgroundColor='transparent'">
                 Close
             </button>
         </div>
@@ -531,21 +500,21 @@ document.addEventListener('keydown', function(e) {
 </div>
 
 <!-- Total Books Modal -->
-<div id="booksModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background-color: rgba(0, 0, 0, 0.5);">
-    <div class="rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto" 
-         style="background-color: var(--card-bg); border: 1px solid var(--border-color);">
+<div id="booksModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4"
+    style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
+        style="background-color: var(--card-bg); border: 1px solid var(--border-color);">
         <!-- Modal Header -->
-        <div class="sticky top-0 px-6 py-4 border-b" style="background-color: var(--card-bg); border-color: var(--border-color);">
+        <div class="sticky top-0 px-6 py-4 border-b"
+            style="background-color: var(--card-bg); border-color: var(--border-color);">
             <div class="flex items-center justify-between">
                 <h3 class="text-2xl font-bold" style="color: var(--text-color);">
                     <i class="fas fa-book mr-2 text-purple-600"></i>
                     Book Inventory ({{ stats.total_books }} Books)
                 </h3>
-                <button type="button" onclick="closeStatModal('booksModal')" 
-                        class="p-2 rounded-lg transition-colors"
-                        style="color: var(--text-muted);"
-                        onmouseover="this.style.backgroundColor='rgba(128,128,128,0.1)'"
-                        onmouseout="this.style.backgroundColor='transparent'">
+                <button type="button" onclick="closeStatModal('booksModal')" class="p-2 rounded-lg transition-colors"
+                    style="color: var(--text-muted);" onmouseover="this.style.backgroundColor='rgba(128,128,128,0.1)'"
+                    onmouseout="this.style.backgroundColor='transparent'">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
@@ -561,10 +530,13 @@ document.addEventListener('keydown', function(e) {
                 {% if stats.category_data %}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                     {% for cat in stats.category_data[:8] %}
-                    <div class="p-3 md:p-4 rounded-lg border" style="background-color: var(--card-bg); border-color: var(--border-color);">
+                    <div class="p-3 md:p-4 rounded-lg border"
+                        style="background-color: var(--card-bg); border-color: var(--border-color);">
                         <div class="flex items-center justify-between">
-                            <span class="font-semibold text-sm md:text-base" style="color: var(--text-color);">{{ cat.category }}</span>
-                            <span class="px-2 md:px-3 py-1 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-200 font-bold text-sm">
+                            <span class="font-semibold text-sm md:text-base" style="color: var(--text-color);">{{
+                                cat.category }}</span>
+                            <span
+                                class="px-2 md:px-3 py-1 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-200 font-bold text-sm">
                                 {{ cat.stock }}
                             </span>
                         </div>
@@ -573,7 +545,8 @@ document.addEventListener('keydown', function(e) {
                 </div>
                 {% if stats.category_data|length > 8 %}
                 <p class="text-sm mt-3" style="color: var(--text-muted);">
-                    Showing 8 of {{ stats.category_data|length }} categories. <a href="{{ url_for('main.inventory') }}" class="text-blue-600 hover:underline">View all →</a>
+                    Showing 8 of {{ stats.category_data|length }} categories. <a href="{{ url_for('main.inventory') }}"
+                        class="text-blue-600 hover:underline">View all →</a>
                 </p>
                 {% endif %}
                 {% else %}
@@ -583,16 +556,16 @@ document.addEventListener('keydown', function(e) {
         </div>
 
         <!-- Modal Footer -->
-        <div class="sticky bottom-0 px-6 py-4 border-t flex justify-between items-center" 
-             style="background-color: var(--card-bg); border-color: var(--border-color);">
+        <div class="sticky bottom-0 px-6 py-4 border-t flex justify-between items-center"
+            style="background-color: var(--card-bg); border-color: var(--border-color);">
             <a href="{{ url_for('main.inventory') }}" class="text-blue-600 hover:text-blue-700 font-semibold">
                 <i class="fas fa-external-link-alt mr-2"></i>View Full Inventory
             </a>
-            <button type="button" onclick="closeStatModal('booksModal')" 
-                    class="px-6 py-2.5 border rounded-lg font-semibold transition-all"
-                    style="color: var(--text-color); border-color: var(--border-color);"
-                    onmouseover="this.style.backgroundColor='rgba(128,128,128,0.1)'"
-                    onmouseout="this.style.backgroundColor='transparent'">
+            <button type="button" onclick="closeStatModal('booksModal')"
+                class="px-6 py-2.5 border rounded-lg font-semibold transition-all"
+                style="color: var(--text-color); border-color: var(--border-color);"
+                onmouseover="this.style.backgroundColor='rgba(128,128,128,0.1)'"
+                onmouseout="this.style.backgroundColor='transparent'">
                 Close
             </button>
         </div>
@@ -600,21 +573,21 @@ document.addEventListener('keydown', function(e) {
 </div>
 
 <!-- Active Loans Modal -->
-<div id="loansModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background-color: rgba(0, 0, 0, 0.5);">
-    <div class="rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto" 
-         style="background-color: var(--card-bg); border: 1px solid var(--border-color);">
+<div id="loansModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4"
+    style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto"
+        style="background-color: var(--card-bg); border: 1px solid var(--border-color);">
         <!-- Modal Header -->
-        <div class="sticky top-0 px-6 py-4 border-b" style="background-color: var(--card-bg); border-color: var(--border-color);">
+        <div class="sticky top-0 px-6 py-4 border-b"
+            style="background-color: var(--card-bg); border-color: var(--border-color);">
             <div class="flex items-center justify-between">
                 <h3 class="text-2xl font-bold" style="color: var(--text-color);">
                     <i class="fas fa-hand-holding-heart mr-2 text-amber-600"></i>
                     Active Loans ({{ stats.active_loans }})
                 </h3>
-                <button type="button" onclick="closeStatModal('loansModal')" 
-                        class="p-2 rounded-lg transition-colors"
-                        style="color: var(--text-muted);"
-                        onmouseover="this.style.backgroundColor='rgba(128,128,128,0.1)'"
-                        onmouseout="this.style.backgroundColor='transparent'">
+                <button type="button" onclick="closeStatModal('loansModal')" class="p-2 rounded-lg transition-colors"
+                    style="color: var(--text-muted);" onmouseover="this.style.backgroundColor='rgba(128,128,128,0.1)'"
+                    onmouseout="this.style.backgroundColor='transparent'">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
@@ -623,48 +596,57 @@ document.addEventListener('keydown', function(e) {
         <!-- Modal Body -->
         <div class="p-6">
             {% if stats.all_active_loans %}
-            
+
             <!-- Mobile Card View -->
             <div class="md:hidden space-y-3">
                 {% for loan in stats.all_active_loans[:5] %}
-                <div class="p-3 rounded-lg border" style="background-color: var(--card-bg); border-color: var(--border-color);">
+                <div class="p-3 rounded-lg border"
+                    style="background-color: var(--card-bg); border-color: var(--border-color);">
                     <div class="space-y-2">
                         <div>
                             <p class="text-xs font-semibold uppercase" style="color: var(--text-muted);">Book</p>
-                            <p class="font-semibold" style="color: var(--text-color);">{{ loan.book.title if loan.book else 'Unknown' }}</p>
+                            <p class="font-semibold" style="color: var(--text-color);">{{ loan.book.title if loan.book
+                                else 'Unknown' }}</p>
                         </div>
                         <div class="flex justify-between items-start gap-2">
                             <div class="flex-1">
-                                <p class="text-xs font-semibold uppercase" style="color: var(--text-muted);">Borrower</p>
-                                <p class="text-sm" style="color: var(--text-color);">{{ loan.user.username if loan.user else 'Unknown' }}</p>
+                                <p class="text-xs font-semibold uppercase" style="color: var(--text-muted);">Borrower
+                                </p>
+                                <p class="text-sm" style="color: var(--text-color);">{{ loan.user.username if loan.user
+                                    else 'Unknown' }}</p>
                             </div>
                             <div>
-                                {% if loan.due_date and loan.due_date < stats.current_datetime %}
-                                    <span class="px-2 py-1 rounded bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200 text-xs font-semibold whitespace-nowrap">
-                                        <i class="fas fa-exclamation-circle mr-1"></i>Overdue
+                                {% if loan.due_date and loan.due_date < stats.current_datetime %} <span
+                                    class="px-2 py-1 rounded bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200 text-xs font-semibold whitespace-nowrap">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>Overdue
                                     </span>
-                                {% else %}
-                                    <span class="px-2 py-1 rounded bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200 text-xs font-semibold whitespace-nowrap">
+                                    {% else %}
+                                    <span
+                                        class="px-2 py-1 rounded bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200 text-xs font-semibold whitespace-nowrap">
                                         <i class="fas fa-check-circle mr-1"></i>On Time
                                     </span>
-                                {% endif %}
+                                    {% endif %}
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <p class="text-xs font-semibold uppercase" style="color: var(--text-muted);">Checkout</p>
-                                <p class="text-sm" style="color: var(--text-color);">{{ loan.checkout_date.strftime('%Y-%m-%d') if loan.checkout_date else 'N/A' }}</p>
+                                <p class="text-xs font-semibold uppercase" style="color: var(--text-muted);">Checkout
+                                </p>
+                                <p class="text-sm" style="color: var(--text-color);">{{
+                                    loan.checkout_date.strftime('%Y-%m-%d') if loan.checkout_date else 'N/A' }}</p>
                             </div>
                             <div>
-                                <p class="text-xs font-semibold uppercase" style="color: var(--text-muted);">Due Date</p>
-                                <p class="text-sm" style="color: var(--text-color);">{{ loan.due_date.strftime('%Y-%m-%d') if loan.due_date else 'N/A' }}</p>
+                                <p class="text-xs font-semibold uppercase" style="color: var(--text-muted);">Due Date
+                                </p>
+                                <p class="text-sm" style="color: var(--text-color);">{{
+                                    loan.due_date.strftime('%Y-%m-%d') if loan.due_date else 'N/A' }}</p>
                             </div>
                         </div>
                     </div>
                 </div>
                 {% endfor %}
             </div>
-            
+
             <!-- Desktop Table View -->
             <div class="hidden md:block overflow-x-auto">
                 <table class="w-full">
@@ -679,23 +661,29 @@ document.addEventListener('keydown', function(e) {
                     </thead>
                     <tbody>
                         {% for loan in stats.all_active_loans[:5] %}
-                        <tr class="border-b hover:bg-opacity-5 hover:bg-gray-500 transition-colors" style="border-color: var(--border-color);">
+                        <tr class="border-b hover:bg-opacity-5 hover:bg-gray-500 transition-colors"
+                            style="border-color: var(--border-color);">
                             <td class="p-3">
-                                <p class="font-semibold" style="color: var(--text-color);">{{ loan.book.title if loan.book else 'Unknown' }}</p>
+                                <p class="font-semibold" style="color: var(--text-color);">{{ loan.book.title if
+                                    loan.book else 'Unknown' }}</p>
                             </td>
-                            <td class="p-3" style="color: var(--text-color);">{{ loan.user.username if loan.user else 'Unknown' }}</td>
-                            <td class="p-3 text-sm" style="color: var(--text-muted);">{{ loan.checkout_date.strftime('%Y-%m-%d') if loan.checkout_date else 'N/A' }}</td>
-                            <td class="p-3 text-sm" style="color: var(--text-muted);">{{ loan.due_date.strftime('%Y-%m-%d') if loan.due_date else 'N/A' }}</td>
+                            <td class="p-3" style="color: var(--text-color);">{{ loan.user.username if loan.user else
+                                'Unknown' }}</td>
+                            <td class="p-3 text-sm" style="color: var(--text-muted);">{{
+                                loan.checkout_date.strftime('%Y-%m-%d') if loan.checkout_date else 'N/A' }}</td>
+                            <td class="p-3 text-sm" style="color: var(--text-muted);">{{
+                                loan.due_date.strftime('%Y-%m-%d') if loan.due_date else 'N/A' }}</td>
                             <td class="p-3">
-                                {% if loan.due_date and loan.due_date < stats.current_datetime %}
-                                    <span class="px-2 py-1 rounded bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200 text-xs font-semibold">
-                                        <i class="fas fa-exclamation-circle mr-1"></i>Overdue
+                                {% if loan.due_date and loan.due_date < stats.current_datetime %} <span
+                                    class="px-2 py-1 rounded bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200 text-xs font-semibold">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>Overdue
                                     </span>
-                                {% else %}
-                                    <span class="px-2 py-1 rounded bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200 text-xs font-semibold">
+                                    {% else %}
+                                    <span
+                                        class="px-2 py-1 rounded bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200 text-xs font-semibold">
                                         <i class="fas fa-check-circle mr-1"></i>On Time
                                     </span>
-                                {% endif %}
+                                    {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
@@ -704,7 +692,8 @@ document.addEventListener('keydown', function(e) {
             </div>
             {% if stats.all_active_loans|length > 5 %}
             <p class="text-center mt-4 text-sm" style="color: var(--text-muted);">
-                Showing 5 of {{ stats.all_active_loans|length }} active loans. <a href="{{ url_for('main.admin_loans') }}" class="text-blue-600 hover:underline">View all →</a>
+                Showing 5 of {{ stats.all_active_loans|length }} active loans. <a
+                    href="{{ url_for('main.admin_loans') }}" class="text-blue-600 hover:underline">View all →</a>
             </p>
             {% endif %}
             {% else %}
@@ -713,16 +702,16 @@ document.addEventListener('keydown', function(e) {
         </div>
 
         <!-- Modal Footer -->
-        <div class="sticky bottom-0 px-6 py-4 border-t flex justify-between items-center" 
-             style="background-color: var(--card-bg); border-color: var(--border-color);">
+        <div class="sticky bottom-0 px-6 py-4 border-t flex justify-between items-center"
+            style="background-color: var(--card-bg); border-color: var(--border-color);">
             <a href="{{ url_for('main.admin_loans') }}" class="text-blue-600 hover:text-blue-700 font-semibold">
                 <i class="fas fa-external-link-alt mr-2"></i>View Full Loans Page
             </a>
-            <button type="button" onclick="closeStatModal('loansModal')" 
-                    class="px-6 py-2.5 border rounded-lg font-semibold transition-all"
-                    style="color: var(--text-color); border-color: var(--border-color);"
-                    onmouseover="this.style.backgroundColor='rgba(128,128,128,0.1)'"
-                    onmouseout="this.style.backgroundColor='transparent'">
+            <button type="button" onclick="closeStatModal('loansModal')"
+                class="px-6 py-2.5 border rounded-lg font-semibold transition-all"
+                style="color: var(--text-color); border-color: var(--border-color);"
+                onmouseover="this.style.backgroundColor='rgba(128,128,128,0.1)'"
+                onmouseout="this.style.backgroundColor='transparent'">
                 Close
             </button>
         </div>
@@ -730,21 +719,21 @@ document.addEventListener('keydown', function(e) {
 </div>
 
 <!-- Pending Orders Modal -->
-<div id="ordersModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background-color: rgba(0, 0, 0, 0.5);">
-    <div class="rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto" 
-         style="background-color: var(--card-bg); border: 1px solid var(--border-color);">
+<div id="ordersModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4"
+    style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto"
+        style="background-color: var(--card-bg); border: 1px solid var(--border-color);">
         <!-- Modal Header -->
-        <div class="sticky top-0 px-6 py-4 border-b" style="background-color: var(--card-bg); border-color: var(--border-color);">
+        <div class="sticky top-0 px-6 py-4 border-b"
+            style="background-color: var(--card-bg); border-color: var(--border-color);">
             <div class="flex items-center justify-between">
                 <h3 class="text-2xl font-bold" style="color: var(--text-color);">
                     <i class="fas fa-truck-loading mr-2 text-emerald-600"></i>
-                    Pending Orders ({{ stats.pending_supply_orders }})
+                    Supply Orders ({{ stats.pending_supply_orders }})
                 </h3>
-                <button type="button" onclick="closeStatModal('ordersModal')" 
-                        class="p-2 rounded-lg transition-colors"
-                        style="color: var(--text-muted);"
-                        onmouseover="this.style.backgroundColor='rgba(128,128,128,0.1)'"
-                        onmouseout="this.style.backgroundColor='transparent'">
+                <button type="button" onclick="closeStatModal('ordersModal')" class="p-2 rounded-lg transition-colors"
+                    style="color: var(--text-muted);" onmouseover="this.style.backgroundColor='rgba(128,128,128,0.1)'"
+                    onmouseout="this.style.backgroundColor='transparent'">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
@@ -755,7 +744,8 @@ document.addEventListener('keydown', function(e) {
             {% if stats.all_pending_orders %}
             <div class="space-y-2">
                 {% for order in stats.all_pending_orders[:5] %}
-                <div class="p-3 rounded-lg border hover:shadow-md transition-shadow" style="background-color: var(--card-bg); border-color: var(--border-color);">
+                <div class="p-3 rounded-lg border hover:shadow-md transition-shadow"
+                    style="background-color: var(--card-bg); border-color: var(--border-color);">
                     <div class="flex items-center justify-between gap-4">
                         <div class="flex items-center gap-4 flex-1">
                             <div>
@@ -778,7 +768,8 @@ document.addEventListener('keydown', function(e) {
             </div>
             {% if stats.all_pending_orders|length > 5 %}
             <p class="text-center mt-4 text-sm" style="color: var(--text-muted);">
-                Showing 5 of {{ stats.all_pending_orders|length }} pending orders. <a href="{{ url_for('main.supplier_review') }}" class="text-blue-600 hover:underline">View all →</a>
+                Showing 5 of {{ stats.all_pending_orders|length }} pending orders. <a
+                    href="{{ url_for('main.supplier_review') }}" class="text-blue-600 hover:underline">View all →</a>
             </p>
             {% endif %}
             {% else %}
@@ -787,16 +778,16 @@ document.addEventListener('keydown', function(e) {
         </div>
 
         <!-- Modal Footer -->
-        <div class="sticky bottom-0 px-6 py-4 border-t flex justify-between items-center" 
-             style="background-color: var(--card-bg); border-color: var(--border-color);">
+        <div class="sticky bottom-0 px-6 py-4 border-t flex justify-between items-center"
+            style="background-color: var(--card-bg); border-color: var(--border-color);">
             <a href="{{ url_for('main.supplier_review') }}" class="text-blue-600 hover:text-blue-700 font-semibold">
                 <i class="fas fa-external-link-alt mr-2"></i>View Full Orders Page
             </a>
-            <button type="button" onclick="closeStatModal('ordersModal')" 
-                    class="px-6 py-2.5 border rounded-lg font-semibold transition-all"
-                    style="color: var(--text-color); border-color: var(--border-color);"
-                    onmouseover="this.style.backgroundColor='rgba(128,128,128,0.1)'"
-                    onmouseout="this.style.backgroundColor='transparent'">
+            <button type="button" onclick="closeStatModal('ordersModal')"
+                class="px-6 py-2.5 border rounded-lg font-semibold transition-all"
+                style="color: var(--text-color); border-color: var(--border-color);"
+                onmouseover="this.style.backgroundColor='rgba(128,128,128,0.1)'"
+                onmouseout="this.style.backgroundColor='transparent'">
                 Close
             </button>
         </div>
@@ -805,55 +796,49 @@ document.addEventListener('keydown', function(e) {
 
 <!-- Stat Modal JavaScript -->
 <script>
-function openStatModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        document.body.style.overflow = 'hidden';
-    }
-}
+    function openStatModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }}
 
-function closeStatModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-        document.body.style.overflow = '';
-    }
-}
+    function closeStatModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = '';
+        }}
 
-// Close modal when clicking outside
-['membersModal', 'booksModal', 'loansModal', 'ordersModal'].forEach(modalId => {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeStatModal(modalId);
+    // Close modal when clicking outside
+    ['membersModal', 'booksModal', 'loansModal', 'ordersModal'].forEach(modalId => {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.addEventListener('click', function (e) {
+                if (e.target === this) {
+                    closeStatModal(modalId);
+                }});
+        }});
+
+    // Update Escape key handler to close all stat modals
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            // Close management modal
+            const mgmtModal = document.getElementById('editManagementModal');
+            if (mgmtModal && !mgmtModal.classList.contains('hidden')) {
+                closeEditManagementModal();
+                return;
             }
-        });
-    }
-});
 
-// Update Escape key handler to close all stat modals
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        // Close management modal
-        const mgmtModal = document.getElementById('editManagementModal');
-        if (mgmtModal && !mgmtModal.classList.contains('hidden')) {
-            closeEditManagementModal();
-            return;
-        }
-        
-        // Close any open stat modal
-        ['membersModal', 'booksModal', 'loansModal', 'ordersModal'].forEach(modalId => {
-            const modal = document.getElementById(modalId);
-            if (modal && !modal.classList.contains('hidden')) {
-                closeStatModal(modalId);
-            }
-        });
-    }
-});
+            // Close any open stat modal
+            ['membersModal', 'booksModal', 'loansModal', 'ordersModal'].forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (modal && !modal.classList.contains('hidden')) {
+                    closeStatModal(modalId);
+                }});
+        }});
 </script>
 
 <script>
@@ -875,7 +860,7 @@ document.addEventListener('keydown', function(e) {
         emerald: '#10b981',
         violet: '#8b5cf6'
     };
-    
+
     // Create a color palette array for charts with many categories
     const categoryColorPalette = [
         chartColors.blue,
@@ -898,26 +883,25 @@ document.addEventListener('keydown', function(e) {
     let salesChart = null;
     const salesData = {
         daily: {
-            labels: {{ stats.sales_trends.daily | map(attribute = 'label') | list | tojson }},
-            data: {{ stats.sales_trends.daily | map(attribute = 'count') | list | tojson }},
-            title: 'Sales Trend (Last 30 Days)'
+            labels: {{ stats.sales_trends.daily | map(attribute='label') | list | tojson }},
+    data: {{ stats.sales_trends.daily | map(attribute='count') | list | tojson }},
+    title: 'Sales Trend (Last 30 Days)'
         },
-        monthly: {
-            labels: {{ stats.sales_trends.monthly | map(attribute = 'label') | list | tojson }},
-            data: {{ stats.sales_trends.monthly | map(attribute = 'count') | list | tojson }},
-            title: 'Sales Trend (Last 12 Months)'
-        },
-        yearly: {
-            labels: {{ stats.sales_trends.yearly | map(attribute = 'label') | list | tojson }},
-            data: {{ stats.sales_trends.yearly | map(attribute = 'count') | list | tojson }},
-            title: 'Sales Trend (Last 5 Years)'
-        }
-    };
+    monthly: {
+        labels: {{ stats.sales_trends.monthly | map(attribute='label') | list | tojson }},
+        data: {{ stats.sales_trends.monthly | map(attribute='count') | list | tojson }},
+        title: 'Sales Trend (Last 12 Months)'
+    },
+    yearly: {
+        labels: {{ stats.sales_trends.yearly | map(attribute='label') | list | tojson }},
+        data: {{ stats.sales_trends.yearly | map(attribute='count') | list | tojson }},
+        title: 'Sales Trend (Last 5 Years)'
+    }};
 
     function updateSalesChart(period) {
         // Update Title
         document.getElementById('salesTrendTitle').innerText = salesData[period].title;
-        
+
         // Update Button Styles
         document.querySelectorAll('.sales-toggle-btn').forEach(btn => {
             btn.style.backgroundColor = 'transparent';
@@ -932,15 +916,14 @@ document.addEventListener('keydown', function(e) {
             salesChart.data.labels = salesData[period].labels;
             salesChart.data.datasets[0].data = salesData[period].data;
             salesChart.update();
-        }
-    }
+        }}
 
     // Initialize Charts
     function initDashboardCharts() {
         // Sales Trend Chart
         const salesCtx = document.getElementById('salesTrendChart').getContext('2d');
         if (salesChart) salesChart.destroy();
-        
+
         salesChart = new Chart(salesCtx, {
             type: 'line',
             data: {
@@ -958,15 +941,12 @@ document.addEventListener('keydown', function(e) {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: false }
-                },
+                    legend: { display: false }},
                 scales: {
-                    y: { 
+                    y: {
                         beginAtZero: true,
-                        ticks: { stepSize: 1 }
-                    }
-                }
-            }
+                        ticks: { stepSize: 1 }}
+                }}
         });
 
         // Top Selling Books Chart
@@ -974,52 +954,47 @@ document.addEventListener('keydown', function(e) {
         new Chart(topSellingCtx, {
             type: 'bar',
             data: {
-                labels: {{ stats.top_selling_books | map(attribute = 'title') | list | tojson }},
-            datasets: [{
-                label: 'Copies Sold',
-                data: {{ stats.top_selling_books | map(attribute = 'count') | list | tojson }},
-            backgroundColor: [chartColors.blue, chartColors.purple, chartColors.amber, chartColors.green, chartColors.red]
-            }]
-        },
-            options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false }
+                labels: {{ stats.top_selling_books | map(attribute='title') | list | tojson }},
+    datasets: [{
+        label: 'Copies Sold',
+        data: {{ stats.top_selling_books | map(attribute='count') | list | tojson }},
+        backgroundColor: [chartColors.blue, chartColors.purple, chartColors.amber, chartColors.green, chartColors.red]
+                }]
             },
-            scales: {
-                y: { beginAtZero: true }
-            }
-        }
-    });
+    options: {
+        responsive: true,
+            maintainAspectRatio: false,
+                plugins: {
+            legend: { display: false }},
+        scales: {
+            y: { beginAtZero: true }}
+    }});
 
-        // Category Stock Chart
-        const categoryCtx = document.getElementById('categoryStockChart').getContext('2d');
-        new Chart(categoryCtx, {
-            type: 'doughnut',
-            data: {
-                labels: {{ stats.category_data | map(attribute='category') | list | tojson }},
-            datasets: [{
-                data: {{ stats.category_data | map(attribute='stock') | list | tojson }},
-            backgroundColor: categoryColorPalette
+    // Category Stock Chart
+    const categoryCtx = document.getElementById('categoryStockChart').getContext('2d');
+    new Chart(categoryCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ stats.category_data | map(attribute='category') | list | tojson }},
+        datasets: [{
+            data: {{ stats.category_data | map(attribute='stock') | list | tojson }},
+        backgroundColor: categoryColorPalette
             }]
         },
-            options: {
-            responsive: true,
-            maintainAspectRatio: false
-        }
-    });
-    }
+        options: {
+        responsive: true,
+        maintainAspectRatio: false
+    }});
+}
 
     // Call init on load and on HTMX content load
     initDashboardCharts();
-    document.body.addEventListener('htmx:afterOnLoad', function(evt) {
+    document.body.addEventListener('htmx:afterOnLoad', function (evt) {
         if (evt.detail.target.id === 'mainContent') {
             // Re-init charts if dashboard was loaded
             if (document.getElementById('salesTrendChart')) {
                 initDashboardCharts();
-            }
-        }
+            }}
     });
 </script>
 {% endblock %}

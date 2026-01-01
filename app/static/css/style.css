@@ -24,6 +24,35 @@
     --white: #FFFFFF;
 }
 
+/* Light Theme - Explicit white backgrounds */
+[data-theme="light"] {
+    --bg-color: #FFFFFF;
+    /* Pure White */
+    --card-bg: #FFFFFF;
+    /* Pure White */
+    --text-color: #1F2937;
+    /* Gray 800 */
+    --text-muted: #6B7280;
+    /* Gray 500 */
+    --border-color: #E5E7EB;
+    /* Gray 200 */
+    --nav-bg: #FFFFFF;
+    /* Pure White */
+    --pill-bg: #F3F4F6;
+    /* Light Gray for pills */
+    --pill-text: #374151;
+    /* Gray 700 */
+    --pill-hover: #E5E7EB;
+    /* Gray 200 */
+    --placeholder-bg: #F9FAFB;
+    /* Very Light Gray */
+    --placeholder-text: #1F2937;
+    /* Gray 800 */
+
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --white: #FFFFFF;
+}
+
 [data-theme="dark"] {
     --bg-color: #111827;
     /* Gray 900 */
